@@ -3,20 +3,17 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "4.0.0"
+      version = "4.33.0"
     }
   }
 }
 
-provider "aws" {
-  region = "us-west-2"
-}
-
+/*
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "2.21.0"
-
-  name = var.vpc_name
+  for_each = toset(var.envs)
+  name = each.value
   cidr = var.vpc_cidr
 
   azs             = var.vpc_azs
@@ -26,10 +23,17 @@ module "vpc" {
   enable_nat_gateway = var.vpc_enable_nat_gateway
 
   tags = var.vpc_tags
+}*/
+resource "aws_vpc" "main" {
+  cidr_block       = "10.0.0.0/16"
+  instance_tenancy = "default"
+  for_each = toset(var.envs)
+  tags = {
+    Name = each.value
+  }
 }
 
-
-resource "aws_api_gateway_rest_api" "example" {
+resource "aws_api_gateway_rest_api" "vpc_api_gateway" {
   body = jsonencode({
     openapi = "3.0.1"
     info = {
