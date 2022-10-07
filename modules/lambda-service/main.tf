@@ -6,18 +6,8 @@ terraform {
     }
   }
 }
-resource "aws_s3_bucket" "hacking-gymnastics" {
-  for_each = toset(var.service_envs)
-  bucket = "hacking-gymnastics-{each.value}"
-
-  tags = {
-    Name        = "My bucket"
-    Environment = "Dev"
-  }
-}
 resource "aws_iam_role" "service_lambda_iam_role" {
-  for_each = toset(var.service_envs)
-  name = join("-", [var.service_prefix, var.service_name, var.service_version, each.value, "lambda"])
+  name = join("-", [var.service_prefix, var.service_name, var.service_version, var.service_env, "lambda"])
 
   assume_role_policy = <<EOF
 {
@@ -36,9 +26,8 @@ resource "aws_iam_role" "service_lambda_iam_role" {
 EOF
 }
 resource "aws_security_group" "service_lambda_sg" {
-  for_each = toset(var.service_envs)
-  name        = join("-", [var.service_prefix, var.service_name, var.service_version, each.value, "lambda"])
-  description =  join("-", [var.service_prefix, var.service_name, var.service_version, each.value, "lambda"])
+  name        = join("-", [var.service_prefix, var.service_name, var.service_version, var.service_env, "lambda"])
+  description =  join("-", [var.service_prefix, var.service_name, var.service_version, var.service_env, "lambda"])
   vpc_id      = var.vpc_id
 
   /*ingress {
@@ -65,10 +54,9 @@ resource "aws_security_group" "service_lambda_sg" {
 resource "aws_lambda_function" "service_lambda_web"  {
   # If the file is not in the current working directory you will need to include a
   # path.module in the filename.
-  for_each = toset(var.service_envs)
   filename      = "lambda_function_payload.zip"
-  function_name = join("-", [var.service_prefix, var.service_name, var.service_version, each.value])
-  role          = aws_iam_role.service_lambda_iam_role[each.value].arn
+  function_name = join("-", [var.service_prefix, var.service_name, var.service_version, var.service_env])
+  role          = aws_iam_role.service_lambda_iam_role.arn
   handler       = "index.test"
 
   # The filebase64sha256() function is available in Terraform 0.11.12 and later
@@ -81,7 +69,7 @@ resource "aws_lambda_function" "service_lambda_web"  {
   vpc_config {
     # Every subnet should be able to reach an EFS mount target in the same Availability Zone. Cross-AZ mounts are not permitted.
     subnet_ids         = var.private_subnet_ids
-    security_group_ids = [aws_security_group.service_lambda_sg[each.value].id]
+    security_group_ids = [aws_security_group.service_lambda_sg.id]
   }
 
   environment {

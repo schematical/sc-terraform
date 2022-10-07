@@ -18,10 +18,10 @@ variable "service_uri" {
   type        = string
   default     = "iamaroute"
 }
-variable "service_envs" {
+variable "service_env" {
   description = "Environment"
-  type        = list(string)
-  default     = ["dev"]
+  type        = string
+  default     = "dev"
 }
 
 variable "api_gateway_id" {
