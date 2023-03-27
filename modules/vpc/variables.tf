@@ -1,13 +1,14 @@
 # Input variable definitions
-variable "envs" {
-  description = "Environments"
-  type        = list(string)
-  default     = ["dev", "stage", "prod"]
-}
+
 variable "vpc_name" {
   description = "Name of VPC"
   type        = string
   default     = "example-vpc"
+}
+variable "region" {
+  description = "The Region the VPC will be booted up in"
+  type        = string
+  default     = "us-east-1"
 }
 
 variable "vpc_cidr" {
@@ -15,25 +16,46 @@ variable "vpc_cidr" {
   type        = string
   default     = "10.0.0.0/16"
 }
-
-variable "vpc_azs" {
-  description = "Availability zones for VPC"
-  type        = list(string)
-  default     = ["us-west-2a", "us-west-2b", "us-west-2c"]
+variable "private_subnets" {
+  type = list(object({
+    az = string
+    cidr = string
+    name = string
+  }))
+  default = [
+    {
+      az = "a"
+      cidr = "10.0.1.0/24",
+      name = "private-a"
+    },
+    {
+      az = "b"
+      cidr = "10.0.2.0/24",
+      name = "private-b"
+    }
+  ]
 }
 
-variable "vpc_private_subnets" {
-  description = "Private subnets for VPC"
-  type        = list(string)
-  default     = ["10.0.1.0/24", "10.0.2.0/24"]
-}
 
-variable "vpc_public_subnets" {
-  description = "Public subnets for VPC"
-  type        = list(string)
-  default     = ["10.0.101.0/24", "10.0.102.0/24"]
+variable "public_subnets" {
+  type = list(object({
+    az = string
+    cidr = string
+    name = string
+  }))
+  default = [
+    {
+      az = "a"
+      cidr = "10.0.101.0/24"
+      name = "public-a"
+    },
+    {
+      az = "b"
+      cidr = "10.0.102.0/24"
+      name = "public-b"
+    }
+  ]
 }
-
 variable "vpc_enable_nat_gateway" {
   description = "Enable NAT gateway for VPC"
   type        = bool

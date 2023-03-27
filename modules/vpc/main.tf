@@ -8,73 +8,116 @@ terraform {
   }
 }
 
-/*
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "2.21.0"
-  for_each = toset(var.envs)
-  name = each.value
-  cidr = var.vpc_cidr
-
-  azs             = var.vpc_azs
-  private_subnets = var.vpc_private_subnets
-  public_subnets  = var.vpc_public_subnets
-
-  enable_nat_gateway = var.vpc_enable_nat_gateway
-
-  tags = var.vpc_tags
-}*/
 resource "aws_vpc" "main" {
-  cidr_block       = "10.0.0.0/16"
+  cidr_block       =  var.vpc_cidr
   instance_tenancy = "default"
-  for_each = toset(var.envs)
+  tags = merge(
+    {
+      Name = var.vpc_name
+    },
+    {
+      Region = var.region
+    },
+    var.vpc_tags
+  )
+}
+
+resource "aws_eip" "nat_gateway_eip" {
+  vpc = true
+}
+
+resource "aws_nat_gateway" "nat_gateway" {
+  allocation_id = aws_eip.nat_gateway_eip.id
+  subnet_id = values(aws_subnet.public_subnets)[0].id
   tags = {
-    Name = each.value
+    Name = "${var.vpc_name}-${var.region}-nat"
   }
 }
 
-resource "aws_api_gateway_rest_api" "vpc_api_gateway" {
-  body = jsonencode({
-    openapi = "3.0.1"
-    info = {
-      title   = "example"
-      version = "1.0"
-    }
-    paths = {
-      "/path1" = {
-        get = {
-          x-amazon-apigateway-integration = {
-            httpMethod           = "GET"
-            payloadFormatVersion = "1.0"
-            type                 = "HTTP_PROXY"
-            uri                  = "https://ip-ranges.amazonaws.com/ip-ranges.json"
-          }
-        }
-      }
-    }
-  })
+resource "aws_internet_gateway" "internet_gateway" {
+  tags = {
+    Name = "${var.vpc_name}-${var.region}-igw"
+  }
+}
+resource "aws_subnet" "private_subnets" {
+  for_each = {
+    for index, vm in var.private_subnets:
+    vm.name => vm # Perfect, since VM names also need to be unique
+    # OR: index => vm (unique but not perfect, since index will change frequently)
+    # OR: uuid() => vm (do NOT do this! gets recreated everytime)
+  }
+  vpc_id = aws_vpc.main.id
+  cidr_block = each.value.cidr
+  availability_zone = join("", [var.region, each.value.az])
+  tags = {
+    Name = join(
+      "-",
+      [
+        var.vpc_name,
+        var.region,
+        each.value.name
+      ]
+    )
+    Region: var.region
+  }
+}
+resource "aws_subnet" "public_subnets" {
 
-  name = "example"
-
-  endpoint_configuration {
-    types = ["REGIONAL"]
+  for_each = {
+    for index, vm in var.public_subnets:
+    vm.name => vm # Perfect, since VM names also need to be unique
+    # OR: index => vm (unique but not perfect, since index will change frequently)
+    # OR: uuid() => vm (do NOT do this! gets recreated everytime)
+  }
+  vpc_id = aws_vpc.main.id
+  cidr_block = each.value.cidr
+  availability_zone = join("", [var.region, each.value.az])
+  tags = {
+    Name = join(
+      "-",
+      [
+        var.vpc_name,
+        var.region,
+        each.value.name
+      ]
+    )
+    Region: var.region
   }
 }
 
-resource "aws_api_gateway_deployment" "example" {
-  rest_api_id = aws_api_gateway_rest_api.vpc_api_gateway.id
+resource "aws_route_table_association" "public_subnet_route_table_association" {
+  for_each = aws_subnet.public_subnets
+  subnet_id = each.value.id
+  route_table_id = aws_route_table.public_route_table.id
+}
 
-  triggers = {
-    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.vpc_api_gateway.body))
-  }
+resource "aws_route_table_association" "private_subnet_route_table_association" {
+  for_each = aws_subnet.private_subnets
+  subnet_id = each.value.id
+  route_table_id = aws_route_table.private_route_table.id
+}
 
-  lifecycle {
-    create_before_destroy = true
+
+resource "aws_route_table" "public_route_table" {
+  vpc_id = aws_vpc.main.id
+  tags = {
+    Name = "${var.vpc_name}-public-rt"
   }
 }
 
-resource "aws_api_gateway_stage" "example" {
-  deployment_id = aws_api_gateway_deployment.example.id
-  rest_api_id   = aws_api_gateway_rest_api.vpc_api_gateway.id
-  stage_name    = "example"
+
+resource "aws_route_table" "private_route_table" {
+  vpc_id = aws_vpc.main.id
+  tags = {
+    Name = "${var.vpc_name}-private-rt"
+  }
+}
+resource "aws_route" "public_route_igw" {
+  route_table_id = aws_route_table.public_route_table.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id = aws_internet_gateway.internet_gateway.id
+}
+resource "aws_internet_gateway_attachment" "internet_gateway_attachment" {
+  internet_gateway_id = aws_internet_gateway.internet_gateway.id
+  vpc_id              = aws_vpc.main.id
 }
