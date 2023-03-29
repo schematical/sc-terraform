@@ -4,7 +4,6 @@ variable "region" {
 
 variable "env" {}
 
-variable "vpc_name" {}
 
 variable "api_gateway_id" {}
 
@@ -12,7 +11,7 @@ variable "hosted_zone_name" {
   default = "schematical.com"
 }
 variable "hosted_zone_id" {
-  default = ""
+
 }
 
 variable "acm_cert_arn" {

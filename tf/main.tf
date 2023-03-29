@@ -16,7 +16,7 @@ resource "aws_api_gateway_rest_api" "api_gateway" {
       version = "1.0"
     }
     paths = {
-      "/path1" = {
+      "/" = {
         get = {
           x-amazon-apigateway-integration = {
             httpMethod           = "GET"
@@ -29,7 +29,7 @@ resource "aws_api_gateway_rest_api" "api_gateway" {
     }
   })
 
-  name = "example"
+  name = "schematical-terraform-v1"
 
   endpoint_configuration {
     types = ["REGIONAL"]
@@ -66,12 +66,48 @@ EOF
   }
 }
 
+resource "aws_s3_bucket" "code_pipeline_artifact_store_bucket" {
+  # Add your bucket configuration here
+}
 
+resource "aws_iam_role" "ecs_task_execution_iam_role" {
+  name = "ECSTaskExecutionIAMRole"
+  path = "/"
 
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  managed_policy_arns = [
+    "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  ]
+}
 module "vpc" {
-  source = "../../sc-terraform/modules/vpc"
+  source = "../modules/vpc"
   vpc_name = "dev"
 }
+module "dev_env" {
+  /*depends_on = [
+    aws_api_gateway_method.api_gateway_method,
+    aws_api_gateway_integration.api_gateway_root_resource_method_integration
+  ]*/
+  source = "../modules/env"
+  env = "dev"
+  ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
+  api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
+  hosted_zone_id = "ZC4VPG65C2OOQ"
+
+}
+
 /*module "lambda-service" {
   for_each = toset(var.envs)
   source = "../../sc-terraform/modules/lambda-service"
