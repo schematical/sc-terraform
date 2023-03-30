@@ -9,8 +9,8 @@ phases:
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
   build:
     commands:
-      - cd $CODEBUILD_SRC_DIR
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f ./modules/sagemaker/build/Dockerfile .
+      - cd $CODEBUILD_SRC_DIR/modules/sagemaker/build
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f ./Dockerfile .
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
   post_build:
     commands:

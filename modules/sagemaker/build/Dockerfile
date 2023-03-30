@@ -17,10 +17,10 @@ RUN git clone https://github.com/XavierXiao/Dreambooth-Stable-Diffusion /home/ub
 
 ENV  PATH /opt/conda/bin:$PATH
 
-VOLUME ["/opt/conda"]
-VOLUME ["/home/ubuntu/src"]
-VOLUME ["/home/ubuntu/.conda"]
-VOLUME ["/root/.cache"]
-VOLUME ["/home/ubuntu/.cache"]
+#VOLUME ["/opt/conda"]
+#VOLUME ["/home/ubuntu/src"]
+#VOLUME ["/home/ubuntu/.conda"]
+#VOLUME ["/root/.cache"]
+#VOLUME ["/home/ubuntu/.cache"]
 
 CMD ["node", "/home/ubuntu/node/run.js", "test", "'a city skyline'", "1"]
