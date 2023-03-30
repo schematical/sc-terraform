@@ -8,8 +8,9 @@ provider "aws" {
   }
 }
 data "aws_caller_identity" "current" {}
-resource "aws_s3_bucket_policy" "CodePipelineArtifactStoreBucketPolicy" {
-  bucket = aws_s3_bucket.code_pipeline_artifact_store_bucket.id
+/*
+resource "aws_s3_bucket_policy" "code_pipeline_artifact_store_bucket_policy" {
+  bucket = var.code_pipeline_artifact_store_bucket # aws_s3_bucket.code_pipeline_artifact_store_bucket.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -18,7 +19,7 @@ resource "aws_s3_bucket_policy" "CodePipelineArtifactStoreBucketPolicy" {
         Effect = "Allow"
         Principal = "*"
         Action = "s3:*"
-        Resource = aws_s3_bucket.code_pipeline_artifact_store_bucket.arn
+        Resource = var.code_pipeline_artifact_store_bucket # aws_s3_bucket.code_pipeline_artifact_store_bucket.arn
         Condition = {
           StringNotEquals = {
             "s3:x-amz-server-side-encryption" = "aws:kms"
@@ -28,10 +29,13 @@ resource "aws_s3_bucket_policy" "CodePipelineArtifactStoreBucketPolicy" {
     ]
   })
 }
+*/
 
+/*
 resource "aws_s3_bucket" "code_pipeline_artifact_store_bucket" {
   bucket = "${var.service_name}-${var.env}-${var.region}-code-pipeline"
 }
+*/
 
 
 resource "aws_codepipeline" "app_pipeline" {
@@ -40,7 +44,7 @@ resource "aws_codepipeline" "app_pipeline" {
 
   artifact_store {
     type     = "S3"
-    location = aws_s3_bucket.code_pipeline_artifact_store_bucket.bucket
+    location = var.code_pipeline_artifact_store_bucket # aws_s3_bucket.code_pipeline_artifact_store_bucket.bucket
   }
 
   stage {
@@ -214,7 +218,7 @@ resource "aws_codebuild_project" "codebuild_project" {
   }
   source {
     type = "CODEPIPELINE"
-    buildspec = "echo \"HIIIITTTTTT1\""
+    buildspec = "modules/sagemaker/build/buildspec.yml"
   }
   build_batch_config {
     service_role = aws_iam_role.code_build_role.arn

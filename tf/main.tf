@@ -96,7 +96,7 @@ module "vpc" {
   vpc_name = "dev"
 }
 module "dev_env" {
-  /*depends_on = [
+/*  depends_on = [
     aws_api_gateway_method.api_gateway_method,
     aws_api_gateway_integration.api_gateway_root_resource_method_integration
   ]*/
