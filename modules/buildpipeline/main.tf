@@ -170,7 +170,32 @@ resource "aws_iam_role" "code_pipeline_service_role" {
     })
   }
 }
+resource "aws_security_group" "codebuild_project_security_group" {
+  name        =  "${var.service_name}-${var.env}-${var.region}-codebuild"
+  description = "${var.service_name}-${var.env}-${var.region}"
+  vpc_id      = var.vpc_id
 
+  /*ingress {
+    description      = "TLS from VPC"
+    from_port        = 443
+    to_port          = 443
+    protocol         = "tcp"
+    cidr_blocks      = [aws_vpc.main.cidr_block]
+    ipv6_cidr_blocks = [aws_vpc.main.ipv6_cidr_block]
+  }*/
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  tags = {
+    Name = "allow_tls"
+  }
+}
 resource "aws_codebuild_project" "codebuild_project" {
   name = "${var.service_name}-${var.env}-${var.region}"
   description = "${var.service_name}-${var.env}-${var.region}"
@@ -179,11 +204,21 @@ resource "aws_codebuild_project" "codebuild_project" {
   artifacts {
     type = "CODEPIPELINE"
   }
+  vpc_config {
+    vpc_id = var.vpc_id
+
+    subnets = [for o in var.private_subnet_mappings : o.id]
+
+    security_group_ids = [
+      aws_security_group.codebuild_project_security_group.id
+    ]
+  }
   environment {
     compute_type = "BUILD_GENERAL1_MEDIUM"
     image = var.code_build_image_uri
     type = "LINUX_CONTAINER"
     privileged_mode = true
+
     environment_variable {
       name = "AWS_DEFAULT_region"
       type = "PLAINTEXT"
@@ -284,7 +319,6 @@ resource "aws_iam_role" "code_build_role" {
         {
           Effect = "Allow"
           Action = [
-            "codebuild:Start",
             "codebuild:StartBuild"
           ]
           Resource = [
@@ -318,6 +352,44 @@ resource "aws_iam_role" "code_build_role" {
             "ecr:GetAuthorizationToken"
           ],
           "Resource": "*"
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+     /*       "ec2:DescribeSecurityGroups",
+            "ec2:DescribeSubnets",
+            "ec2:DescribeNetworkInterfaces",
+            "ec2:DeleteNetworkInterface",
+            "ec2:CreateNetworkInterfacePermission",*/
+            "iam:PassRole",
+            "ec2:CreateNetworkInterface",
+            "ec2:ModifySnapshotAttribute",
+            "ec2:DetachNetworkInterface",
+            "ec2:DescribeVpcs",
+            "ec2:DescribeSubnets",
+            "ec2:DescribeSecurityGroups",
+            "ec2:DescribeNetworkInterfaces",
+            "ec2:DescribeDhcpOptions",
+            "ec2:DeleteNetworkInterface",
+            "ec2:CreateNetworkInterface",
+
+            "ec2:DescribeDhcpOptions"
+          ],
+          "Resource": "*"
+        },
+        {
+          "Sid": "VisualEditor0",
+          "Effect": "Allow",
+          "Action": "ec2:CreateNetworkInterfacePermission",
+          "Resource": "arn:aws:ec2:${var.region}:${data.aws_caller_identity.current.account_id}:network-interface/*",
+          /*"Condition": {
+            "StringEquals": {
+              "ec2:Subnet": [
+                [for o in var.private_subnet_mappings : o.arn]
+              ],
+              "ec2:AuthorizedService": "codebuild.amazonaws.com"
+            }
+          }*/
         }
       ]
     })

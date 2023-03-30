@@ -117,6 +117,13 @@ resource "aws_route" "public_route_igw" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id = aws_internet_gateway.internet_gateway.id
 }
+resource "aws_route" "private_route_nat" {
+  destination_cidr_block = "0.0.0.0/0"
+  route_table_id         = aws_route_table.private_route_table.id
+  nat_gateway_id         = aws_nat_gateway.nat_gateway.id
+
+  // depends_on = aws_route_table_association.private_subnet_route_table_association
+}
 resource "aws_internet_gateway_attachment" "internet_gateway_attachment" {
   internet_gateway_id = aws_internet_gateway.internet_gateway.id
   vpc_id              = aws_vpc.main.id

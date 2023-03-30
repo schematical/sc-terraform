@@ -320,5 +320,7 @@ module "buildpipeline" {
   github_project_name = "sc-terraform"
   github_source_branch = "main"
   code_pipeline_artifact_store_bucket = var.code_pipeline_artifact_store_bucket
+  vpc_id = var.vpc_id
+  private_subnet_mappings = var.private_subnet_mappings
   # codestar_connection_arn ="arn:aws:codestar-connections:us-east-1:368590945923:connection/67d17ca5-a542-49db-9256-157204b67b1d"
 }

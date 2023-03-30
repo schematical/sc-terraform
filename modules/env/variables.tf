@@ -4,7 +4,7 @@ variable "region" {
 
 variable "env" {}
 
-variable "vpc_id" {}
+
 variable "api_gateway_id" {}
 
 variable "hosted_zone_name" {
@@ -19,7 +19,7 @@ variable "acm_cert_arn" {
 }
 
 variable "ecs_task_execution_iam_role" {}
-
+variable "vpc_id" {}
 variable "private_subnet_mappings" {
   type = map(any)
 }

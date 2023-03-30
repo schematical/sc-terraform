@@ -67,3 +67,8 @@ variable "base_image_uri" {
   default     = ""
   description = "Template"
 }
+
+variable "vpc_id" {}
+variable "private_subnet_mappings" {
+  type = map(any)
+}
