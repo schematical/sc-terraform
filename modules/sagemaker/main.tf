@@ -13,7 +13,6 @@ provider "aws" {
   region = "us-east-1"
 }
 
-/*
 
 resource "aws_ecr_repository" "sagemaker_ecr_repo" {
   name                 = "sagemaker_ecr_repo"
@@ -113,8 +112,7 @@ resource "aws_iam_role" "example" {
           ]
           Effect   = "Allow"
           Resource = [
-            "arn:aws:logs:us-east-1:368590945923:log-group:/aws/sagemaker/Endpoints*/
-/*",
+            "arn:aws:logs:us-east-1:368590945923:log-group:/aws/sagemaker/Endpoints",
           ]
         },
         {
@@ -139,8 +137,7 @@ resource "aws_iam_role" "example" {
               aws_s3_bucket.output_bucket.arn,
               "**"
             ]),
-            "arn:aws:s3:::sagemaker-us-east-1-368590945923*/
-/**"
+            "arn:aws:s3:::sagemaker-us-east-1-368590945923/*"
           ]
         },
         {
@@ -204,11 +201,10 @@ resource "aws_sagemaker_endpoint_configuration" "ec" {
     model_name             = aws_sagemaker_model.model1.name
     initial_instance_count = 1
     instance_type          = "ml.g4dn.xlarge"
-    */
-/*serverless_config {
+    /*serverless_config {
       max_concurrency = 1
       memory_size_in_mb = 6144
-    }*//*
+    }*/
 
 
   }
@@ -220,9 +216,8 @@ resource "aws_sagemaker_endpoint_configuration" "ec" {
       s3_output_path = join("", [
         "s3://",
         aws_s3_bucket.output_bucket.bucket
-        ])
+      ])
 
-      # TODO: Add  `notification_config` - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sagemaker_endpoint_configuration#notification_config
       notification_config {
         success_topic = aws_sns_topic.success_topic.arn
         error_topic = aws_sns_topic.error_topic.arn
@@ -268,26 +263,52 @@ resource "aws_s3_bucket_acl" "aws_s3_bucket_acl" {
   bucket = aws_s3_bucket.output_bucket.id
   acl    = "private"
 }
+
+
 resource "aws_sagemaker_model" "model1" {
   name               = "my-model"
   execution_role_arn = aws_iam_role.example.arn
 
   primary_container {
-    # image = "368590945923.dkr.ecr.us-east-1.amazonaws.com/dreambooth-worker-v1-prod-us-east-1:sagemaker"
-    image = data.aws_sagemaker_prebuilt_ecr_image.test.registry_path
+    image = "368590945923.dkr.ecr.${var.region}.amazonaws.com/${var.service_name}-${var.env}-${var.region}:latest" # "368590945923.dkr.ecr.us-east-1.amazonaws.com/dreambooth-worker-v1-prod-us-east-1:sagemaker"
+    # image = data.aws_sagemaker_prebuilt_ecr_image.test.registry_path
     model_data_url = "s3://sagemaker-us-east-1-368590945923/pytorch-inference-2023-03-28-22-59-47-075/model.tar.gz"
   }
   vpc_config {
-    subnets            = ["subnet-0f00f4432c6bd2c44", "subnet-05fde2c8507ed0b83"]
-    security_group_ids = ["sg-0aca1d9bb8ede54c1"]
+    subnets            =  [for o in var.private_subnet_mappings : o.id] # var.private_subnet_mappings[*].id
+    security_group_ids = [aws_security_group.aws_sagemaker_model_security_group.id]
   }
 }
-data "aws_sagemaker_prebuilt_ecr_image" "test" {
+/*data "aws_sagemaker_prebuilt_ecr_image" "test" {
   repository_name = "pytorch-inference"
   image_tag       = "1.8.0-gpu-py3" # "1.13.1-transformers4.26.0-gpu-py39-ubuntu18.04"
-}
-*/
+}*/
+resource "aws_security_group" "aws_sagemaker_model_security_group" {
+  name        =  "${var.service_name}-${var.env}-${var.region}"
+  description = "${var.service_name}-${var.env}-${var.region}"
+  vpc_id      = var.vpc_id
 
+  /*ingress {
+    description      = "TLS from VPC"
+    from_port        = 443
+    to_port          = 443
+    protocol         = "tcp"
+    cidr_blocks      = [aws_vpc.main.cidr_block]
+    ipv6_cidr_blocks = [aws_vpc.main.ipv6_cidr_block]
+  }*/
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  tags = {
+    Name = "allow_tls"
+  }
+}
 
 
 module "buildpipeline" {
@@ -301,33 +322,3 @@ module "buildpipeline" {
   code_pipeline_artifact_store_bucket = var.code_pipeline_artifact_store_bucket
   # codestar_connection_arn ="arn:aws:codestar-connections:us-east-1:368590945923:connection/67d17ca5-a542-49db-9256-157204b67b1d"
 }
-
-/*
-
-
-resource "aws_s3_bucket_policy" "CodePipelineArtifactStoreBucketPolicy" {
-  bucket = aws_s3_bucket.CodePipelineArtifactStoreBucket.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "S3"
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = "s3:*"
-        Resource  = "${aws_s3_bucket.CodePipelineArtifactStoreBucket.arn}*/
-/*"
-
-        Condition = {
-          StringNotEquals = {
-            "s3:x-amz-server-side-encryption" = "aws:kms"
-          }
-        }
-      }
-    ]
-  })
-}
-
-
-*/

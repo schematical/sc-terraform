@@ -57,8 +57,9 @@ module "sagemaker" {
   env = var.env
 
   code_pipeline_artifact_store_bucket = aws_s3_bucket.codepipeline_artifact_store_bucket.bucket
-
+  vpc_id = var.vpc_id
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
+  private_subnet_mappings = var.private_subnet_mappings
 
 }
 

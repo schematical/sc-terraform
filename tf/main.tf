@@ -102,9 +102,11 @@ module "dev_env" {
   ]*/
   source = "../modules/env"
   env = "dev"
+  vpc_id = module.vpc.vpc_id
   ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
   api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
   hosted_zone_id = "ZC4VPG65C2OOQ"
+  private_subnet_mappings = module.vpc.private_subnet_mappings
 
 }
 

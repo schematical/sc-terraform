@@ -8,3 +8,6 @@ output "api_gateway_method_id" {
   # to have completed first.
   depends_on = [aws_api_gateway_method.api_gateway_method]
 }
+output "module_dev_vpc_private_subnet_mappings" {
+  value = module.vpc.private_subnet_mappings
+}
