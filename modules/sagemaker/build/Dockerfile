@@ -1,12 +1,12 @@
-FROM nvidia/cuda:11.3.1-runtime-ubuntu20.04
-# FROM 368590945923.dkr.ecr.us-east-1.amazonaws.com/schematicabot-worker:base
+# FROM nvidia/cuda:11.3.1-runtime-ubuntu20.04
+FROM 368590945923.dkr.ecr.us-east-1.amazonaws.com/schematicabot-worker:base
 ENV CONDA_DIR /opt/conda
 ARG DEBIAN_FRONTEND=noninteractive
 
 
 COPY ./src /home/ubuntu/src
 
-RUN git clone https://github.com/XavierXiao/Dreambooth-Stable-Diffusion /home/ubuntu/src/dreambooth
+
 
 RUN apt update && \
     apt install --no-install-recommends -y curl unzip build-essential gcc git wget libcudnn8 nodejs  && \  # libcudnn8 \
@@ -17,13 +17,12 @@ RUN apt update && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda/install \ && \
     export PATH=/opt/conda/install/bin:$PATH && \
     echo "export PATH=/opt/conda/install/bin:$PATH" >> ~/.bashrc && \
+    git clone https://github.com/XavierXiao/Dreambooth-Stable-Diffusion /home/ubuntu/src/dreambooth  && \
     cd /home/ubuntu/src/dreambooth  && \
     ls -la  && \
     /opt/conda/install/bin/conda env create -f ./environment.yaml --prefix /opt/conda/install/envs/ldm -v  && \
     /opt/conda/install/bin/conda init bash  && \
     /opt/conda/install/bin/conda install pip -y
-
-
 
 ENV  PATH /opt/conda/bin:$PATH
 
