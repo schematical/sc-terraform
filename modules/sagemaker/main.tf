@@ -15,7 +15,7 @@ provider "aws" {
 
 
 resource "aws_ecr_repository" "sagemaker_ecr_repo" {
-  name                 = "sagemaker_ecr_repo"
+  name                 = "${var.service_name}-${var.env}-${var.region}"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
