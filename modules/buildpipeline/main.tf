@@ -311,6 +311,13 @@ resource "aws_iam_role" "code_build_role" {
             "ecr:GetLifecyclePolicy"
           ]
           Resource = ["arn:aws:ecr:${var.region}:${data.aws_caller_identity.current.account_id}:repository/*"]
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ecr:GetAuthorizationToken"
+          ],
+          "Resource": "*"
         }
       ]
     })
