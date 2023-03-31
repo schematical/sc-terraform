@@ -1,0 +1,2 @@
+#!/bin/bash
+node /home/ubuntu/src/run.js

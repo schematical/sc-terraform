@@ -270,7 +270,7 @@ resource "aws_sagemaker_model" "model1" {
   execution_role_arn = aws_iam_role.example.arn
 
   primary_container {
-    image = "368590945923.dkr.ecr.${var.region}.amazonaws.com/${var.service_name}-${var.env}-${var.region}:latest" # "368590945923.dkr.ecr.us-east-1.amazonaws.com/dreambooth-worker-v1-prod-us-east-1:sagemaker"
+    image = "368590945923.dkr.ecr.${var.region}.amazonaws.com/${var.service_name}-${var.env}-${var.region}:${var.env}" # "368590945923.dkr.ecr.us-east-1.amazonaws.com/dreambooth-worker-v1-prod-us-east-1:sagemaker"
     # image = data.aws_sagemaker_prebuilt_ecr_image.test.registry_path
     model_data_url = "s3://sagemaker-us-east-1-368590945923/pytorch-inference-2023-03-28-22-59-47-075/model.tar.gz"
   }
