@@ -23,7 +23,8 @@ RUN git clone https://github.com/XavierXiao/Dreambooth-Stable-Diffusion /home/ub
     /opt/conda/install/bin/conda env create -f ./environment.yaml --prefix /opt/conda/install/envs/ldm -v  && \
     /opt/conda/install/bin/conda init bash  && \
     /opt/conda/install/bin/conda install pip -y
-RUN chmod 755 /home/ubuntu/src/serve #  && \ vi +':wq ++ff=unix' /home/ubuntu/src/serve
+RUN mv  /home/ubuntu/src/serve  /home/ubuntu/serve && \
+    chmod 755 /home/ubuntu/serve #  && \ vi +':wq ++ff=unix' /home/ubuntu/src/serve
 
 ENV  PATH /opt/conda/bin:$PATH
 
