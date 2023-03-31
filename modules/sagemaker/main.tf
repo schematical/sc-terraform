@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.16"
+      version = "~> 4.61.0"
     }
   }
 
@@ -192,6 +192,7 @@ resource "aws_sagemaker_endpoint" "e" {
   tags = {
     Name = "foo"
   }
+
 }
 resource "aws_sagemaker_endpoint_configuration" "ec" {
   name = "my-endpoint-config"
