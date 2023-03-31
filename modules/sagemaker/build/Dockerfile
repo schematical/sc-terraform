@@ -26,6 +26,7 @@ RUN git clone https://github.com/XavierXiao/Dreambooth-Stable-Diffusion /home/ub
 RUN cp  /home/ubuntu/src/serve  /opt/program/serve && \
     chmod 755 /opt/program/serve
 WORKDIR /opt/program
+ENV PATH="/opt/program:${PATH}"
 ENV  PATH /opt/conda/bin:$PATH
 ENTRYPOINT ["sh", "/opt/program/serve"]
 #VOLUME ["/opt/conda"]
