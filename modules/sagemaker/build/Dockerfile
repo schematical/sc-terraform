@@ -23,16 +23,12 @@ RUN git clone https://github.com/XavierXiao/Dreambooth-Stable-Diffusion /home/ub
     /opt/conda/install/bin/conda env create -f ./environment.yaml --prefix /opt/conda/install/envs/ldm -v  && \
     /opt/conda/install/bin/conda init bash  && \
     /opt/conda/install/bin/conda install pip -y
-RUN cp  /home/ubuntu/src/serve  /opt/program/serve && \
-    chmod 755 /opt/program/serve
-WORKDIR /opt/program
-ENV PATH="/opt/program:${PATH}"
+RUN cp  /home/ubuntu/src/serve  /home/ubuntu/serve && \
+    chmod 755 /home/ubuntu/serve
+WORKDIR /home/ubuntu
+ENV PATH="/home/ubuntu:${PATH}"
 ENV  PATH /opt/conda/bin:$PATH
-ENTRYPOINT ["sh", "/opt/program/serve"]
-#VOLUME ["/opt/conda"]
-#VOLUME ["/home/ubuntu/src"]
-#VOLUME ["/home/ubuntu/.conda"]
-#VOLUME ["/root/.cache"]
-#VOLUME ["/home/ubuntu/.cache"]
+ENTRYPOINT ["sh", "/home/ubuntu/serve"]
+
 
 CMD ["node", "/home/ubuntu/src/run.js", "test", "'a city skyline'", "1"]
