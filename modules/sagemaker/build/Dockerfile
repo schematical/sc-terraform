@@ -9,7 +9,7 @@ COPY ./package-lock.json /home/ubuntu
 COPY ./package.json /home/ubuntu
 
 RUN apt update && \
-    apt install --no-install-recommends -y curl unzip build-essential gcc git wget libcudnn8 nodejs  && \
+    apt install --no-install-recommends -y curl unzip build-essential gcc git wget libcudnn8 nodejs npm  && \
     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \
     ./aws/install  && \
