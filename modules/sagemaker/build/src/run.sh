@@ -1,4 +1,12 @@
 cd /home/ubuntu/src/dreambooth
+
+echo "/opt----------------------\n"
+ls -la /opt
+echo "/opt/ml----------------------\n"
+ls -la /opt/ml
+echo "----------------------\n"
+ls -la /opt/ml/model
+echo "/opt/ml/model----------------------\n"
 # echo 'conda run -n ldm /bin/bash -c conda activate ldm'
 # conda run -n ldm /bin/bash -c conda activate ldm
 echo "!!!!!!conda init bash"
@@ -11,7 +19,7 @@ echo "!!!!!!conda init bash"
 # echo "!!!!! conda activate ldm"
 # conda activate ldm
 echo "!!!!Sending it. Dir: $1 Prompt: $2 Seed: $3"
-python /home/ubuntu/src/dreambooth/scripts/stable_txt2img.py --outdir "/home/ubuntu/src/outputs/$1" --ddim_eta 0.0 --n_samples 1 --n_iter 4 --scale 10.0 --ddim_steps 50 --seed $3 --ckpt /home/ubuntu/src/model.ckpt --prompt "$2"
+python /home/ubuntu/src/dreambooth/scripts/stable_txt2img.py --outdir "/home/ubuntu/src/outputs/$1" --ddim_eta 0.0 --n_samples 1 --n_iter 4 --scale 10.0 --ddim_steps 50 --seed $3 --ckpt /opt/ml/model/model.pth --prompt "$2"
 
 echo "!!!!Pushing to S3"
 aws s3 cp /home/ubuntu/src/outputs/$1 s3://$S3_BUCKET/$1 --recursive
