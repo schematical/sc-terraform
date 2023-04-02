@@ -9,7 +9,7 @@ app.get('/ping', (req, res) => {
     console.log("PING")
     res.send('Hello World!')
 })
-app.post('/invoke', async (req, res) => {
+app.post('/invocations', async (req, res) => {
     console.log("req.body: ", req.body);
     await runSpawn({
         path: '/home/ubuntu/src/run.sh',
