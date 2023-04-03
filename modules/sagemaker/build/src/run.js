@@ -13,11 +13,28 @@ app.get('/ping', (req, res) => {
 app.post('/invocations', async (req, res) => {
     console.log("req.body: ", req.body);
     console.log("req.headers: ", req.headers);
-    await runSpawn({
-        path: '/home/ubuntu/src/run.sh',
-        cmd: '/opt/conda/install/bin/conda',
-        args: ["run", "--no-capture-output", "-n", "ldm", "/bin/bash", "-c", `/home/ubuntu/src/run.sh \"${req.body.output_bucket}\" \"${req.body.output_path}\" \"${req.body.prompt}\" -1`]
-    });
+    if (
+        !req.body.output_bucket ||
+        !req.body.output_path ||
+        !req.body.prompt
+    ){
+        return res.status(400).json({
+            error: "Invalid `res.body`. " + JSON.stringify(res.body)
+        });
+    }
+    try {
+        await runSpawn({
+            path: '/home/ubuntu/src/run.sh',
+            cmd: '/opt/conda/install/bin/conda',
+            args: ["run", "--no-capture-output", "-n", "ldm", "/bin/bash", "-c", `/home/ubuntu/src/run.sh \"${req.body.output_bucket}\" \"${req.body.output_path}\" \"${req.body.prompt}\" -1`]
+        });
+    }catch(e){
+        console.error("Caught Error: " + e.message + "\n\n" + e.stackTrace)
+        return res.status(400).json({
+            error: "Caught Error: " + e.message,
+            stackTrace:  e.stackTrace
+        });
+    }
 })
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
