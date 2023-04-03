@@ -26,7 +26,9 @@ RUN apt update && \
     /opt/conda/install/bin/conda init bash  && \
     /opt/conda/install/bin/conda install pip -y && \
     cp  /home/ubuntu/src/serve  /home/ubuntu/serve && \
-    chmod 755 /home/ubuntu/serve
+    chmod 755 /home/ubuntu/serve && \
+    chmod 755 /home/ubuntu/src/run.sh \
+
 WORKDIR /home/ubuntu
 ENV PATH="/home/ubuntu:${PATH}"
 ENV  PATH /opt/conda/bin:$PATH
