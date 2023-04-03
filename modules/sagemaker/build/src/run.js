@@ -22,11 +22,12 @@ app.post('/invocations', async (req, res) => {
             error: "Invalid `res.body`. " + JSON.stringify(res.body)
         });
     }
+    const seed = req.body.seed || Math.round(Math.random() * 9999);
     try {
         await runSpawn({
             path: '/home/ubuntu/src/run.sh',
             cmd: '/opt/conda/install/bin/conda',
-            args: ["run", "--no-capture-output", "-n", "ldm", "/bin/bash", "-c", `/home/ubuntu/src/run.sh \"${req.body.output_bucket}\" \"${req.body.output_path}\" \"${req.body.prompt}\" -1`]
+            args: ["run", "--no-capture-output", "-n", "ldm", "/bin/bash", "-c", `/home/ubuntu/src/run.sh \"${req.body.output_bucket}\" \"${req.body.output_path}\" \"${req.body.prompt}\" ${seed}`]
         });
     }catch(e){
         console.error("Caught Error: " + e.message + "\n\n" + e.stackTrace)
