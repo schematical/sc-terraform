@@ -16,7 +16,7 @@ app.post('/invocations', async (req, res) => {
     await runSpawn({
         path: '/home/ubuntu/src/run.sh',
         cmd: '/opt/conda/install/bin/conda',
-        args: ["run", "--no-capture-output", "-n", "ldm", "/bin/bash", "-c", `/home/ubuntu/src/run.sh "sagemaker-test" \"${req.body.prompt}\" -1`]
+        args: ["run", "--no-capture-output", "-n", "ldm", "/bin/bash", "-c", `/home/ubuntu/src/run.sh \"${req.body.output_bucket}\" \"${req.body.output_path}\" \"${req.body.prompt}\" -1`]
     });
 })
 app.listen(port, () => {
