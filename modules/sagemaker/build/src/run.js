@@ -59,7 +59,7 @@ const runSpawn = async (options) => {
 
         mainCmd.stderr.on('data', (data) => {
             console.error(`stderr: ${data}`);
-            return reject(new Error(data));
+           /// return reject(new Error(data));
         });
 
         mainCmd.on('close', (code) => {
