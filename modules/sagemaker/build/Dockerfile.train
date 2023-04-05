@@ -30,7 +30,7 @@ RUN apt update && \
 WORKDIR /home/ubuntu
 ENV PATH="/home/ubuntu:${PATH}"
 ENV  PATH /opt/conda/bin:$PATH
-ENTRYPOINT ["sh", "/home/ubuntu/src/train.sh"]
+ENTRYPOINT ["/opt/conda/install/bin/conda", "run", "--no-capture-output", "-n", "ldm", "/bin/bash", "-c", "/home/ubuntu/src/train.sh"]
 # ENTRYPOINT ["sh", "/home/ubuntu/serve"]
 
 
