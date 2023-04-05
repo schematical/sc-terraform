@@ -1,0 +1,18 @@
+curl 'https://stage.enthusiastenterprises.us/wholesale/submit' \
+-X 'POST' \
+-H 'authority: stage.enthusiastenterprises.us' \
+-H 'accept: */*' \
+-H 'accept-language: en-US,en;q=0.9' \
+-H 'content-length: 80587' \
+-H 'content-type: multipart/form-data; boundary=----WebKitFormBoundaryaemQaNLA9vAS5P7b' \
+-H 'dnt: 1' \
+-H 'origin: https://stage.sdwheelwholesale.com' \
+-H 'referer: https://stage.sdwheelwholesale.com/' \
+-H 'sec-ch-ua: "Google Chrome";v="111", "Not(A:Brand";v="8", "Chromium";v="111"' \
+-H 'sec-ch-ua-mobile: ?0' \
+-H 'sec-ch-ua-platform: "Windows"' \
+-H 'sec-fetch-dest: empty' \
+-H 'sec-fetch-mode: cors' \
+-H 'sec-fetch-site: cross-site' \
+-H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36' \
+--compressed

@@ -51,7 +51,7 @@ resource "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
 
 
 
-module "sagemaker" {
+module "sagemaker_endpoint" {
   source = "../sagemaker"
   region = "us-east-1"
   env = var.env
@@ -62,4 +62,5 @@ module "sagemaker" {
   private_subnet_mappings = var.private_subnet_mappings
 
 }
+
 

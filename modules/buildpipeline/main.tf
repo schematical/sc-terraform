@@ -253,7 +253,7 @@ resource "aws_codebuild_project" "codebuild_project" {
   }
   source {
     type = "CODEPIPELINE"
-    buildspec = "modules/sagemaker/build/buildspec.yml"
+    buildspec = var.source_buildspec_path
   }
   build_batch_config {
     service_role = aws_iam_role.code_build_role.arn

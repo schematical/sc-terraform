@@ -10,7 +10,7 @@ phases:
   build:
     commands:
       - cd $CODEBUILD_SRC_DIR/modules/sagemaker/build
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f ./Dockerfile .
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f ./Dockerfile.train .
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
   post_build:
     commands:

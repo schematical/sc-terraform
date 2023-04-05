@@ -185,7 +185,7 @@ data "aws_iam_policy_document" "iam_assume_role" {
 }
 
 
-resource "aws_sagemaker_endpoint" "e" {
+/*resource "aws_sagemaker_endpoint" "e" {
   name                 = "my-endpoint"
   endpoint_config_name = aws_sagemaker_endpoint_configuration.ec.name
 
@@ -193,7 +193,7 @@ resource "aws_sagemaker_endpoint" "e" {
     Name = "foo"
   }
 
-}
+}*/
 resource "aws_sagemaker_endpoint_configuration" "ec" {
   name = "my-endpoint-config"
 
@@ -323,5 +323,6 @@ module "buildpipeline" {
   code_pipeline_artifact_store_bucket = var.code_pipeline_artifact_store_bucket
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
+  source_buildspec_path = "modules/sagemaker/build/buildspec.yml"
   # codestar_connection_arn ="arn:aws:codestar-connections:us-east-1:368590945923:connection/67d17ca5-a542-49db-9256-157204b67b1d"
 }

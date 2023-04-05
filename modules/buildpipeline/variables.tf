@@ -67,6 +67,11 @@ variable "base_image_uri" {
   default     = ""
   description = "Template"
 }
+variable "source_buildspec_path" {
+  type        = string
+  default     = ""
+  description = "buildspec.yml"
+}
 
 variable "vpc_id" {}
 variable "private_subnet_mappings" {
