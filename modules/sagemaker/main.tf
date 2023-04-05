@@ -137,7 +137,8 @@ resource "aws_iam_role" "example" {
               aws_s3_bucket.output_bucket.arn,
               "**"
             ]),
-
+            "arn:aws:s3:::sc-cloud-formation-v1", # TODO DELETEME
+            "arn:aws:s3:::sc-cloud-formation-v1/**", # TODO DELETEME
             "arn:aws:s3:::sagemaker-us-east-1-368590945923/**", # TODO DELETEME
             "arn:aws:s3:::dreambooth-worker-v1-prod-us-east-1", # TODO DELETEME
             "arn:aws:s3:::dreambooth-worker-v1-prod-us-east-1/**" # TODO DELETEME
