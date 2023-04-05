@@ -128,3 +128,11 @@ resource "aws_internet_gateway_attachment" "internet_gateway_attachment" {
   internet_gateway_id = aws_internet_gateway.internet_gateway.id
   vpc_id              = aws_vpc.main.id
 }
+resource "aws_vpc_endpoint" "s3_vpc_endpoint" {
+  vpc_id       = aws_vpc.main.id
+  service_name = "com.amazonaws.${var.region}.s3"
+}
+resource "aws_vpc_endpoint_route_table_association" "s3_vpc_endpoint_route_table_association" {
+  route_table_id  = aws_route_table.private_route_table.id
+  vpc_endpoint_id = aws_vpc_endpoint.s3_vpc_endpoint.id
+}

@@ -17,8 +17,6 @@ RUN apt update && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda/install \ && \
     export PATH=/opt/conda/install/bin:$PATH && \
     echo "export PATH=/opt/conda/install/bin:$PATH" >> ~/.bashrc   && \
-    # cd /home/ubuntu && \
-    # npm ci && \
     git clone https://github.com/XavierXiao/Dreambooth-Stable-Diffusion /home/ubuntu/src/dreambooth  && \
     cd /home/ubuntu/src/dreambooth  && \
     ls -la  && \

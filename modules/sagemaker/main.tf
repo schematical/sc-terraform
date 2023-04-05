@@ -112,7 +112,7 @@ resource "aws_iam_role" "example" {
           ]
           Effect   = "Allow"
           Resource = [
-            "arn:aws:logs:us-east-1:368590945923:log-group:/aws/sagemaker/Endpoints",
+            "arn:aws:logs:us-east-1:368590945923:log-group:/aws/sagemaker/**",
           ]
         },
         {
@@ -128,7 +128,7 @@ resource "aws_iam_role" "example" {
           Action   = [
             "s3:PutObject",
             "s3:GetObject",
-            "s3:ListBucket",
+            "s3:ListBucket"
           ]
           Effect   = "Allow"
           Resource = [
@@ -137,7 +137,10 @@ resource "aws_iam_role" "example" {
               aws_s3_bucket.output_bucket.arn,
               "**"
             ]),
-            "arn:aws:s3:::sagemaker-us-east-1-368590945923/*"
+
+            "arn:aws:s3:::sagemaker-us-east-1-368590945923/**", # TODO DELETEME
+            "arn:aws:s3:::dreambooth-worker-v1-prod-us-east-1", # TODO DELETEME
+            "arn:aws:s3:::dreambooth-worker-v1-prod-us-east-1/**" # TODO DELETEME
           ]
         },
         {
