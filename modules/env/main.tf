@@ -50,7 +50,6 @@ resource "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
 
 
 
-
 module "sagemaker_endpoint" {
   source = "../sagemaker"
   region = "us-east-1"
@@ -62,5 +61,17 @@ module "sagemaker_endpoint" {
   private_subnet_mappings = var.private_subnet_mappings
 
 }
+
+/*module "sagemaker_serverless" {
+  source = "../sagemaker-serverless"
+  region = "us-east-1"
+  env = var.env
+
+  code_pipeline_artifact_store_bucket = aws_s3_bucket.codepipeline_artifact_store_bucket.bucket
+  vpc_id = var.vpc_id
+  ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
+  private_subnet_mappings = var.private_subnet_mappings
+
+}*/
 
 
