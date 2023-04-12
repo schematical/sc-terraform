@@ -25,8 +25,8 @@ python /home/ubuntu/src/dreambooth/main.py \
   --actual_resume  /opt/ml/checkpoints/Public-Prompts-Pixel-Model.ckpt \
   -n Test1 \
   --gpus '0,' \
-  --data_root /home/ubuntu/src/images \
-  --reg_data_root /home/ubuntu/src/reg_images \
+  --data_root /opt/ml/input/data/train \
+  --reg_data_root /opt/ml/input/data/train \
   --class_word lzstlrry
 
 
