@@ -22,7 +22,7 @@ echo "!!!!!!conda init bash"
 python /home/ubuntu/src/dreambooth/main.py \
   --base /home/ubuntu/src/dreambooth/configs/stable-diffusion/v1-finetune_unfrozen.yaml \
   -t \
-  --actual_resume  /opt/ml/checkpoints/sd-v1-4.ckpt \
+  --actual_resume  /opt/ml/checkpoints/Public-Prompts-Pixel-Model.ckpt \
   -n Test1 \
   --gpus '0,' \
   --data_root /home/ubuntu/src/images \
