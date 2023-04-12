@@ -27,6 +27,6 @@ python /home/ubuntu/src/dreambooth/main.py \
   --gpus '0,' \
   --data_root /opt/ml/input/data/train \
   --reg_data_root /opt/ml/input/data/reg \
-  --class_word lzstlrry
-
+  --class_word lzstlrry \
+  --gradient_accumulation_steps=1 --gradient_checkpointing --use_8bit_adam
 
