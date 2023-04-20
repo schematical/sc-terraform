@@ -47,10 +47,23 @@ data "aws_route53_zone" "hosted_zone" {
 resource "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
   bucket = "codebuild-bucket-${var.env}-${var.region}"
 }
+resource "aws_s3_bucket" "dreambooth_storage_bucket" {
+  bucket = "dreambooth-worker-v1-${var.env}-${var.region}"
+}
+module "dreambooth_service" {
+  service_name = "dreambooth"
+  source = "../aws-batch-pytorch-gpu-service"
+  region = "us-east-1"
+  env = var.env
+  vpc_id = var.vpc_id
+  ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
+  private_subnet_mappings = var.private_subnet_mappings
 
+  codepipeline_artifact_store_bucket = aws_s3_bucket.codepipeline_artifact_store_bucket.arn
+  output_bucket                      = aws_s3_bucket.dreambooth_storage_bucket.arn
+}
 
-
-module "sagemaker_endpoint" {
+/*module "sagemaker_endpoint" {
   source = "../sagemaker"
   region = "us-east-1"
   env = var.env
@@ -60,7 +73,7 @@ module "sagemaker_endpoint" {
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
   private_subnet_mappings = var.private_subnet_mappings
 
-}
+}*/
 
 /*module "sagemaker_serverless" {
   source = "../sagemaker-serverless"

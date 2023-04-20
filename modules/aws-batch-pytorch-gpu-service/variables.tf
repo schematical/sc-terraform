@@ -32,9 +32,8 @@ variable "min_vcpus" {
   default = 0
 }
 
-variable "private_subnets" {
-  type    = list(string)
-  default = []
+variable "private_subnet_mappings" {
+  type = map(any)
 }
 
 variable "codebuild_image_uri" {
@@ -65,7 +64,4 @@ variable "source_code_bucket_object_key" {
   default = "cf-pytorch-gpu-service-src.zip"
 }
 
-variable "ecs_task_execution_iam_role" {
-  type    = string
-  default = ""
-}
+variable "ecs_task_execution_iam_role" {}
