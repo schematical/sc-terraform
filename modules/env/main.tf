@@ -59,8 +59,8 @@ module "dreambooth_service" {
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
   private_subnet_mappings = var.private_subnet_mappings
 
-  codepipeline_artifact_store_bucket = aws_s3_bucket.codepipeline_artifact_store_bucket.arn
-  output_bucket                      = aws_s3_bucket.dreambooth_storage_bucket.arn
+  codepipeline_artifact_store_bucket = aws_s3_bucket.codepipeline_artifact_store_bucket
+  output_bucket                      = aws_s3_bucket.dreambooth_storage_bucket
 }
 
 /*module "sagemaker_endpoint" {

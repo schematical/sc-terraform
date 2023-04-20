@@ -47,17 +47,11 @@ variable "codebuild_timeout" {
 }
 
 variable "output_bucket" {
-  type = string
 }
 
 variable "codepipeline_artifact_store_bucket" {
-  type = string
 }
 
-variable "source_code_bucket" {
-  type    = string
-  default = "sc-cloud-formation-v1"
-}
 
 variable "source_code_bucket_object_key" {
   type    = string

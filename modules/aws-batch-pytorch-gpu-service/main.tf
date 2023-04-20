@@ -61,12 +61,12 @@ resource "aws_batch_compute_environment" "batch_gpu_compute_environment" {
 data "aws_caller_identity" "current" {}
 
 resource "aws_iam_instance_profile" "batch_gpu_compute_environment" {
-  name = join("-", [var.service_name, var.env, var.region, "batch-gpu-compute-environment"])
-  role = aws_iam_role.batch_gpu_compute_environment.arn
+  name = join("-", [var.service_name, var.env, var.region, "cpu-env"])
+  role = aws_iam_role.batch_gpu_compute_environment.name
 }
 
 resource "aws_iam_role" "batch_gpu_compute_environment" {
-  name               = join("-", [var.service_name, var.env, var.region, "batch-gpu-compute-environment"])
+  name               = join("-", [var.service_name, var.env, var.region, "compute-env"])
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -88,7 +88,7 @@ resource "aws_iam_role" "batch_gpu_compute_environment" {
 }
 
 resource "aws_security_group" "batch_gpu_compute_environment" {
-  name_prefix = join("-", [var.service_name, var.env, var.region, "batch-gpu-compute-environment"])
+  name_prefix = join("-", [var.service_name, var.env, var.region, "compute-env"])
   vpc_id      = var.vpc_id
 
   ingress {
@@ -176,7 +176,7 @@ resource "aws_batch_job_definition" "job_definition" {
      environment = [
        {
          name  = "S3_BUCKET"
-         value = "${var.output_bucket}"
+         value = var.output_bucket.bucket
        },
        {
          name  = "PYTHONUNBUFFERED"
@@ -201,16 +201,16 @@ resource "aws_batch_job_definition" "job_definition" {
 
      readonly_root_filesystem = false
 
-     resource_requirements = [
+     resourceRequirements = [
        {
          type  = "GPU"
          value = "1"
        },
        {
-       type  = "VCPU"
-       value = "8"
+         type  = "VCPU"
+         value = "8"
        },
-         {
+       {
          type  = "MEMORY"
          value = "30510"
        }
@@ -331,8 +331,8 @@ resource "aws_batch_job_definition" "job_definition" {
              "s3:GetBucketLocation"
            ]
            Resource = [
-             "${var.output_bucket}/*",
-             "${var.output_bucket}"
+             "${var.output_bucket.arn}/*",
+             "${var.output_bucket.arn}"
            ]
          },
          {
@@ -426,19 +426,11 @@ resource "aws_security_group" "efs_mount_target_security_group" {
   }*/
 
   egress {
-    from_port = -1
-    to_port = -1
-    protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "AllIPv4"
-  }
-
-  egress {
-    from_port = -1
-    to_port = -1
-    protocol = "tcp"
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
-    description = "AllIPv6"
   }
 }
 resource "aws_efs_mount_target" "efs_mount_target_private_subnet_a" {
@@ -470,7 +462,7 @@ resource "aws_efs_mount_target" "efs_mount_target_private_subnet_c" {
   security_groups = [aws_security_group.efs_mount_target_security_group.id]
 }*/
 resource "aws_s3_bucket_policy" "CodePipelineArtifactStoreBucketPolicy" {
-  bucket = var.codepipeline_artifact_store_bucket
+  bucket = var.codepipeline_artifact_store_bucket.bucket
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -480,7 +472,7 @@ resource "aws_s3_bucket_policy" "CodePipelineArtifactStoreBucketPolicy" {
         Effect    = "Allow"
         Principal = "*"
         Action    = "s3:*"
-        Resource  = var.codepipeline_artifact_store_bucket
+        Resource  = var.codepipeline_artifact_store_bucket.arn
 
         Condition = {
           StringNotEquals = {
@@ -493,13 +485,13 @@ resource "aws_s3_bucket_policy" "CodePipelineArtifactStoreBucketPolicy" {
 }
 module "buildpipeline" {
   source = "../buildpipeline"
-  service_name = "sagemaker-test"
+  service_name = var.service_name
   region = var.region
   env = var.env
   github_owner = "schematical"
   github_project_name = "sc-terraform"
   github_source_branch = "main"
-  code_pipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket
+  code_pipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket.bucket
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
   source_buildspec_path = "modules/sagemaker/build/buildspec.yml"
