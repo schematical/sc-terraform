@@ -494,6 +494,6 @@ module "buildpipeline" {
   code_pipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket.bucket
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
-  source_buildspec_path = "modules/sagemaker/build/buildspec.yml"
+  source_buildspec_path = "modules/aws-batch-pytorch-gpu-service/build/buildspec.yml"
   # codestar_connection_arn ="arn:aws:codestar-connections:us-east-1:368590945923:connection/67d17ca5-a542-49db-9256-157204b67b1d"
 }
