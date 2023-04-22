@@ -32,6 +32,15 @@ const runSpawn = async (options) => {
     });
 }
 (async () => {
+    const condaExists = fs.existsSync(CONDA_DIR);
+    if (!condaExists) {
+        await runSpawn({
+            path: CONDA_DIR,
+            cmd: 'sh',
+            args: [`${__dirname}/scripts/install_conda.sh`]
+        });
+    }
+
     const srcExists = fs.existsSync(SRC_PATH);
     if (!srcExists) {
         await runSpawn({
