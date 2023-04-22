@@ -310,7 +310,8 @@ resource "aws_batch_job_definition" "job_definition" {
              "s3:GetObject",
              "s3:GetObjectVersion",
              "s3:GetBucketAcl",
-             "s3:GetBucketLocation"
+             "s3:GetBucketLocation",
+             "s3:ListBucket"
            ]
            Resource = [
              "${var.output_bucket.arn}/**",
