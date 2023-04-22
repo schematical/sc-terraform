@@ -10,9 +10,7 @@ phases:
 
   build:
     commands:
-      - pwd
-      - echo $CODEBUILD_SRC_DIR
-      - cd $CODEBUILD_SRC_DIR
+      - cd $CODEBUILD_SRC_DIR/modules/aws-batch-pytorch-gpu-service/build
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
   post_build:
