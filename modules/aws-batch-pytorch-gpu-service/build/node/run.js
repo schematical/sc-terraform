@@ -52,7 +52,7 @@ const runSpawn = async (options) => {
         await runSpawn({
             path: SRC_PATH,
             cmd: 'aws',
-            args: [`cp`, `s3://${process.env.S3_BUCKET}/${instance}`, imageDir]
+            args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}/${instance}`, imageDir, '--recursive']
         });
         conceptsList.push(  {
             "instance_prompt":      instance_prompt,
@@ -65,7 +65,7 @@ const runSpawn = async (options) => {
     await runSpawn({
         path: SRC_PATH,
         cmd: 'aws',
-        args: [`cp`, `s3://${process.env.S3_BUCKET}/classes/dog/`, '/home/ubuntu/images/dogs']
+        args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}/classes/dog/`, '/home/ubuntu/images/dogs', '--recursive']
     });
 
     // Save the JSON to disk
