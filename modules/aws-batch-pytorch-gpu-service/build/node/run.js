@@ -71,11 +71,13 @@ const runSpawn = async (options) => {
         })
     }
     // Use s3 to download the images
-    await runSpawn({
+    const options = {
         path: SRC_PATH,
         cmd: 'aws',
         args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}/classes/dog/`, '/home/ubuntu/images/dogs', '--recursive']
-    });
+    }
+    console.log('options', options);
+    await runSpawn(options);
 
     // Save the JSON to disk
 
