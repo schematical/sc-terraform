@@ -304,7 +304,7 @@ resource "aws_batch_job_definition" "job_definition" {
              "s3:GetBucketLocation"
            ]
            Resource = [
-             "${var.output_bucket.arn}/*",
+             "${var.output_bucket.arn}/**",
              "${var.output_bucket.arn}"
            ]
          },
