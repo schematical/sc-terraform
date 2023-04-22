@@ -49,7 +49,11 @@ const runSpawn = async (options) => {
             args: [`${__dirname}/scripts/install_src.sh`]
         });
     }
-
+    await runSpawn({
+        path: SRC_PATH,
+        cmd: 'aws',
+        args: [`sts`, `get-caller-identity`]
+    });
 
 
     const conceptsList = []

@@ -139,6 +139,15 @@ resource "aws_ecr_repository" "ecr_repository" {
     Region  = var.region
   }
 }
+resource "aws_cloudwatch_log_group" "job_definition_log_group" {
+  name = join("-", [var.service_name, var.env, var.region])
+
+  tags = {
+    Service = var.service_name
+    Env     = var.env
+    Region  = var.region
+  }
+}
 resource "aws_batch_job_definition" "job_definition" {
    type = "container"
 
@@ -156,23 +165,23 @@ resource "aws_batch_job_definition" "job_definition" {
          value = "1"
        }
      ]
-     execution_role_arn = "${var.ecs_task_execution_iam_role}"
-     job_role_arn = "${aws_iam_role.job_definition_iam_role.arn}"
+     executionRoleArn = var.ecs_task_execution_iam_role.arn
+     jobRoleArn = aws_iam_role.job_definition_iam_role.arn
      image = "${join(":", [aws_ecr_repository.ecr_repository.repository_url, var.env])}"
 
-     log_configuration = {
-       log_driver = "awslogs"
+     logConfiguration = {
+       logDriver = "awslogs"
 
        options = {
          "awslogs-region"        = "${var.region}"
-         "awslogs-group"         = "${join("-", [var.service_name, var.env, var.region])}"
+         "awslogs-group"         = aws_cloudwatch_log_group.job_definition_log_group.name # "${join("-", [var.service_name, var.env, var.region])}"
          "awslogs-create-group"  = "true"
        }
      }
 
      privileged = true
 
-     readonly_root_filesystem = false
+     readonlyRootFilesystem = false
 
      resourceRequirements = [
        {
@@ -188,31 +197,31 @@ resource "aws_batch_job_definition" "job_definition" {
          value = "30510"
        }
     ]
-     mount_points = [
+     mountPoints = [
        {
-         container_path = "/home/ubuntu/src"
-         source_volume  = "src"
-         read_only      = false
+         containerPath = "/home/ubuntu/src"
+         sourceVolume  = "src"
+         readOnly      = false
        },
        {
-         container_path = "/home/ubuntu/.conda"
-         source_volume  = "conda_cache"
-         read_only      = false
+         containerPath = "/home/ubuntu/.conda"
+         sourceVolume  = "conda_cache"
+         readOnly      = false
        },
        {
-         container_path = "/root/.cache"
-         source_volume  = "root_cache"
-         read_only      = false
+         containerPath = "/root/.cache"
+         sourceVolume  = "root_cache"
+         readOnly      = false
        },
        {
-         container_path = "/home/ubuntu/.cache"
-         source_volume  = "ubuntu_cache"
-         read_only      = false
+         containerPath = "/home/ubuntu/.cache"
+         sourceVolume  = "ubuntu_cache"
+         readOnly      = false
        },
        {
-         container_path = "/opt/conda"
-         source_volume  = "opt_conda"
-         read_only      = false
+         containerPath = "/opt/conda"
+         sourceVolume  = "opt_conda"
+         readOnly      = false
        }
      ]
 
@@ -220,41 +229,41 @@ resource "aws_batch_job_definition" "job_definition" {
        {
          name = "root_cache"
 
-         efs_volume_configuration  = {
-           file_system_id = "${aws_efs_file_system.efs_file_system.id}"
-           root_directory = "/root_cache"
+         efsVolumeConfiguration  = {
+           fileSystemId = "${aws_efs_file_system.efs_file_system.id}"
+           rootDiirectory = "/root_cache"
          }
        },
        {
          name = "opt_conda"
 
-         efs_volume_configuration = {
-           file_system_id = "${aws_efs_file_system.efs_file_system.id}"
-           root_directory = "/opt_conda"
+         efsVolumeConfiguration = {
+           fileSystemId = "${aws_efs_file_system.efs_file_system.id}"
+           rootDiirectory = "/opt_conda"
          }
        },
        {
          name = "src"
 
-         efs_volume_configuration = {
-           file_system_id = "${aws_efs_file_system.efs_file_system.id}"
-           root_directory = "/src"
+         efsVolumeConfiguration = {
+           fileSystemId = "${aws_efs_file_system.efs_file_system.id}"
+           rootDiirectory = "/src"
          }
        },
        {
          name = "ubuntu_cache"
 
-         efs_volume_configuration = {
-           file_system_id = "${aws_efs_file_system.efs_file_system.id}"
-           root_directory = "/ubuntu_cache"
+         efsVolumeConfiguration = {
+           fileSystemId = "${aws_efs_file_system.efs_file_system.id}"
+           rootDiirectory = "/ubuntu_cache"
          }
        },
        {
          name = "conda_cache"
 
-         efs_volume_configuration = {
-           file_system_id = "${aws_efs_file_system.efs_file_system.id}"
-           root_directory = "/conda_cache"
+         efsVolumeConfiguration = {
+           fileSystemId = "${aws_efs_file_system.efs_file_system.id}"
+           rootDiirectory = "/conda_cache"
          }
        }
      ]
@@ -390,13 +399,13 @@ resource "aws_security_group" "efs_mount_target_security_group" {
   description = "${var.service_name}-efs-mount-target-${var.env}-${var.region}"
   vpc_id = var.vpc_id
 
- /* ingress {
-    from_port = -1
-    to_port = -1
-    protocol = "tcp"
-    security_groups = [aws_security_group.batch_gpu_compute_environment_security_group.id, aws_security_group.code_build_security_group.id]
+  ingress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    security_groups = [aws_security_group.batch_gpu_compute_environment_security_group.id] # , aws_security_group.code_build_security_group.id
     description = "AllIPv4"
-  }*/
+  }
 
   egress {
     from_port        = 0
@@ -406,7 +415,7 @@ resource "aws_security_group" "efs_mount_target_security_group" {
     ipv6_cidr_blocks = ["::/0"]
   }
 }
-resource "aws_efs_mount_target" "efs_mount_target_private_subnet_a" {
+resource "aws_efs_mount_target" "efs_mount_target_private_subnet" {
   for_each = {
     for index, vm in var.private_subnet_mappings:
     vm.id => vm # Perfect, since VM names also need to be unique
@@ -420,20 +429,6 @@ resource "aws_efs_mount_target" "efs_mount_target_private_subnet_a" {
   subnet_id = each.value.id
 }
 
-/*
-resource "aws_efs_mount_target" "efs_mount_target_private_subnet_b" {
-    file_system_id = aws_efs_file_system.efs_file_system.id
-    security_groups = [
-        aws_security_group.efs_mount_target_security_group.id
-    ]
-    subnet_id = var.private_subnet_mappings[1].subnet_id
-}
-
-resource "aws_efs_mount_target" "efs_mount_target_private_subnet_c" {
-  file_system_id = aws_efs_file_system.efs_file_system.id
-  subnet_id = var.private_subnet_mappings[2].subnet_id
-  security_groups = [aws_security_group.efs_mount_target_security_group.id]
-}*/
 resource "aws_s3_bucket_policy" "CodePipelineArtifactStoreBucketPolicy" {
   bucket = var.codepipeline_artifact_store_bucket.bucket
 

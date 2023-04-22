@@ -11,6 +11,7 @@ terraform {
 resource "aws_vpc" "main" {
   cidr_block       =  var.vpc_cidr
   instance_tenancy = "default"
+  enable_dns_hostnames = true
   tags = merge(
     {
       Name = var.vpc_name
@@ -136,6 +137,7 @@ resource "aws_vpc_endpoint_route_table_association" "s3_vpc_endpoint_route_table
   route_table_id  = aws_route_table.private_route_table.id
   vpc_endpoint_id = aws_vpc_endpoint.s3_vpc_endpoint.id
 }
+/*
 resource "aws_instance" "bastion" {
   ami                          = "ami-0557a15b87f6559cf"
   instance_type                = "t2.nano"
@@ -152,6 +154,7 @@ resource "aws_instance" "bastion" {
     "Region"                    = var.region
   }
 }
+*/
 
 resource "aws_security_group" "bastion" {
   name_prefix                  = join("-", [var.vpc_name, var.region, "bastion"])
