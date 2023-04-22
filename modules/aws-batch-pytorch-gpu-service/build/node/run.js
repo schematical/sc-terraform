@@ -63,7 +63,7 @@ const runSpawn = async (options) => {
     await runSpawn({
         path: SRC_PATH,
         cmd: 'aws',
-        args: [`cp`, `s3://${process.env.S3_BUCKET}/${instance}`, imageDir]
+        args: [`cp`, `s3://${process.env.S3_BUCKET}/classes/dog/`, '/home/ubuntu/images/dogs']
     });
 
     // Save the JSON to disk
