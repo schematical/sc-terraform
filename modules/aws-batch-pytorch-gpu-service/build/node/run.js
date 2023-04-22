@@ -5,7 +5,8 @@ const CONDA_LDM_DIR = '/opt/conda/install/envs/ldm';
 const CONDA_DIR = '/opt/conda/install';
 const MODEL_PATH = '/home/ubuntu/src/model.ckpt';
 console.log("process.argv", process.argv);
-const INSTANCE_LIST = JSON.parse(process.argv[1]);
+console.log("process.argv[2]", process.argv[2]);
+const INSTANCE_LIST = JSON.parse(process.argv[2]);
 
 const runSpawn = async (options) => {
     return new Promise((resolve, reject) => {
