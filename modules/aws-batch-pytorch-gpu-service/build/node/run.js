@@ -4,7 +4,8 @@ const SRC_PATH = '/home/ubuntu/src/dreambooth/environment.yaml';
 const CONDA_LDM_DIR = '/opt/conda/install/envs/ldm';
 const CONDA_DIR = '/opt/conda/install';
 const MODEL_PATH = '/home/ubuntu/src/model.ckpt';
-const INSTANCE_LIST = JSON.parse(process.argv[3]);
+console.log("process.argv", process.argv);
+const INSTANCE_LIST = JSON.parse(process.argv[1]);
 
 const runSpawn = async (options) => {
     return new Promise((resolve, reject) => {
