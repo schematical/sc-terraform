@@ -1,9 +1,7 @@
 const fs = require('fs');
 const { spawn } = require('child_process');
-const SRC_PATH = '/home/ubuntu/src/dreambooth/environment.yaml';
-const CONDA_LDM_DIR = '/opt/conda/install/envs/ldm';
+const SRC_PATH = '/home/ubuntu/src/dreambooth';
 const CONDA_DIR = '/opt/conda/install';
-const MODEL_PATH = '/home/ubuntu/src/model.ckpt';
 console.log("process.argv", process.argv);
 console.log("process.argv[2]", process.argv[2]);
 const INSTANCE_LIST = JSON.parse(process.argv[2]);
@@ -55,37 +53,42 @@ const runSpawn = async (options) => {
         args: [`sts`, `get-caller-identity`]
     });
 
-
+    const classDataDir = '/home/ubuntu/src/dreambooth/dogs'
+    // Use s3 to download the images
+    const classDataDirExists = fs.existsSync(classDataDir);
+    if (!classDataDirExists) {
+        const options = {
+            path: SRC_PATH,
+            cmd: 'aws',
+            args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}/classes/dog/`, classDataDir, '--recursive']
+        }
+        console.log('options', options);
+        await runSpawn(options);
+    }
     const conceptsList = []
     // We just need the instances URIs
     for (const instance of INSTANCE_LIST) {
         const parts = instance.split('/');
         const instance_prompt = parts[parts.length - 1];
-        const imageDir = `/home/ubuntu/images/${instance_prompt}`;
-        await runSpawn({
-            path: SRC_PATH,
-            cmd: 'aws',
-            args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}/${instance}`, imageDir, '--recursive']
-        });
+        const imageDir = `/home/ubuntu/src/dreambooth/images/${instance_prompt}`;
+        const imageDirExists = fs.existsSync(imageDir);
+        if (!imageDirExists) {
+            await runSpawn({
+                path: SRC_PATH,
+                cmd: 'aws',
+                args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}/${instance}`, imageDir, '--recursive']
+            });
+        }
         conceptsList.push(  {
             "instance_prompt":      instance_prompt,
             "class_prompt":         "dog",
             "instance_data_dir":    imageDir,
-            "class_data_dir":       "/home/ubuntu/images/dogs"
+            "class_data_dir": classDataDir
         })
     }
-    // Use s3 to download the images
-    const options = {
-        path: SRC_PATH,
-        cmd: 'aws',
-        args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}/classes/dog/`, '/home/ubuntu/images/dogs', '--recursive']
-    }
-    console.log('options', options);
-    await runSpawn(options);
 
+    console.log("conceptsList:", conceptsList);
     // Save the JSON to disk
-
-
     fs.writeFileSync("/home/ubuntu/concepts_list.json", JSON.stringify(conceptsList));
 
 
