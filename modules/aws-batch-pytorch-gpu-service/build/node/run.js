@@ -1,15 +1,14 @@
 const fs = require('fs');
-
 const { spawn } = require('child_process');
 const SRC_PATH = '/home/ubuntu/src/dreambooth/environment.yaml';
 const CONDA_LDM_DIR = '/opt/conda/install/envs/ldm';
 const CONDA_DIR = '/opt/conda/install';
 const MODEL_PATH = '/home/ubuntu/src/model.ckpt';
-const CONCEPTS_LIST = JSON.parse(process.argv[3]);
+const INSTANCE_LIST = JSON.parse(process.argv[3]);
 
 const runSpawn = async (options) => {
     return new Promise((resolve, reject) => {
-        console.log("Did not find " + options.path + " installing");
+        // console.log("Did not find " + options.path + " installing");
 
         const mainCmd = spawn(
             options.cmd,
@@ -31,10 +30,6 @@ const runSpawn = async (options) => {
     });
 }
 (async () => {
-    /*CONCEPTS_LIST.forEach(async (concept) => {
-        concept.
-    });*/
-
     const srcExists = fs.existsSync(SRC_PATH);
     if (!srcExists) {
         await runSpawn({
@@ -44,10 +39,44 @@ const runSpawn = async (options) => {
         });
     }
 
+
+
+    const conceptsList = []
+    // We just need the instances URIs
+    for (const instance of INSTANCE_LIST) {
+        const parts = instance.split('/');
+        const instance_prompt = parts[parts.length - 1];
+        const imageDir = `/home/ubuntu/images/${instance_prompt}`;
+        await runSpawn({
+            path: SRC_PATH,
+            cmd: 'aws',
+            args: [`cp`, `s3://${process.env.S3_BUCKET}/${instance}`, imageDir]
+        });
+        conceptsList.push(  {
+            "instance_prompt":      instance_prompt,
+            "class_prompt":         "dog",
+            "instance_data_dir":    imageDir,
+            "class_data_dir":       "/home/ubuntu/images/dogs"
+        })
+    }
+    // Use s3 to download the images
+    await runSpawn({
+        path: SRC_PATH,
+        cmd: 'aws',
+        args: [`cp`, `s3://${process.env.S3_BUCKET}/${instance}`, imageDir]
+    });
+
+    // Save the JSON to disk
+
+
+    fs.writeFileSync("/home/ubuntu/concepts_list.json", JSON.stringify(conceptsList));
+
+
+
     await runSpawn({
         path: '/home/ubuntu/node/scripts/run.sh',
         cmd: 'sh',
-        args: [`/home/ubuntu/node/scripts/run.sh`,  process.argv[2],  process.argv[3], process.argv[4]]
+        args: [`/home/ubuntu/node/scripts/run.sh`]
     });
 // /opt/conda/envs
 })();

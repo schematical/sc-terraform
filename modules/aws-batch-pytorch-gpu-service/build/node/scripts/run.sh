@@ -1,20 +1,14 @@
 cd /home/ubuntu/src/dreambooth
-# echo 'conda run -n ldm /bin/bash -c conda activate ldm'
-# conda run -n ldm /bin/bash -c conda activate ldm
-echo "!!!!!!conda init bash"
-/opt/conda/install/bin/conda init bash
+
+# echo "!!!!!!conda init bash"
+# /opt/conda/install/bin/conda init bash
 
 
-# echo "!!!!! cat /root/.bashrc"
-# cat /root/.bashrc
-
-# echo "!!!!! conda activate ldm"
-# conda activate ldm
 
 echo $2 >> /home/ubuntu/concepts_list.json
 cat /home/ubuntu/concepts_list.json
 
-echo "!!!!Sending it. Dir: $1 Prompt: $2 Seed: $3"
+echo "!!!!Sending it."
 accelerate launch \
   --mixed_precision="fp16" \
   train_dreambooth.py \
@@ -31,7 +25,7 @@ accelerate launch \
   --num_train_epochs 50
 
 echo "!!!!Pushing to S3"
-aws s3 cp /home/ubuntu/src/outputs/$1 s3://$S3_BUCKET/$1 --recursive
+# aws s3 cp /home/ubuntu/src/outputs/$1 s3://$S3_BUCKET/$1 --recursive
 
 echo "!!!!Cleaning Up"
 rm -rf /home/ubuntu/src/outputs/$1
