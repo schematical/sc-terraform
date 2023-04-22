@@ -5,6 +5,8 @@ const SRC_PATH = '/home/ubuntu/src/dreambooth/environment.yaml';
 const CONDA_LDM_DIR = '/opt/conda/install/envs/ldm';
 const CONDA_DIR = '/opt/conda/install';
 const MODEL_PATH = '/home/ubuntu/src/model.ckpt';
+const CONCEPTS_LIST = JSON.parse(process.argv[3]);
+
 const runSpawn = async (options) => {
     return new Promise((resolve, reject) => {
         console.log("Did not find " + options.path + " installing");
@@ -29,7 +31,9 @@ const runSpawn = async (options) => {
     });
 }
 (async () => {
-
+    /*CONCEPTS_LIST.forEach(async (concept) => {
+        concept.
+    });*/
 
     const srcExists = fs.existsSync(SRC_PATH);
     if (!srcExists) {

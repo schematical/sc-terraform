@@ -7,9 +7,6 @@ ARG DEBIAN_FRONTEND=noninteractive
 COPY ./node /home/ubuntu/node
 RUN ls -la /home/ubuntu/node && \
     ls -la /home/ubuntu/node/scripts && \
-    chmod a+x /home/ubuntu/node/scripts/activate_ldm.sh && \
-    chmod a+x /home/ubuntu/node/scripts/download_model.sh && \
-    chmod a+x /home/ubuntu/node/scripts/install_conda.sh && \
     chmod a+x /home/ubuntu/node/scripts/install_src.sh && \
     chmod a+x /home/ubuntu/node/scripts/run.sh && \
     apt update && \
