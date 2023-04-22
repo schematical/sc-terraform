@@ -23,4 +23,5 @@ variable "vpc_id" {}
 variable "private_subnet_mappings" {
   type = map(any)
 }
+variable "bastion_security_group" {}
 

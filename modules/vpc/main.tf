@@ -136,3 +136,56 @@ resource "aws_vpc_endpoint_route_table_association" "s3_vpc_endpoint_route_table
   route_table_id  = aws_route_table.private_route_table.id
   vpc_endpoint_id = aws_vpc_endpoint.s3_vpc_endpoint.id
 }
+resource "aws_instance" "bastion" {
+  ami                          = "ami-0557a15b87f6559cf"
+  instance_type                = "t2.nano"
+  key_name                     = var.bastion_keypair_name
+  subnet_id                    = values(aws_subnet.public_subnets)[0].id
+  associate_public_ip_address  = true
+  instance_initiated_shutdown_behavior = "terminate"
+  security_groups            = [aws_security_group.bastion.id]
+
+
+  tags = {
+    "Name"                      = join("-", [var.vpc_name, "bastion"])
+    "VPC"                       = var.vpc_name
+    "Region"                    = var.region
+  }
+}
+
+resource "aws_security_group" "bastion" {
+  name_prefix                  = join("-", [var.vpc_name, var.region, "bastion"])
+  description                  = join("-", [var.vpc_name, var.region, "bastion"])
+  vpc_id                       = aws_vpc.main.id
+
+  ingress {
+    cidr_blocks                = [var.bastion_ingress_rule]
+    description                = "AllIPv4"
+    from_port                  = 22
+    protocol                   = "tcp"
+    to_port                    = 22
+  }
+  ingress {
+    ipv6_cidr_blocks           = ["::/0"]
+    description                = "AllIPv6"
+    from_port                  = 22
+    protocol                   = "tcp"
+    to_port                    = 22
+  }
+
+  egress {
+    cidr_blocks                = ["0.0.0.0/0"]
+    description                = "AllIPv4"
+    from_port                  = 0
+    protocol                   = -1
+    to_port                    = 0
+  }
+
+  egress {
+    ipv6_cidr_blocks           = ["::/0"]
+    description                = "AllIPv6"
+    from_port                  = 0
+    protocol                   = -1
+    to_port                    = 0
+  }
+}

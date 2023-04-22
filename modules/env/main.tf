@@ -61,6 +61,7 @@ module "dreambooth_service" {
 
   codepipeline_artifact_store_bucket = aws_s3_bucket.codepipeline_artifact_store_bucket
   output_bucket                      = aws_s3_bucket.dreambooth_storage_bucket
+  bastion_security_group = var.bastion_security_group
 }
 
 /*module "sagemaker_endpoint" {

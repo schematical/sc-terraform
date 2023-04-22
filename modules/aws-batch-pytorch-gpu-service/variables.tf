@@ -59,3 +59,4 @@ variable "source_code_bucket_object_key" {
 }
 
 variable "ecs_task_execution_iam_role" {}
+variable "bastion_security_group" {}

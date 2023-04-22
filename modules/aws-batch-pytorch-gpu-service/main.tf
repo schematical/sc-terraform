@@ -21,9 +21,10 @@ resource "aws_batch_compute_environment" "batch_gpu_compute_environment" {
     instance_type           = var.instance_types
     max_vcpus                = var.max_vcpus
     min_vcpus                = var.min_vcpus
-    security_group_ids       = [aws_security_group.batch_gpu_compute_environment.id]
+    security_group_ids       = [aws_security_group.batch_gpu_compute_environment_security_group.id]
     subnets                  = [for o in var.private_subnet_mappings : o.id] # values(var.private_subnet_mappings)
     type                     = "EC2"
+    ec2_key_pair = "schematical_node_1"
     # update_to_latest_image   = true
 
     ec2_configuration {
@@ -80,49 +81,6 @@ resource "aws_iam_role" "batch_gpu_compute_environment" {
     ]
   })
 
-  tags = {
-    Service = var.service_name
-    Env     = var.env
-    Region  = var.region
-  }
-}
-
-resource "aws_security_group" "batch_gpu_compute_environment" {
-  name_prefix = join("-", [var.service_name, var.env, var.region, "compute-env"])
-  vpc_id      = var.vpc_id
-
-  ingress {
-    protocol = "tcp"
-    from_port = 0
-    to_port   = 65535
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Service = var.service_name
-    Env     = var.env
-    Region  = var.region
-  }
-}
-resource "aws_iam_instance_profile" "batch_gpu_compute_environment_instance_profile" {
-  name = "${var.service_name}-compute-env-instance-profile-${var.env}-${var.region}"
-  path = "/"
-
-  role = aws_iam_role.batch_gpu_compute_environment_instance_iam_role.name
-}
-
-resource "aws_iam_role" "batch_gpu_compute_environment_instance_iam_role" {
-  name = "${var.service_name}-compute-env-instance-${var.env}-${var.region}"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect    = "Allow"
-        Principal = { Service = "ec2.amazonaws.com" }
-        Action    = "sts:AssumeRole"
-      }
-    ]
-  })
   path = "/"
   managed_policy_arns = [
     "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
@@ -140,13 +98,19 @@ resource "aws_iam_role" "batch_gpu_compute_environment_instance_iam_role" {
       ]
     })
   }
+  tags = {
+    Service = var.service_name
+    Env     = var.env
+    Region  = var.region
+  }
 }
+
+
 resource "aws_security_group" "batch_gpu_compute_environment_security_group" {
   name_prefix = "${var.service_name}-${var.env}-${var.region}-"
   description = "${var.service_name}-${var.env}-${var.region}"
   vpc_id      = var.vpc_id
 
-  ingress = []
 
   egress {
     from_port        = 0
@@ -155,6 +119,15 @@ resource "aws_security_group" "batch_gpu_compute_environment_security_group" {
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
+
+}
+resource "aws_vpc_security_group_ingress_rule" "batch_gpu_compute_environment_security_group_egress_rule" {
+  security_group_id = aws_security_group.batch_gpu_compute_environment_security_group.id
+  referenced_security_group_id  = var.bastion_security_group
+  description       = "AllIPv4"
+  from_port         = 22
+  ip_protocol          = "tcp"
+  to_port           = 22
 }
 resource "aws_ecr_repository" "ecr_repository" {
   name             = "${var.service_name}-${var.env}-${var.region}"

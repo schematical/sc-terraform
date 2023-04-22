@@ -10,13 +10,17 @@ echo "!!!!!!conda init bash"
 
 # echo "!!!!! conda activate ldm"
 # conda activate ldm
+
+echo $2 >> /home/ubuntu/concepts_list.json
+cat /home/ubuntu/concepts_list.json
+
 echo "!!!!Sending it. Dir: $1 Prompt: $2 Seed: $3"
 accelerate launch \
   --mixed_precision="fp16" \
   train_dreambooth.py \
   --pretrained_model_name_or_path=runwayml/stable-diffusion-v1-5 \
   --instance_data_dir ./images \
-  --concepts_list="concepts_list.json" \
+  --concepts_list="/home/ubuntu/concepts_list.json" \
   --resolution 512 \
   --gradient_checkpointing \
   --use_8bit_adam \

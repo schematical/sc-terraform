@@ -16,6 +16,16 @@ variable "vpc_cidr" {
   type        = string
   default     = "10.0.0.0/16"
 }
+variable "bastion_keypair_name" {
+  description = "The keypair you created"
+  type        = string
+  default = null
+}
+variable "bastion_ingress_rule" {
+  description = "IP Address For Bastion"
+  type        = string
+  default     = "0.0.0.0/0"
+}
 variable "private_subnets" {
   type = list(object({
     az = string
@@ -58,6 +68,11 @@ variable "public_subnets" {
 }
 variable "vpc_enable_nat_gateway" {
   description = "Enable NAT gateway for VPC"
+  type        = bool
+  default     = true
+}
+variable "vpc_enable_bastion" {
+  description = "Enable Bastion for VPC"
   type        = bool
   default     = true
 }

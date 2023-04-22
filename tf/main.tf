@@ -94,6 +94,7 @@ resource "aws_iam_role" "ecs_task_execution_iam_role" {
 module "vpc" {
   source = "../modules/vpc"
   vpc_name = "dev"
+  bastion_keypair_name = "schematical_node_1"
 }
 module "dev_env" {
 /*  depends_on = [
@@ -107,6 +108,7 @@ module "dev_env" {
   api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
   hosted_zone_id = "ZC4VPG65C2OOQ"
   private_subnet_mappings = module.vpc.private_subnet_mappings
+  bastion_security_group = module.vpc.bastion_security_group
 
 }
 
