@@ -5,7 +5,6 @@ cd /home/ubuntu/src/dreambooth/examples/dreambooth
 
 
 
-echo $2 >> /home/ubuntu/concepts_list.json
 cat /home/ubuntu/concepts_list.json
 
 echo "!!!!Sending it."

@@ -53,7 +53,7 @@ const runSpawn = async (options) => {
         args: [`sts`, `get-caller-identity`]
     });
 
-    const classDataDir = '/home/ubuntu/src/dreambooth/dogs'
+    const classDataDir = '/home/ubuntu/src/dreambooth/images/dogs'
     // Use s3 to download the images
     const classDataDirExists = fs.existsSync(classDataDir);
     if (!classDataDirExists) {
