@@ -2,8 +2,8 @@ cd /home/ubuntu/src/dreambooth/examples/dreambooth
 
 # echo "!!!!!!conda init bash"
 # /opt/conda/install/bin/conda init bash
-
-
+pip3 install accelerate
+which accelerate
 
 cat /home/ubuntu/concepts_list.json
 
