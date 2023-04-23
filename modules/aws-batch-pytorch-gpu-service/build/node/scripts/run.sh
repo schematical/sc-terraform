@@ -2,7 +2,10 @@ cd /home/ubuntu/src/dreambooth/examples/dreambooth
 
 # echo "!!!!!!conda init bash"
 # /opt/conda/install/bin/conda init bash
-
+echo "!!!!!!ls -la /home/ubuntu/src/dreambooth/images/dogs"
+ls -la /home/ubuntu/src/dreambooth/images/dogs
+echo "!!!!!!! ls -la /home/ubuntu/src/dreambooth/images/shay"
+ls -la /home/ubuntu/src/dreambooth/images/shay
 
 cat /home/ubuntu/concepts_list.json
 
@@ -11,7 +14,6 @@ accelerate launch \
   --mixed_precision="fp16" \
   /home/ubuntu/src/dreambooth/examples/dreambooth/train_dreambooth.py \
   --pretrained_model_name_or_path=runwayml/stable-diffusion-v1-5 \
-  --instance_data_dir /home/ubuntu/src/images \
   --concepts_list="/home/ubuntu/concepts_list.json" \
   --resolution 512 \
   --gradient_checkpointing \

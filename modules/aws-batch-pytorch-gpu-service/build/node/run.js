@@ -67,17 +67,20 @@ const runSpawn = async (options) => {
     }
     const conceptsList = []
     // We just need the instances URIs
+    console.log("INSTANCE_LIST", INSTANCE_LIST);
     for (const instance of INSTANCE_LIST) {
         const parts = instance.split('/');
         const instance_prompt = parts[parts.length - 1];
         const imageDir = `/home/ubuntu/src/dreambooth/images/${instance_prompt}`;
         const imageDirExists = fs.existsSync(imageDir);
         if (!imageDirExists) {
-            await runSpawn({
+            const options2 = {
                 path: SRC_PATH,
                 cmd: 'aws',
                 args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}/${instance}`, imageDir, '--recursive']
-            });
+            };
+            console.log("options2", options2);
+            await runSpawn(options2);
         }
         conceptsList.push(  {
             "instance_prompt":      instance_prompt,
