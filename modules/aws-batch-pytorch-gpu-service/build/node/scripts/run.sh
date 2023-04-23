@@ -2,8 +2,8 @@ cd /home/ubuntu/src/dreambooth/examples/dreambooth
 
 # echo "!!!!!!conda init bash"
 # /opt/conda/install/bin/conda init bash
-echo "!!!!!!ls -la /home/ubuntu/src/dreambooth/images/dogs"
-ls -la /home/ubuntu/src/dreambooth/images/dogs
+# echo "!!!!!!ls -la /home/ubuntu/src/dreambooth/images/dogs"
+# ls -la /home/ubuntu/src/dreambooth/images/dogs
 echo "!!!!!!! ls -la /home/ubuntu/src/dreambooth/images/shay"
 ls -la /home/ubuntu/src/dreambooth/images/shay
 
