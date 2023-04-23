@@ -16,6 +16,7 @@ RUN ls -la /home/ubuntu/node && \
     ./aws/install  && \
     export PATH=/opt/conda/install/bin:$PATH &&\
     echo "export PATH=/opt/conda/install/bin:$PATH" >> ~/.bashrc && \
+    sh /home/ubuntu/node/scripts/install_src.sh && \
     rm -rf /root/.cache && \
     rm -rf /home/ubuntu/.cache
 
