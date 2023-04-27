@@ -16,6 +16,14 @@ variable "env" {
 variable "vpc_id" {
   type = string
 }
+variable "private_subnet_mappings" {
+  type = map(any)
+}
+variable "output_bucket" {
+}
+
+variable "codepipeline_artifact_store_bucket" {
+}
 
 variable "instance_types" {
   type    = list(string)
@@ -32,9 +40,7 @@ variable "min_vcpus" {
   default = 0
 }
 
-variable "private_subnet_mappings" {
-  type = map(any)
-}
+
 
 variable "codebuild_image_uri" {
   type    = string
@@ -46,11 +52,6 @@ variable "codebuild_timeout" {
   default = 5
 }
 
-variable "output_bucket" {
-}
-
-variable "codepipeline_artifact_store_bucket" {
-}
 
 
 variable "source_code_bucket_object_key" {

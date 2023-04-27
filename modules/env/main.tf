@@ -47,6 +47,22 @@ data "aws_route53_zone" "hosted_zone" {
 resource "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
   bucket = "codebuild-bucket-${var.env}-${var.region}"
 }
+/*resource "aws_route53_record" "dev-ns" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "${var.env}"
+  type    = "NS"
+  ttl     = "30"
+  records = aws_route53_zone.dev.name_servers
+}*/
+
+
+
+
+
+
+
+
+
 resource "aws_s3_bucket" "dreambooth_storage_bucket" {
   bucket = "dreambooth-worker-v1-${var.env}-${var.region}"
 }
@@ -63,6 +79,9 @@ module "dreambooth_service" {
   output_bucket                      = aws_s3_bucket.dreambooth_storage_bucket
   bastion_security_group = var.bastion_security_group
 }
+
+
+
 
 /*module "sagemaker_endpoint" {
   source = "../sagemaker"

@@ -111,7 +111,19 @@ module "dev_env" {
   bastion_security_group = module.vpc.bastion_security_group
 
 }
+module "project_drawnby_ai" {
+  /*  depends_on = [
+      aws_api_gateway_method.api_gateway_method,
+      aws_api_gateway_integration.api_gateway_root_resource_method_integration
+    ]*/
+  source = "./projects/drawnby_ai"
+  env = "dev"
+  vpc_id = module.vpc.vpc_id
+  ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
+  api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
+  private_subnet_mappings = module.vpc.private_subnet_mappings
 
+}
 /*module "lambda-service" {
   for_each = toset(var.envs)
   source = "../../sc-terraform/modules/lambda-service"
@@ -121,4 +133,5 @@ module "dev_env" {
   api_gateway_parent_id = aws_api_gateway_rest_api.api_gateway.root_resource_id
   api_gateway_stage_id = lookup(var.api_gateway_stages, each.value, "fail")
 }*/
+
 
