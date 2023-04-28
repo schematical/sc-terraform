@@ -7,11 +7,17 @@ resource "aws_s3_bucket" "bucket" {
     Service = var.service_name
   }
 }
-
-/*resource "aws_s3_bucket_acl" "b_acl" {
+/*resource "aws_s3_bucket_ownership_controls" "example" {
   bucket = aws_s3_bucket.bucket.id
-  acl    = "private"
+
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
 }*/
+resource "aws_s3_bucket_acl" "b_acl" {
+  bucket = aws_s3_bucket.bucket.id
+  acl    = "public-read"
+}
 
 locals {
   s3_origin_id = "myS3Origin"
@@ -23,6 +29,15 @@ resource "aws_cloudfront_origin_access_control" "default" {
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
 }
+resource "aws_s3_bucket_public_access_block" "example" {
+  bucket = aws_s3_bucket.bucket.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
     domain_name              = aws_s3_bucket.bucket.bucket_regional_domain_name
@@ -132,7 +147,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 resource "aws_route53_record" "drawnby-ai-cloudfront-domain" {
   zone_id = var.hosted_zone_id
   name    = var.env
-  type    = "CNAME"
+  type    = "A"
   # ttl     = "30"
   alias {
     evaluate_target_health = false
