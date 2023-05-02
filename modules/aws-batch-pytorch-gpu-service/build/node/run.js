@@ -85,7 +85,7 @@ const runSpawn = async (options) => {
                 const options = {
                     path: SRC_PATH,
                     cmd: 'aws',
-                    args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}/classes/${instnce.classS3Path}/`, classDataDir, '--recursive']
+                    args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}/classes/${instance.classS3Path}/`, classDataDir, '--recursive']
                 }
                 console.log('options', options);
                 await runSpawn(options);

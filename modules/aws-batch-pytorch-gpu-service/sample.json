@@ -1,14 +1,14 @@
 {
-  "modelNamespace": "Test123",
+  "modelNamespace": "shay-test",
   "modelVersion": 0,
-  "modelPath": "/dominic/models/test12/0",
+  "modelPath": "/schematical/models/shay-test/0",
   "baseModel": "runwayml/stable-diffusion-v1-5",
   "conceptList": [
     {
-      "instancePrompt": "scttplgrm a scene of a park from a sidescroller videogame",
-      "classPrompt": "scttplgrm a scene from a sidescroller videogame",
-      "instanceS3Path": "/dominic/models/test12/instances/x",
-      "classS3Path": "reg"
+      "instancePrompt": "shaycutepuppy",
+      "classPrompt": "dog",
+      "instanceS3Path": "/models/default/instances/shay",
+      "classS3Path": "dog"
     }
   ]
 }
