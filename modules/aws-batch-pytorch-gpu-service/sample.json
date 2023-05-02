@@ -1,0 +1,14 @@
+{
+  "modelNamespace": "Test123",
+  "modelVersion": 0,
+  "modelPath": "/dominic/models/test12/0",
+  "baseModel": "runwayml/stable-diffusion-v1-5",
+  "conceptList": [
+    {
+      "instancePrompt": "scttplgrm a scene of a park from a sidescroller videogame",
+      "classPrompt": "scttplgrm a scene from a sidescroller videogame",
+      "instanceS3Path": "/dominic/models/test12/instances/x",
+      "classS3Path": "reg"
+    }
+  ]
+}

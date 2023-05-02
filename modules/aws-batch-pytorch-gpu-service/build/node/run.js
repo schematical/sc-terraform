@@ -3,8 +3,8 @@ const { spawn } = require('child_process');
 const SRC_PATH = '/home/ubuntu/src/dreambooth';
 const CONDA_DIR = '/opt/conda/install';
 console.log("process.argv", process.argv);
-console.log("process.argv[2]", process.argv[2]);
-const INSTANCE_LIST = JSON.parse(process.argv[2]);
+// console.log("process.argv[2]", process.argv[2]);
+const ARGS = JSON.parse(process.env.ARGS); // process.argv[2]);
 
 const runSpawn = async (options) => {
     return new Promise((resolve, reject) => {
@@ -53,41 +53,49 @@ const runSpawn = async (options) => {
         args: [`sts`, `get-caller-identity`]
     });
 
-    const classDataDir = '/home/ubuntu/src/dreambooth/images/dogs'
+    //
+
     // Use s3 to download the images
-    const classDataDirExists = fs.existsSync(classDataDir);
-    if (!classDataDirExists) {
-        const options = {
-            path: SRC_PATH,
-            cmd: 'aws',
-            args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}/classes/dog/`, classDataDir, '--recursive']
-        }
-        console.log('options', options);
-        await runSpawn(options);
-    }
+
     const conceptsList = []
     // We just need the instances URIs
-    console.log("INSTANCE_LIST", INSTANCE_LIST);
-    for (const instance of INSTANCE_LIST) {
-        const parts = instance.split('/');
-        const instance_prompt = parts[parts.length - 1];
-        const imageDir = `/home/ubuntu/src/dreambooth/images/${instance_prompt}`;
+    console.log("INSTANCE_LIST", ARGS);
+    for (const instance of ARGS.conceptList) {
+        // const parts = instance.split('/');
+
+        const imageDir = `/home/ubuntu/src/dreambooth/images/${instance.instanceS3Path}`;
         const imageDirExists = fs.existsSync(imageDir);
         if (!imageDirExists) {
             const options2 = {
                 path: SRC_PATH,
                 cmd: 'aws',
-                args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}${instance}`, imageDir, '--recursive']
+                args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}${instance.instanceS3Path}`, imageDir, '--recursive']
             };
             console.log("options2", options2);
             await runSpawn(options2);
         }
-        conceptsList.push(  {
-            "instance_prompt":      instance_prompt,
-            "class_prompt":         "dog",
+        const conceptData = {
+            "instance_prompt":      instance.instancePrompt,
             "instance_data_dir":    imageDir,
-            "class_data_dir": classDataDir
-        })
+        }
+        if (instance.classS3Path) {
+            const classDataDir = `/home/ubuntu/src/dreambooth/images/${instance.classS3Path}`
+            const classDataDirExists = fs.existsSync(classDataDir);
+            if (!classDataDirExists) {
+                const options = {
+                    path: SRC_PATH,
+                    cmd: 'aws',
+                    args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}/classes/${instnce.classS3Path}/`, classDataDir, '--recursive']
+                }
+                console.log('options', options);
+                await runSpawn(options);
+            }
+
+            conceptData.class_prompt =  instance.classPrompt;
+            conceptData.class_data_dir = classDataDir;
+        }
+
+        conceptsList.push(conceptData);
     }
 
     console.log("conceptsList:", conceptsList);
@@ -101,5 +109,26 @@ const runSpawn = async (options) => {
         cmd: 'sh',
         args: [`/home/ubuntu/node/scripts/run.sh`]
     });
+
+    const outputPath = "/home/ubuntu/src/dreambooth/examples/dreambooth/text-inversion-model"
+    const dirs = fs.readdirSync(outputPath);// .filter(file => fs.statSync(path.join(srcPath, file)).isDirectory())
+    const outputDir = dirs.sort()[dirs.left - 1];
+    const outputPathFull = path.join(outputPath, outputDir);
+    const options0 = {
+        path: '/home/ubuntu/node/scripts/toCkpt.sh',
+        cmd: 'sh',
+        args: [`/home/ubuntu/node/scripts/toCkpt.sh`, outputPathFull]
+    };
+    console.log("options0", options0);
+    await runSpawn(options0);
+    const checkPointPath = outputPathFull + '.ckpt';
+    const options = {
+        path: SRC_PATH,
+        cmd: 'aws',
+        args: [`s3`, `cp`, checkPointPath, `s3://${process.env.S3_BUCKET}/${ARGS.modelPath}`], // '--recursive']
+    }
+    console.log('options', options);
+    await runSpawn(options);
+
 // /opt/conda/envs
 })();

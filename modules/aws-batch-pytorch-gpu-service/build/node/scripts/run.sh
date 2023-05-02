@@ -1,11 +1,7 @@
 cd /home/ubuntu/src/dreambooth/examples/dreambooth
 
-# echo "!!!!!!conda init bash"
-# /opt/conda/install/bin/conda init bash
-# echo "!!!!!!ls -la /home/ubuntu/src/dreambooth/images/dogs"
-# ls -la /home/ubuntu/src/dreambooth/images/dogs
-echo "!!!!!!! ls -la /home/ubuntu/src/dreambooth/images/shay"
-ls -la /home/ubuntu/src/dreambooth/images/shay
+#echo "!!!!!!! ls -la /home/ubuntu/src/dreambooth/images/shay"
+#ls -la /home/ubuntu/src/dreambooth/images/shay
 
 cat /home/ubuntu/concepts_list.json
 
@@ -24,11 +20,11 @@ accelerate launch \
   --gradient_checkpointing \
   --num_train_epochs 50
 
-echo "!!!!Pushing to S3"
-# aws s3 cp /home/ubuntu/src/outputs/$1 s3://$S3_BUCKET/$1 --recursive
+# echo "!!!!Pushing to S3"
+# aws s3 cp /home/ubuntu/src/dreambooth/examples/dreambooth/text-inversion-model/$1 s3://$S3_BUCKET/$1 --recursive
 
-echo "!!!!Cleaning Up"
-rm -rf /home/ubuntu/src/outputs/$1
+# echo "!!!!Cleaning Up"
+# rm -rf /home/ubuntu/src/dreambooth/examples/dreambooth/text-inversion-model/$1
 
 echo "!!!!!!DONE"
 #["conda", "run", "-n", "ldm",  "/bin/bash",  "-c",  "sh", "/home/ubuntu/node/test.sh"]
