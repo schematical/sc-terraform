@@ -113,7 +113,7 @@ const runSpawn = async (options) => {
 
     const outputPath = "/home/ubuntu/src/dreambooth/examples/dreambooth/text-inversion-model"
     const dirs = fs.readdirSync(outputPath);// .filter(file => fs.statSync(path.join(srcPath, file)).isDirectory())
-    const outputDir = dirs.sort()[dirs.left - 1];
+    const outputDir = dirs.sort()[dirs.length - 1] || "FAILED";
     const outputPathFull = path.join(outputPath, outputDir);
     const options0 = {
         path: '/home/ubuntu/node/scripts/toCkpt.sh',
