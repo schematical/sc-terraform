@@ -1,13 +1,10 @@
 {
-  "modelNamespace": "shay-test",
-  "modelVersion": 0,
   "modelPath": "/schematical/models/shay-test/0",
-  "baseModel": "runwayml/stable-diffusion-v1-5",
   "conceptList": [
     {
       "instancePrompt": "shaycutepuppy",
       "classPrompt": "dog",
-      "instanceS3Path": "/models/default/instances/shay",
+      "instanceS3Path": "/schematical/models/default/instances/shay",
       "classS3Path": "dog"
     }
   ]
