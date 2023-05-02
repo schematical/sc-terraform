@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const { spawn } = require('child_process');
 const SRC_PATH = '/home/ubuntu/src/dreambooth';
 const CONDA_DIR = '/opt/conda/install';
@@ -63,7 +64,7 @@ const runSpawn = async (options) => {
     for (const instance of ARGS.conceptList) {
         // const parts = instance.split('/');
 
-        const imageDir = `/home/ubuntu/src/dreambooth/images/${instance.instanceS3Path}`;
+        const imageDir = `/home/ubuntu/src/dreambooth/images${instance.instanceS3Path}`;
         const imageDirExists = fs.existsSync(imageDir);
         if (!imageDirExists) {
             const options2 = {
