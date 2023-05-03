@@ -10,6 +10,7 @@ RUN ls -la /home/ubuntu/node && \
     chmod a+x /home/ubuntu/node/scripts/install_src.sh && \
     chmod a+x /home/ubuntu/node/scripts/run.sh && \
     chmod a+x /home/ubuntu/node/scripts/toCkpt.sh && \
+    curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash - \
     apt update && \
     apt install --no-install-recommends -y curl unzip build-essential gcc git wget libcudnn8 nodejs python3-pip && \
     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
