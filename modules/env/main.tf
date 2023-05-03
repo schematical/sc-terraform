@@ -66,6 +66,23 @@ resource "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
 resource "aws_s3_bucket" "dreambooth_storage_bucket" {
   bucket = "dreambooth-worker-v1-${var.env}-${var.region}"
 }
+resource "aws_s3_bucket_cors_configuration" "dreambooth_storage_bucket" {
+  bucket = aws_s3_bucket.dreambooth_storage_bucket.bucket
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["PUT", "POST"]
+    allowed_origins = ["https://s3-website-test.hashicorp.com"]
+    expose_headers  = ["ETag"]
+    max_age_seconds = 3000
+  }
+
+  cors_rule {
+    allowed_methods = ["GET"]
+    allowed_origins = ["*"]
+  }
+}
+
 module "dreambooth_service" {
   service_name = "dreambooth"
   source = "../aws-batch-pytorch-gpu-service"
