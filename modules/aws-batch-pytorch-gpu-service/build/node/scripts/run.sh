@@ -18,7 +18,7 @@ accelerate launch \
   --sample_batch_size=1  \
   --gradient_accumulation_steps=1 \
   --gradient_checkpointing \
-  --num_train_epochs 3
+  --num_train_epochs 100
 
 # echo "!!!!Pushing to S3"
 # aws s3 cp /home/ubuntu/src/dreambooth/examples/dreambooth/text-inversion-model/$1 s3://$S3_BUCKET/$1 --recursive
