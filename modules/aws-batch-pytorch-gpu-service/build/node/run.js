@@ -134,7 +134,7 @@ const runSpawn = async (options) => {
     await runSpawn(options);
     console.log("Cleaning up output dir: " + outputPath);
     dirs.forEach((dir) => {
-        const outputPathFull = path.join(outputPath, outputDir);
+        const outputPathFull = path.join(outputPath, dir);
         console.log("fs.rmSync(outputPathFull ... : " + outputPathFull);
         fs.rmSync(outputPathFull,  { recursive: true, force: true });
     });
