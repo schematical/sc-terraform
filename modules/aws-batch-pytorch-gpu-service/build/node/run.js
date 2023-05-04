@@ -9,11 +9,11 @@ const ARGS = JSON.parse(process.env.ARGS); // process.argv[2]);
 
 const runSpawn = async (options) => {
     return new Promise((resolve, reject) => {
-        // console.log("Did not find " + options.path + " installing");
 
         const mainCmd = spawn(
             options.cmd,
-            options.args
+            options.args,
+            options.options
         );
 
         mainCmd.stdout.on('data', (data) => {
@@ -48,11 +48,7 @@ const runSpawn = async (options) => {
             args: [`${__dirname}/scripts/install_src.sh`]
         });
     }
-    await runSpawn({
-        path: SRC_PATH,
-        cmd: 'aws',
-        args: [`sts`, `get-caller-identity`]
-    });
+
 
     //
 
@@ -102,31 +98,52 @@ const runSpawn = async (options) => {
     console.log("conceptsList:", conceptsList);
     // Save the JSON to disk
     fs.writeFileSync("/home/ubuntu/concepts_list.json", JSON.stringify(conceptsList));
+    let runArgs = null;
+    if (ARGS.runArgs) {
+        runArgs = ARGS.runArgs;
+    } else {
+        const steps = ARGS.steps || 3;
+        const outputPath = path.join("/home/ubuntu", ARGS.modelPath)
+        console.log("outputDir:", outputPath);
+        fs.mkdirSync(outputPath, { recursive: true });
+        runArgs = [
+            "--mixed_precision", "fp16",
+            "/home/ubuntu/src/dreambooth/examples/dreambooth/train_dreambooth.py ",
+            "--pretrained_model_name_or_path", "runwayml/stable-diffusion-v1-5 ",
+            "--concepts_list", "/home/ubuntu/concepts_list.json",
+            "--resolution", 512,
+            "--gradient_checkpointing",
+            "--use_8bit_adam",
+            "--train_batch_size", 1,
+            "--sample_batch_size", 1,
+            "--gradient_accumulation_steps", 1,
+            "--gradient_checkpointing",
+            "--num_train_epochs", steps,
+            "--output_dir", outputPath
+        ];
+    }
 
-
-    const steps = ARGS.steps || 3;
     await runSpawn({
-        path: '/home/ubuntu/node/scripts/run.sh',
-        cmd: 'sh',
-        args: [`/home/ubuntu/node/scripts/run.sh`, steps]
+        cmd: "accelerate launch",
+        args: runArgs,
+        options: {
+            cwd: '/home/ubuntu/src/dreambooth/examples/dreambooth'
+        }
     });
 
-    const outputPath = "/home/ubuntu/src/dreambooth/examples/dreambooth/text-inversion-model"
     const dirs = fs.readdirSync(outputPath);// .filter(file => fs.statSync(path.join(srcPath, file)).isDirectory())
     const sortedDirs = dirs.sort();
-    console.log("SORTED DIRS: ", sortedDirs);
+    console.log("SORTED DIRS: ", outputPath, sortedDirs);
     const outputDir = sortedDirs[sortedDirs.length - 1] || "FAILED";
     const outputPathFull = path.join(outputPath, outputDir);
     const options0 = {
-        path: '/home/ubuntu/node/scripts/toCkpt.sh',
         cmd: 'sh',
         args: [`/home/ubuntu/node/scripts/toCkpt.sh`, outputPathFull]
     };
     console.log("options0", options0);
     await runSpawn(options0);
     const checkPointPath = outputPathFull + '.ckpt';
-    const options = {
-        path: SRC_PATH,
+    const options = {path: SRC_PATH,
         cmd: 'aws',
         args: [`s3`, `cp`, checkPointPath, `s3://${process.env.S3_BUCKET}/${ARGS.modelPath}`], // '--recursive']
     }

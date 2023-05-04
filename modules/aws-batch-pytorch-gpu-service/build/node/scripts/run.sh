@@ -1,11 +1,4 @@
-cd /home/ubuntu/src/dreambooth/examples/dreambooth
 
-#echo "!!!!!!! ls -la /home/ubuntu/src/dreambooth/images/shay"
-#ls -la /home/ubuntu/src/dreambooth/images/shay
-
-cat /home/ubuntu/concepts_list.json
-
-echo "!!!!Sending it."
 accelerate launch \
   --mixed_precision="fp16" \
   /home/ubuntu/src/dreambooth/examples/dreambooth/train_dreambooth.py \
@@ -19,13 +12,6 @@ accelerate launch \
   --gradient_accumulation_steps=1 \
   --gradient_checkpointing \
   --num_train_epochs $1
+  # --output_dir
 
-# echo "!!!!Pushing to S3"
-# aws s3 cp /home/ubuntu/src/dreambooth/examples/dreambooth/text-inversion-model/$1 s3://$S3_BUCKET/$1 --recursive
-
-# echo "!!!!Cleaning Up"
-# rm -rf /home/ubuntu/src/dreambooth/examples/dreambooth/text-inversion-model/$1
-
-echo "!!!!!!DONE"
-#["conda", "run", "-n", "ldm",  "/bin/bash",  "-c",  "sh", "/home/ubuntu/node/test.sh"]
 
