@@ -133,6 +133,13 @@ const runSpawn = async (options) => {
         }
     });
     await runSpawn({
+        cmd: "ls",
+        args: ["-la"],
+        options: {
+            cwd: '/home/ubuntu/src/dreambooth/examples/dreambooth'
+        }
+    });
+    await runSpawn({
         cmd: "accelerate",
         args: runArgs,
         options: {
