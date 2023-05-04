@@ -104,11 +104,11 @@ const runSpawn = async (options) => {
     fs.writeFileSync("/home/ubuntu/concepts_list.json", JSON.stringify(conceptsList));
 
 
-
+    const steps = ARGS.steps || 3;
     await runSpawn({
         path: '/home/ubuntu/node/scripts/run.sh',
         cmd: 'sh',
-        args: [`/home/ubuntu/node/scripts/run.sh`]
+        args: [`/home/ubuntu/node/scripts/run.sh`, steps]
     });
 
     const outputPath = "/home/ubuntu/src/dreambooth/examples/dreambooth/text-inversion-model"
