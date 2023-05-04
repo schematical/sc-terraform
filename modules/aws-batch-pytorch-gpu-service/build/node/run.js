@@ -98,14 +98,17 @@ const runSpawn = async (options) => {
     console.log("conceptsList:", conceptsList);
     // Save the JSON to disk
     fs.writeFileSync("/home/ubuntu/concepts_list.json", JSON.stringify(conceptsList));
+    const outputPath = path.join("/home/ubuntu", ARGS.modelPath)
+    console.log("outputDir:", outputPath);
+    fs.mkdirSync(outputPath, { recursive: true });
     let runArgs = null;
     if (ARGS.runArgs) {
         runArgs = ARGS.runArgs;
     } else {
         const steps = ARGS.steps || 3;
-        const outputPath = path.join("/home/ubuntu", ARGS.modelPath)
-        console.log("outputDir:", outputPath);
-        fs.mkdirSync(outputPath, { recursive: true });
+
+
+
         runArgs = [
             "launch",
             "--mixed_precision", "fp16",
@@ -120,9 +123,9 @@ const runSpawn = async (options) => {
             "--gradient_accumulation_steps", 1,
             "--gradient_checkpointing",
             "--num_train_epochs", steps,
-            "--output_dir", outputPath
         ];
     }
+    runArgs.concat([ "--output_dir", outputPath]);
 
     await runSpawn({
         cmd: "accelerate",
