@@ -41,13 +41,13 @@ const runSpawn = async (options) => {
     }
 
     const srcExists = fs.existsSync(SRC_PATH);
-    if (!srcExists) {
+    // if (!srcExists) {
         await runSpawn({
             path: SRC_PATH,
             cmd: 'sh',
             args: [`${__dirname}/scripts/install_src.sh`]
         });
-    }
+    // }
 
 
     //
@@ -126,7 +126,12 @@ const runSpawn = async (options) => {
         ];
     }
     runArgs = runArgs.concat([ "--output_dir", outputPath]);
-
+    await runSpawn({
+        cmd: "pwd",
+        options: {
+            cwd: '/home/ubuntu/src/dreambooth/examples/dreambooth'
+        }
+    });
     await runSpawn({
         cmd: "accelerate",
         args: runArgs,
