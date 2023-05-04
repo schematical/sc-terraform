@@ -106,7 +106,7 @@ const runSpawn = async (options) => {
         const outputPath = path.join("/home/ubuntu", ARGS.modelPath)
         console.log("outputDir:", outputPath);
         fs.mkdirSync(outputPath, { recursive: true });
-        runArgs =
+        runArgs = [
             "launch",
             "--mixed_precision", "fp16",
             "/home/ubuntu/src/dreambooth/examples/dreambooth/train_dreambooth.py ",
