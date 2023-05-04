@@ -125,7 +125,7 @@ const runSpawn = async (options) => {
             "--num_train_epochs", steps,
         ];
     }
-    runArgs.concat([ "--output_dir", outputPath]);
+    runArgs = runArgs.concat([ "--output_dir", outputPath]);
 
     await runSpawn({
         cmd: "accelerate",
