@@ -41,13 +41,13 @@ const runSpawn = async (options) => {
     }
 
     const srcExists = fs.existsSync(SRC_PATH);
-    // if (!srcExists) {
+    if (!srcExists) {
         await runSpawn({
             path: SRC_PATH,
             cmd: 'sh',
             args: [`${__dirname}/scripts/install_src.sh`]
         });
-    // }
+    }
 
 
     //
@@ -106,14 +106,14 @@ const runSpawn = async (options) => {
         runArgs = ARGS.runArgs;
     } else {
         const steps = ARGS.steps || 3;
-
+        const baseModel = ARGS.baseModel || "runwayml/stable-diffusion-v1-5";
 
 
         runArgs = [
             "launch",
             "--mixed_precision", "fp16",
             "/home/ubuntu/src/dreambooth/examples/dreambooth/train_dreambooth.py ",
-            "--pretrained_model_name_or_path", "runwayml/stable-diffusion-v1-5 ",
+            "--pretrained_model_name_or_path", baseModel,
             "--concepts_list", "/home/ubuntu/concepts_list.json",
             "--resolution", 512,
             "--gradient_checkpointing",

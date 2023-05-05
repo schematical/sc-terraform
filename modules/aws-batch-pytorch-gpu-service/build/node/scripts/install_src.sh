@@ -1,5 +1,3 @@
-echo "WTF"
-ls -la /home/ubuntu/src/dreambooth/examples/dreambooth
 cd /home/ubuntu/src
 rm -rf /home/ubuntu/src/dreambooth
 git clone https://github.com/ShivamShrirao/diffusers /home/ubuntu/src/dreambooth
