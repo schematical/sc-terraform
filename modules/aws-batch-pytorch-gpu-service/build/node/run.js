@@ -143,7 +143,8 @@ const runSpawn = async (options) => {
         cmd: "accelerate",
         args: runArgs,
         options: {
-            cwd: '/home/ubuntu/src/dreambooth/examples/dreambooth'
+            cwd: '/home/ubuntu/src/dreambooth/examples/dreambooth',
+            shell: true
         }
     });
 
