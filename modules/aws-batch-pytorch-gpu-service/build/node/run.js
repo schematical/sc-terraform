@@ -160,7 +160,7 @@ const runSpawn = async (options) => {
     console.log("options0", options0);
     await runSpawn(options0);
     const checkPointPath = outputPathFull + '.ckpt';
-    const options = {path: SRC_PATH,
+    const options = {
         cmd: 'aws',
         args: [`s3`, `cp`, checkPointPath, `s3://${process.env.S3_BUCKET}/${ARGS.modelPath}`], // '--recursive']
     }
