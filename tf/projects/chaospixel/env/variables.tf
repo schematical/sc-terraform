@@ -1,6 +1,7 @@
 variable "project_name" {
-  default = "drawnby-ai-v1"
+  default = "us-east-1"
 }
+
 variable "region" {
   default = "us-east-1"
 }
@@ -10,23 +11,19 @@ variable "env" {}
 
 variable "api_gateway_id" {}
 
-variable "hosted_zone_name" {
-}
-variable "hosted_zone_id" {
-
-}
-
-
-variable "acm_cert_arn" {
-}
 
 variable "ecs_task_execution_iam_role" {}
 variable "vpc_id" {}
 variable "private_subnet_mappings" {
   type = map(any)
 }
-# variable "bastion_security_group" {}
-
 variable "codepipeline_artifact_store_bucket" {
-
+  type = object({
+    arn: string
+    bucket: string
+  })
 }
+variable "bastion_security_group" {}
+variable "api_gateway_base_path_mapping" {}
+variable "api_gateway_stage_id" {}
+

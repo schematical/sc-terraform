@@ -8,6 +8,17 @@ provider "aws" {
     }
   }
 }
+terraform {
+  backend "s3" {
+    bucket = "schematical-terraform-v1"
+    region = "us-east-1"
+    key    = "schematical/terraform.tfstate"
+  }
+}
+locals {
+  default_hosted_zone_name = "schematical.com"
+  default_hosted_zone_id = "ZC4VPG65C2OOQ"
+}
 resource "aws_api_gateway_rest_api" "api_gateway" {
   body = jsonencode({
     openapi = "3.0.1"
@@ -106,32 +117,38 @@ module "dev_env" {
   vpc_id = module.vpc.vpc_id
   ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
   api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
-  hosted_zone_id = "ZC4VPG65C2OOQ"
+  hosted_zone_id = local.default_hosted_zone_id
+  hosted_zone_name = local.default_hosted_zone_name
   private_subnet_mappings = module.vpc.private_subnet_mappings
   bastion_security_group = module.vpc.bastion_security_group
 
 }
-module "project_drawnby_ai" {
-  /*  depends_on = [
-      aws_api_gateway_method.api_gateway_method,
-      aws_api_gateway_integration.api_gateway_root_resource_method_integration
-    ]*/
-  source = "./projects/drawnby_ai"
-  env = "dev"
-  vpc_id = module.vpc.vpc_id
+locals {
+  env_info = {
+    dev: {
+      name = "dev"
+      vpc_id = module.vpc.vpc_id
+      private_subnet_mappings = module.vpc.private_subnet_mappings
+      codepipeline_artifact_store_bucket = module.dev_env.codepipeline_artifact_store_bucket
+      api_gateway_stage_id = module.dev_env.api_gateway_stage_id
+      bastion_security_group = module.vpc.bastion_security_group
+    }
+  }
+}
+module "project_chaospixel" {
+  source = "./projects/chaospixel"
   ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
   api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
-  private_subnet_mappings = module.vpc.private_subnet_mappings
-
+  api_gateway_base_path_mapping = aws_api_gateway_integration.api_gateway_root_resource_method_integration.id
+  hosted_zone_id = local.default_hosted_zone_id
+  hosted_zone_name = local.default_hosted_zone_name
+  env_info = local.env_info
 }
-/*module "lambda-service" {
-  for_each = toset(var.envs)
-  source = "../../sc-terraform/modules/lambda-service"
-  service_name = "ocr"
-  service_env  = each.value
+module "project_drawnby_ai" {
+  source = "./projects/drawnby_ai"
+  ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
   api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
-  api_gateway_parent_id = aws_api_gateway_rest_api.api_gateway.root_resource_id
-  api_gateway_stage_id = lookup(var.api_gateway_stages, each.value, "fail")
-}*/
+  env_info = local.env_info
+}
 
 

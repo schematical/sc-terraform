@@ -77,13 +77,14 @@ module "dev_env_drawnby_ai" {
 
   source = "./env"
   env = "dev"
-  vpc_id = var.vpc_id
+  vpc_id = var.env_info.dev.vpc_id
   hosted_zone_id = aws_route53_zone.drawnby_ai.id
   hosted_zone_name = aws_route53_zone.drawnby_ai.name
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
   api_gateway_id = var.api_gateway_id
-  private_subnet_mappings = var.private_subnet_mappings
+  private_subnet_mappings = var.env_info.dev.private_subnet_mappings
   acm_cert_arn = aws_acm_certificate.drawnby_ai_cert.arn
+  codepipeline_artifact_store_bucket = var.env_info.dev.codepipeline_artifact_store_bucket
   # bastion_security_group = var.bastion_security_group
 
 }

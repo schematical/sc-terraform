@@ -1,9 +1,6 @@
 
-resource "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
-  bucket = "codebuild-bucket-${var.env}-${var.region}"
-}
 module "cloudfront" {
-  service_name = "drawnby-ai-v1"
+  service_name = var.project_name
   source = "../../../../modules/cloudfront"
   region = var.region
   env = var.env
@@ -13,8 +10,7 @@ module "cloudfront" {
   hosted_zone_name = var.hosted_zone_name
   acm_cert_arn = var.acm_cert_arn
   api_gateway_id = var.api_gateway_id
-  codepipeline_artifact_store_bucket = aws_s3_bucket.codepipeline_artifact_store_bucket
+  codepipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket
 }
-
 
 

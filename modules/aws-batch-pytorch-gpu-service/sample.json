@@ -1,5 +1,7 @@
 {
   "modelPath": "schematical/models/shay-test/1",
+  "baseModel": "runwayml/stable-diffusion-v1-5",
+  "steps": 3,
   "conceptList": [
     {
       "instancePrompt": "shaycutepuppy",

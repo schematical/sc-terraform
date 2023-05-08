@@ -2,12 +2,12 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "4.33.0"
+      version = "4.61.0"
     }
   }
 }
 resource "aws_iam_role" "service_lambda_iam_role" {
-  name = join("-", [var.service_prefix, var.service_name, var.service_version, var.service_env, "lambda"])
+  name = join("-", [var.service_prefix, var.service_name, var.service_version, var.env, "lambda"])
 
   assume_role_policy = <<EOF
 {
@@ -26,8 +26,8 @@ resource "aws_iam_role" "service_lambda_iam_role" {
 EOF
 }
 resource "aws_security_group" "service_lambda_sg" {
-  name        = join("-", [var.service_prefix, var.service_name, var.service_version, var.service_env, "lambda"])
-  description =  join("-", [var.service_prefix, var.service_name, var.service_version, var.service_env, "lambda"])
+  name        = join("-", [var.service_prefix, var.service_name, var.service_version, var.env, "lambda"])
+  description =  join("-", [var.service_prefix, var.service_name, var.service_version, var.env, "lambda"])
   vpc_id      = var.vpc_id
 
   /*ingress {
@@ -55,7 +55,7 @@ resource "aws_lambda_function" "service_lambda_web"  {
   # If the file is not in the current working directory you will need to include a
   # path.module in the filename.
   filename      = "lambda_function_payload.zip"
-  function_name = join("-", [var.service_prefix, var.service_name, var.service_version, var.service_env])
+  function_name = join("-", [var.service_prefix, var.service_name, var.service_version, var.env])
   role          = aws_iam_role.service_lambda_iam_role.arn
   handler       = "index.test"
 
@@ -68,7 +68,7 @@ resource "aws_lambda_function" "service_lambda_web"  {
 
   vpc_config {
     # Every subnet should be able to reach an EFS mount target in the same Availability Zone. Cross-AZ mounts are not permitted.
-    subnet_ids         = var.private_subnet_ids
+    subnet_ids         = [for o in var.private_subnet_mappings : o.id]
     security_group_ids = [aws_security_group.service_lambda_sg.id]
   }
 
