@@ -1,1 +1,1 @@
-terraform import module.project_drawnby_ai.module.dev_env.aws_s3_bucket.dreambooth_storage_bucket  dreambooth-worker-v1-dev-us-east-1
+terraform import module.project_chaospixel.module.dev_env_chaospixel.aws_s3_bucket.dreambooth_storage_bucket  dreambooth-worker-v1-dev-us-east-1

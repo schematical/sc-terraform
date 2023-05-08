@@ -1,6 +1,4 @@
-variable "project_name" {
-  default = "us-east-1"
-}
+
 
 variable "region" {
   default = "us-east-1"

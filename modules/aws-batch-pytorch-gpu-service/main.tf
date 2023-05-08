@@ -443,11 +443,11 @@ resource "aws_s3_bucket_policy" "CodePipelineArtifactStoreBucketPolicy" {
         Action    = "s3:*"
         Resource  = var.codepipeline_artifact_store_bucket.arn
 
-        Condition = {
+        /*Condition = {
           StringNotEquals = {
             "s3:x-amz-server-side-encryption" = "aws:kms"
           }
-        }
+        }*/
       }
     ]
   })

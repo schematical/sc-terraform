@@ -21,10 +21,13 @@ variable "private_subnet_mappings" {
 }
 variable "output_bucket" {
 }
-
 variable "codepipeline_artifact_store_bucket" {
+  type = object({
+    # id: string,
+    arn: string
+    bucket: string
+  })
 }
-
 variable "instance_types" {
   type    = list(string)
   default = ["g4dn.2xlarge"]

@@ -42,7 +42,7 @@ resource "aws_s3_bucket_cors_configuration" "dreambooth_storage_bucket" {
 }
 
 module "lambda_service" {
-  service_name = var.project_name
+  service_name = "chaospixel-v1"
   source = "../../../../modules/lambda-service"
   region = var.region
   env = var.env
@@ -51,11 +51,11 @@ module "lambda_service" {
   api_gateway_id = var.api_gateway_id
   api_gateway_parent_id = var.api_gateway_base_path_mapping
   api_gateway_stage_id = var.api_gateway_stage_id
-  service_uri = "/chaospixel"
+  service_uri = "chaospixel"
 }
 module "buildpipeline" {
   source = "../../../../modules/buildpipeline"# "github.com/schematical/sc-terraform/modules/buildpipeline"
-  service_name = var.project_name
+  service_name = "chaospixel-v1"
   region = var.region
   env = var.env
   github_owner = "schematical"
