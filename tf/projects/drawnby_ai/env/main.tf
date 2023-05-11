@@ -1,9 +1,10 @@
 
-/*module "cloudfront" {
+module "cloudfront" {
   service_name = "drawnby-www-v1"
   source = "../../../../modules/cloudfront"
   region = var.region
   env = var.env
+  subdomain = "assets-${var.env}"
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
   hosted_zone_id = var.hosted_zone_id
@@ -11,7 +12,7 @@
   acm_cert_arn = var.acm_cert_arn
   api_gateway_id = var.api_gateway_id
   codepipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket
-}*/
+}
 
 
 data "aws_caller_identity" "current" {}
@@ -79,6 +80,28 @@ module "buildpipeline" {
   private_subnet_mappings = var.private_subnet_mappings
   source_buildspec_path = "buildspec.yml"
 }
+resource "aws_s3_bucket_policy" "cloudfront_bucket_policy" {
+  bucket = module.cloudfront.s3_bucket.bucket
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "S3"
+        Effect    = "Allow"
+        Principal = "*" // aws_iam_policy.codebuild_iam_policy.arn
+        Action    = "s3:*"
+        Resource  = module.cloudfront.s3_bucket.arn
+
+        Condition = {
+          StringNotEquals = {
+            "s3:x-amz-server-side-encryption" = "aws:kms"
+          }
+        }
+      }
+    ]
+  })
+}
 resource "aws_iam_policy" "codebuild_iam_policy" {
   name = "drawnby-www-v1-${var.env}-codebuild"
 
@@ -94,6 +117,22 @@ resource "aws_iam_policy" "codebuild_iam_policy" {
           ],
           "Resource": [
             module.lambda_service.lambda_function.arn
+          ]
+        },
+        {
+          Effect = "Allow"
+          Action = [
+            "s3:PutObject",
+            "s3:GetObject",
+            "s3:GetObjectVersion",
+            "s3:GetBucketAcl",
+            "s3:GetBucketLocation",
+            "s3:PutObjectAcl",
+            "s3:*"
+          ]
+          Resource = [
+            "${module.cloudfront.s3_bucket.arn}/**",
+            "${module.cloudfront.s3_bucket.arn}"
           ]
         }
       ]

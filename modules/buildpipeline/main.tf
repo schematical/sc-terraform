@@ -220,7 +220,7 @@ resource "aws_codebuild_project" "codebuild_project" {
     privileged_mode = true
 
     environment_variable {
-      name = "AWS_DEFAULT_region"
+      name = "REGION"
       type = "PLAINTEXT"
       value = var.region
     }
@@ -243,6 +243,11 @@ resource "aws_codebuild_project" "codebuild_project" {
       name = "IMAGE_REPO_NAME"
       type = "PLAINTEXT"
       value = "${var.service_name}-${var.env}-${var.region}"
+    }
+    environment_variable {
+      name = "EXTRA_ENV_VARS"
+      type = "PLAINTEXT"
+      value = jsonencode(var.env_vars)
     }
   }
   logs_config {
