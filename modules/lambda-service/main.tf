@@ -7,7 +7,7 @@ terraform {
   }
 }
 resource "aws_iam_role" "service_lambda_iam_role" {
-  name = join("-", [var.service_prefix, var.service_name, var.service_version, var.env, "lambda"])
+  name = join("-", [var.service_prefix, var.service_name, var.env, "lambda"])
   assume_role_policy = jsonencode(
     {
       "Version": "2012-10-17",
@@ -43,8 +43,8 @@ resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 resource "aws_security_group" "service_lambda_sg" {
-  name        = join("-", [var.service_prefix, var.service_name, var.service_version, var.env, "lambda"])
-  description =  join("-", [var.service_prefix, var.service_name, var.service_version, var.env, "lambda"])
+  name        = join("-", [var.service_prefix, var.service_name, var.env, "lambda"])
+  description =  join("-", [var.service_prefix, var.service_name, var.env, "lambda"])
   vpc_id      = var.vpc_id
 
   /*ingress {
@@ -76,11 +76,14 @@ data "archive_file" "lambda" {
 resource "aws_lambda_function" "service_lambda_web"  {
   # If the file is not in the current working directory you will need to include a
   # path.module in the filename.
-  filename      = "index.zip"
-  function_name = join("-", [var.service_prefix, var.service_name, var.service_version, var.env])
+  filename      = var.use_s3_source ? null : "index.zip"
+  function_name = var.service_name
   role          = aws_iam_role.service_lambda_iam_role.arn
-  handler       = "index.test"
-  source_code_hash = data.archive_file.lambda.output_base64sha256
+  handler       = var.handler
+  source_code_hash = var.use_s3_source ? null : data.archive_file.lambda.output_base64sha256
+  s3_bucket = var.s3_bucket
+  s3_key = var.s3_key
+  layers = var.layers
   # The filebase64sha256() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
   # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
@@ -95,14 +98,12 @@ resource "aws_lambda_function" "service_lambda_web"  {
   }
 
   environment {
-    variables = {
-      Terraform = "true"
-    }
+    variables = var.env_vars
   }
 }
-resource "aws_api_gateway_resource" "api_gateway_resource" {
+/*resource "aws_api_gateway_resource" "api_gateway_resource" {
   rest_api_id = var.api_gateway_id # aws_api_gateway_rest_api.MyDemoAPI.id
   parent_id   = var.api_gateway_parent_id # aws_api_gateway_rest_api.MyDemoAPI.root_resource_id
   path_part   = var.service_uri
-}
+}*/
 

@@ -27,7 +27,7 @@ resource "aws_api_gateway_rest_api" "api_gateway" {
       version = "1.0"
     }
     paths = {
-      "/" = {
+     /* "/" = {
         get = {
           x-amazon-apigateway-integration = {
             httpMethod           = "GET"
@@ -36,7 +36,7 @@ resource "aws_api_gateway_rest_api" "api_gateway" {
             uri                  = "https://ip-ranges.amazonaws.com/ip-ranges.json"
           }
         }
-      }
+      }*/
     }
   })
 
@@ -107,20 +107,20 @@ module "vpc" {
   vpc_name = "dev"
   bastion_keypair_name = "schematical_node_1"
 }
+resource "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
+  bucket = "schematical-codebuild-v1"
+}
 module "dev_env" {
-/*  depends_on = [
-    aws_api_gateway_method.api_gateway_method,
-    aws_api_gateway_integration.api_gateway_root_resource_method_integration
-  ]*/
-  source = "../modules/env"
+  source = "../modules/apigateway-env"
   env = "dev"
-  vpc_id = module.vpc.vpc_id
-  ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
+  acm_cert_arn = "arn:aws:acm:us-east-1:368590945923:certificate/2df7c33d-9569-41ab-94ed-0d2638369c21"
   api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
   hosted_zone_id = local.default_hosted_zone_id
   hosted_zone_name = local.default_hosted_zone_name
-  private_subnet_mappings = module.vpc.private_subnet_mappings
-  bastion_security_group = module.vpc.bastion_security_group
+  //vpc_id = module.vpc.vpc_id
+  //private_subnet_mappings = module.vpc.private_subnet_mappings
+  //bastion_security_group = module.vpc.bastion_security_group
+  //ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
 
 }
 locals {
@@ -129,7 +129,7 @@ locals {
       name = "dev"
       vpc_id = module.vpc.vpc_id
       private_subnet_mappings = module.vpc.private_subnet_mappings
-      codepipeline_artifact_store_bucket = module.dev_env.codepipeline_artifact_store_bucket
+      codepipeline_artifact_store_bucket = aws_s3_bucket.codepipeline_artifact_store_bucket
       api_gateway_stage_id = module.dev_env.api_gateway_stage_id
       bastion_security_group = module.vpc.bastion_security_group
     }
@@ -143,11 +143,12 @@ module "project_chaospixel" {
   hosted_zone_id = local.default_hosted_zone_id
   hosted_zone_name = local.default_hosted_zone_name
   env_info = local.env_info
+  secrets = var.secrets
 }
 module "project_drawnby_ai" {
   source = "./projects/drawnby_ai"
   ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
-  api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
+  // api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
   env_info = local.env_info
 }
 

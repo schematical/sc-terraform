@@ -7,16 +7,17 @@ resource "aws_s3_bucket" "bucket" {
     Service = var.service_name
   }
 }
-/*resource "aws_s3_bucket_ownership_controls" "example" {
+resource "aws_s3_bucket_ownership_controls" "s3_bucket_ownership_controls" {
   bucket = aws_s3_bucket.bucket.id
 
   rule {
-    object_ownership = "BucketOwnerPreferred"
+    object_ownership = "ObjectWriter"
   }
-}*/
+}
 resource "aws_s3_bucket_acl" "b_acl" {
   bucket = aws_s3_bucket.bucket.id
   acl    = "public-read"
+  depends_on = [aws_s3_bucket_ownership_controls.s3_bucket_ownership_controls]
 }
 
 locals {

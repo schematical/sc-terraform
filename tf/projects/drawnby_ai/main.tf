@@ -1,3 +1,4 @@
+data "aws_caller_identity" "current" {}
 resource "aws_acm_certificate" "drawnby_ai_cert" {
   domain_name       = aws_route53_zone.drawnby_ai.name
   subject_alternative_names = ["*.${aws_route53_zone.drawnby_ai.name}"]
@@ -8,6 +9,7 @@ resource "aws_acm_certificate" "drawnby_ai_cert" {
     create_before_destroy = true
   }
 }
+
 resource "aws_route53_zone" "drawnby_ai" {
   name = "drawnby.ai"
 }
@@ -73,18 +75,61 @@ resource "aws_route53_record" "drawnby-ai-cname-mc-2" {
     "dkim3.mcsv.net"
   ]
 }
-module "dev_env_drawnby_ai" {
 
+
+
+resource "aws_api_gateway_rest_api" "api_gateway" {
+  body = jsonencode({
+    openapi = "3.0.1"
+    info = {
+      title   = "example"
+      version = "1.0"
+    }
+    paths = {
+
+    }
+  })
+
+  name = "drawnby-www-v1"
+
+  endpoint_configuration {
+    types = ["REGIONAL"]
+  }
+}
+
+resource "aws_api_gateway_method" "api_gateway_method" {
+  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
+  resource_id   = aws_api_gateway_rest_api.api_gateway.root_resource_id
+  http_method   = "ANY"
+  authorization = "NONE"
+
+}
+
+resource "aws_api_gateway_integration" "api_gateway_root_resource_method_integration" {
+  rest_api_id          = aws_api_gateway_rest_api.api_gateway.id
+  resource_id          = aws_api_gateway_rest_api.api_gateway.root_resource_id
+  http_method          = aws_api_gateway_method.api_gateway_method.http_method
+
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  passthrough_behavior    = "WHEN_NO_MATCH"
+  content_handling        = "CONVERT_TO_BINARY"
+  uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:sc-drawnby-www-v1-$${stageVariables.ENV}/invocations"
+}
+
+module "dev_env_drawnby_ai" {
+  # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
   source = "./env"
   env = "dev"
   vpc_id = var.env_info.dev.vpc_id
   hosted_zone_id = aws_route53_zone.drawnby_ai.id
   hosted_zone_name = aws_route53_zone.drawnby_ai.name
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
-  api_gateway_id = var.api_gateway_id
+  api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
   private_subnet_mappings = var.env_info.dev.private_subnet_mappings
   acm_cert_arn = aws_acm_certificate.drawnby_ai_cert.arn
   codepipeline_artifact_store_bucket = var.env_info.dev.codepipeline_artifact_store_bucket
   # bastion_security_group = var.bastion_security_group
 
+  api_gateway_base_path_mapping = aws_api_gateway_rest_api.api_gateway.root_resource_id
 }

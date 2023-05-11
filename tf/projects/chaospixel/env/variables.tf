@@ -6,7 +6,9 @@ variable "region" {
 
 variable "env" {}
 
-
+variable "secrets" {
+  type = map(string)
+}
 variable "api_gateway_id" {}
 
 

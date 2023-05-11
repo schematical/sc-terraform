@@ -3,13 +3,7 @@ variable "region" {
 }
 
 
-
-
-variable "api_gateway_id" {}
-
-
 variable "ecs_task_execution_iam_role" {}
-
 
 /*
 variable "vpc_id" {}

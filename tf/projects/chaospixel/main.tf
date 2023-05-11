@@ -3,6 +3,7 @@ module "dev_env_chaospixel" {
 
   source = "./env"
   env = "dev"
+  secrets = var.secrets
   vpc_id = var.env_info.dev.vpc_id
   # hosted_zone_id = var.hosted_zone_id
   # hosted_zone_name = var.hosted_zone_name

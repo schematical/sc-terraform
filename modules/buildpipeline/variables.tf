@@ -35,7 +35,7 @@ variable "github_source_branch" {
 
 variable "code_build_image_uri" {
   type        = string
-  default     = "aws/codebuild/standard:3.0"
+  default     = "aws/codebuild/standard:7.0"
   description = "Template"
 }
 

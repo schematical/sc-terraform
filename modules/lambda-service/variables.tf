@@ -3,11 +3,6 @@ variable "service_prefix" {
   type        = string
   default     = "sc"
 }
-variable "service_version" {
-  description = "Service Version"
-  type        = string
-  default     = "v1"
-}
 variable "service_name" {
   description = "Name of Service"
   type        = string
@@ -43,5 +38,29 @@ variable "vpc_id" {
 }
 variable "private_subnet_mappings" {
   type = map(any)
+}
+variable "layers" {
+  type = list(string)
+  default = null
+}
+variable "use_s3_source" {
+  type = bool
+  default = false
+}
+variable "s3_bucket" {
+  type = string
+  default = null
+}
+variable "s3_key" {
+  type = string
+  default = null
+}
+variable "handler" {
+  type = string
+  default = "index.handler"
+}
+variable "env_vars" {
+  type = map(string)
+  default = {}
 }
 

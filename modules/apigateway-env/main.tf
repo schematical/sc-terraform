@@ -2,6 +2,8 @@
 resource "aws_api_gateway_deployment" "api_gateway_deployment" {
   rest_api_id = var.api_gateway_id
   # depends_on = [aws_api_gateway_stage.api_gateway_stage]
+  description = "module apigateway-env deployment"
+  stage_description = "module apigateway-env deployment"
 }
 
 resource "aws_api_gateway_stage" "api_gateway_stage" {
@@ -44,9 +46,7 @@ data "aws_route53_zone" "hosted_zone" {
   name = var.hosted_zone_name
 }
 
-resource "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
-  bucket = "codebuild-bucket-${var.env}-${var.region}"
-}
+
 /*resource "aws_route53_record" "dev-ns" {
   zone_id = aws_route53_zone.main.zone_id
   name    = "${var.env}"

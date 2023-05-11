@@ -9,7 +9,7 @@ variable "env" {}
 
 
 variable "api_gateway_id" {}
-
+variable "api_gateway_base_path_mapping" {}
 variable "hosted_zone_name" {
 }
 variable "hosted_zone_id" {

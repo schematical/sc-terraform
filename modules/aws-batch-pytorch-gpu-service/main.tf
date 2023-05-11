@@ -419,9 +419,7 @@ resource "aws_security_group" "efs_mount_target_security_group" {
 resource "aws_efs_mount_target" "efs_mount_target_private_subnet" {
   for_each = {
     for index, vm in var.private_subnet_mappings:
-    vm.id => vm # Perfect, since VM names also need to be unique
-    # OR: index => vm (unique but not perfect, since index will change frequently)
-    # OR: uuid() => vm (do NOT do this! gets recreated everytime)
+    vm.availability_zone => vm
   }
   file_system_id = aws_efs_file_system.efs_file_system.id
   security_groups = [
@@ -430,7 +428,7 @@ resource "aws_efs_mount_target" "efs_mount_target_private_subnet" {
   subnet_id = each.value.id
 }
 
-resource "aws_s3_bucket_policy" "CodePipelineArtifactStoreBucketPolicy" {
+/*resource "aws_s3_bucket_policy" "CodePipelineArtifactStoreBucketPolicy" {
   bucket = var.codepipeline_artifact_store_bucket.bucket
 
   policy = jsonencode({
@@ -443,15 +441,15 @@ resource "aws_s3_bucket_policy" "CodePipelineArtifactStoreBucketPolicy" {
         Action    = "s3:*"
         Resource  = var.codepipeline_artifact_store_bucket.arn
 
-        /*Condition = {
+        *//*Condition = {
           StringNotEquals = {
             "s3:x-amz-server-side-encryption" = "aws:kms"
           }
-        }*/
+        }*//*
       }
     ]
   })
-}
+}*/
 module "buildpipeline" {
   source = "../buildpipeline"
   service_name = var.service_name
