@@ -23,9 +23,10 @@ module "lambda_service" {
   env = var.env
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
-  api_gateway_id = var.api_gateway_id
+/*  api_gateway_id = var.api_gateway_id
   api_gateway_parent_id = var.api_gateway_base_path_mapping
   api_gateway_stage_id = module.dev_env.api_gateway_stage_id
+  service_uri = "chaospixel"*/
   layers = [
     aws_lambda_layer_version.asset_lambda_layer.arn,
     aws_lambda_layer_version.dependency_lambda_layer.arn,
@@ -35,7 +36,7 @@ module "lambda_service" {
   s3_bucket = var.codepipeline_artifact_store_bucket.bucket
   s3_key = "drawnby-www-v1-${var.env}/code.zip"
   handler = "index.handler"
-  service_uri = "chaospixel"
+
 }
 resource "aws_lambda_permission" "apigw_lambda" {
   statement_id  = "AllowExecutionFromAPIGateway"

@@ -100,6 +100,17 @@ resource "aws_lambda_function" "service_lambda_web"  {
   environment {
     variables = var.env_vars
   }
+  lifecycle {
+    ignore_changes = [
+      handler,
+      filename,
+      source_code_hash,
+      s3_bucket,
+      s3_key,
+      environment,
+      timeout
+    ]
+  }
 }
 /*resource "aws_api_gateway_resource" "api_gateway_resource" {
   rest_api_id = var.api_gateway_id # aws_api_gateway_rest_api.MyDemoAPI.id

@@ -1,6 +1,7 @@
 data "aws_caller_identity" "current" {}
 locals {
   lambda_service_name = "sc-chaospixel-v1-${var.env}-gql"
+  kinesis_worker_lambda_service_name = "sc-chaospixel-v1-${var.env}-kinesis-worker"
 }
 resource "aws_kinesis_stream" "kinesis_stream" {
   name             = "chaospixel-${var.env}-${var.region}"
@@ -58,10 +59,10 @@ module "lambda_service" {
   env = var.env
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
-  api_gateway_id = var.api_gateway_id
+/*  api_gateway_id = var.api_gateway_id
   api_gateway_parent_id = var.api_gateway_base_path_mapping
   api_gateway_stage_id = var.api_gateway_stage_id
-  service_uri = "chaospixel"
+  service_uri = "chaospixel"*/
   env_vars =  {
     ENV: var.env,
     DB_URL: var.secrets.chaospixel_dev_lambda_service_DB_URL
@@ -69,6 +70,7 @@ module "lambda_service" {
     AUTH_USER_POOL_ID: var.secrets.chaospixel_dev_lambda_service_AUTH_USER_POOL_ID
     AWS_S3_BUCKET: var.secrets.chaospixel_dev_lambda_service_AWS_S3_BUCKET
     OPENAI_API_KEY: var.secrets.chaospixel_dev_lambda_service_OPENAI_API_KEY
+    AWS_KINESIS_STREAM_ARN = aws_kinesis_stream.kinesis_stream.arn
   }//jsondecode(aws_secretsmanager_secret_version.lambda_secret_version.secret_string)
 }
 resource "aws_api_gateway_resource" "api_gateway_resource" {
@@ -123,6 +125,7 @@ module "buildpipeline" {
     AUTH_USER_POOL_ID: var.secrets.chaospixel_dev_lambda_service_AUTH_USER_POOL_ID
     AWS_S3_BUCKET: var.secrets.chaospixel_dev_lambda_service_AWS_S3_BUCKET
     OPENAI_API_KEY: var.secrets.chaospixel_dev_lambda_service_OPENAI_API_KEY
+    AWS_KINESIS_STREAM_ARN = aws_kinesis_stream.kinesis_stream.arn
   }
 }
 
@@ -142,7 +145,8 @@ resource "aws_iam_policy" "codebuild_iam_policy" {
             "lambda:UpdateFunctionConfiguration"
           ],
           "Resource": [
-            module.lambda_service.lambda_function.arn
+            module.lambda_service.lambda_function.arn,
+            module.kinesis_worker_lambda_service.lambda_function.arn
           ]
         }
       ]
@@ -212,6 +216,7 @@ resource "aws_iam_policy" "lambda_iam_policy" {
         {
           Effect : "Allow",
           Action : [
+            "kinesis:PutRecord",
             "kinesis:PutRecords",
             "kinesis:GetRecords",
             "kinesis:GetShardIterator",
@@ -220,6 +225,16 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             "kinesis:ListStreams",
           ],
           Resource : aws_kinesis_stream.kinesis_stream.arn,
+        },
+        {
+          Effect : "Allow",
+          Action : [
+            "batch:SubmitJob"
+          ],
+          Resource : [
+            module.dreambooth_batch_worker.batch_job_queue.arn,
+            module.dreambooth_batch_worker.batch_job_definition.arn
+          ]
         }
       ]
     }
@@ -228,6 +243,41 @@ resource "aws_iam_policy" "lambda_iam_policy" {
 }
 resource "aws_iam_role_policy_attachment" "lambda_iam_policy_attach" {
   role = module.lambda_service.iam_role.name
+  policy_arn = aws_iam_policy.lambda_iam_policy.arn
+}
+
+
+
+module "kinesis_worker_lambda_service" {
+  service_name = local.kinesis_worker_lambda_service_name
+  source = "../../../../modules/lambda-service"
+  region = var.region
+  env = var.env
+  vpc_id = var.vpc_id
+  private_subnet_mappings = var.private_subnet_mappings
+  handler = "src/functions/kinesis-worker/handler.main"
+  env_vars =  {
+    ENV: var.env,
+    DB_URL: var.secrets.chaospixel_dev_lambda_service_DB_URL
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_dev_lambda_service_AUTH_CLIENT_ID
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_dev_lambda_service_AUTH_USER_POOL_ID
+    AWS_S3_BUCKET: var.secrets.chaospixel_dev_lambda_service_AWS_S3_BUCKET
+    OPENAI_API_KEY: var.secrets.chaospixel_dev_lambda_service_OPENAI_API_KEY
+    AWS_KINESIS_STREAM_ARN = aws_kinesis_stream.kinesis_stream.arn
+    AWS_BATCH_TRAINING_JOB_DEFINITION = module.dreambooth_batch_worker.batch_job_definition.arn
+    AWS_BATCH_JOB_QUEUE = module.dreambooth_batch_worker.batch_job_queue.arn
+  }//jsondecode(aws_secretsmanager_secret_version.lambda_secret_version.secret_string)
+}
+
+resource "aws_lambda_event_source_mapping" "example" {
+  event_source_arn  = aws_kinesis_stream.kinesis_stream.arn
+  function_name     = module.kinesis_worker_lambda_service.lambda_function.arn
+  starting_position = "LATEST"
+  maximum_retry_attempts = 1
+}
+
+resource "aws_iam_role_policy_attachment" "kinesis_worker_lambda_iam_policy_attach" {
+  role = module.kinesis_worker_lambda_service.iam_role.name
   policy_arn = aws_iam_policy.lambda_iam_policy.arn
 }
 

@@ -125,7 +125,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     viewer_protocol_policy = "redirect-to-https"
   }
 
-  price_class = "PriceClass_200"
+  price_class = "PriceClass_100"
 
   restrictions {
     geo_restriction {
@@ -149,7 +149,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 resource "aws_route53_record" "drawnby-ai-cloudfront-domain" {
   zone_id = var.hosted_zone_id
   name    = var.subdomain
-  type    = "CNAME"
+  type    = "A"
   # ttl     = "30"
   alias {
     evaluate_target_health = false
