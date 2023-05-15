@@ -63,7 +63,7 @@ const runSpawn = async (options) => {
         const imageDir = `/home/ubuntu/src/dreambooth/images${instance.instanceS3Path}`;
         const imageDirExists = fs.existsSync(imageDir);
         if (imageDirExists) {
-            fs.rmSync(imageDirExists,  { recursive: true, force: true });
+            fs.rmSync(imageDir,  { recursive: true, force: true });
         }
         const options2 = {
             path: SRC_PATH,
