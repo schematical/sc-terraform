@@ -62,15 +62,17 @@ const runSpawn = async (options) => {
 
         const imageDir = `/home/ubuntu/src/dreambooth/images${instance.instanceS3Path}`;
         const imageDirExists = fs.existsSync(imageDir);
-        if (!imageDirExists) {
-            const options2 = {
-                path: SRC_PATH,
-                cmd: 'aws',
-                args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}${instance.instanceS3Path}`, imageDir, '--recursive']
-            };
-            console.log("options2", options2);
-            await runSpawn(options2);
+        if (imageDirExists) {
+            fs.rmSync(imageDirExists,  { recursive: true, force: true });
         }
+        const options2 = {
+            path: SRC_PATH,
+            cmd: 'aws',
+            args: [`s3`, `cp`, `s3://${process.env.S3_BUCKET}${instance.instanceS3Path}`, imageDir, '--recursive']
+        };
+        console.log("options2", options2);
+        await runSpawn(options2);
+
         const conceptData = {
             "instance_prompt":      instance.instancePrompt,
             "instance_data_dir":    imageDir,
