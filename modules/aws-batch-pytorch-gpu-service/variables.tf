@@ -64,3 +64,20 @@ variable "source_code_bucket_object_key" {
 
 variable "ecs_task_execution_iam_role" {}
 variable "bastion_security_group" {}
+
+variable "codepipeline_github_owner" {
+  type = string
+  default = "schematical"
+}
+variable "codepipeline_github_project_name" {
+  type = string
+  default = "sc-terraform"
+}
+variable "codepipeline_github_source_branch" {
+  type = string
+  default = "main"
+}
+variable "codepipeline_source_buildspec_path" {
+  type = string
+  default = "modules/aws-batch-pytorch-gpu-service/build/buildspec.yml"
+}

@@ -17,7 +17,7 @@ module "cloudfront" {
 
 data "aws_caller_identity" "current" {}
 module "lambda_service" {
-  service_name = "sc-drawnby-www-v1-${var.env}"
+  service_name = "sc-drawnby-www-v1-${var.env}-www"
   source = "../../../../modules/lambda-service"
   region = var.region
   env = var.env
@@ -28,14 +28,16 @@ module "lambda_service" {
   api_gateway_stage_id = module.dev_env.api_gateway_stage_id
   service_uri = "chaospixel"*/
   layers = [
-    aws_lambda_layer_version.asset_lambda_layer.arn,
-    aws_lambda_layer_version.dependency_lambda_layer.arn,
+    // aws_lambda_layer_version.asset_lambda_layer.arn,
+    // aws_lambda_layer_version.dependency_lambda_layer.arn,
     // aws_lambda_layer_version.code_lambda_layer.arn,
   ]
+/*
   use_s3_source = true
   s3_bucket = var.codepipeline_artifact_store_bucket.bucket
   s3_key = "drawnby-www-v1-${var.env}/code.zip"
-  handler = "index.handler"
+*/
+  handler = "handler.main"
 
 }
 resource "aws_lambda_permission" "apigw_lambda" {
@@ -47,7 +49,7 @@ resource "aws_lambda_permission" "apigw_lambda" {
   # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
   source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${var.api_gateway_id}/*/*/*"
 }
-resource "aws_lambda_layer_version" "asset_lambda_layer" {
+/*resource "aws_lambda_layer_version" "asset_lambda_layer" {
   s3_bucket = var.codepipeline_artifact_store_bucket.bucket
   s3_key = "drawnby-www-v1-${var.env}/assetsLayer.zip"
   layer_name = "asset_lambda_layer"
@@ -67,7 +69,7 @@ resource "aws_lambda_layer_version" "dependency_lambda_layer" {
   layer_name = "dependency_lambda_layer"
 
   compatible_runtimes = ["nodejs16.x"]
-}
+}*/
 module "buildpipeline" {
   source = "../../../../modules/buildpipeline"# "github.com/schematical/sc-terraform/modules/buildpipeline"
   service_name = "drawnby-www-v1"
@@ -114,7 +116,9 @@ resource "aws_iam_policy" "codebuild_iam_policy" {
           "Sid": "LambdaDeploy",
           "Effect": "Allow",
           "Action": [
-            "lambda:UpdateFunctionCode"
+            "lambda:UpdateFunctionCode",
+            "lambda:GetFunction",
+            "lambda:UpdateFunctionConfiguration"
           ],
           "Resource": [
             module.lambda_service.lambda_function.arn

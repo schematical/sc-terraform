@@ -293,33 +293,14 @@ module "dreambooth_batch_worker" {
   codepipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket
   output_bucket                      = aws_s3_bucket.dreambooth_storage_bucket
   bastion_security_group = var.bastion_security_group
+
+  codepipeline_github_owner = "schematical"
+  codepipeline_github_project_name = "chaos-ville"
+  codepipeline_github_source_branch = var.env
+  codepipeline_source_buildspec_path = "batch/buildspec.yml"
+
 }
 
 
 
 
-
-
-/*module "sagemaker_endpoint" {
-  source = "../sagemaker"
-  region = "us-east-1"
-  env = var.env
-
-  code_pipeline_artifact_store_bucket = aws_s3_bucket.codepipeline_artifact_store_bucket.bucket
-  vpc_id = var.vpc_id
-  ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
-  private_subnet_mappings = var.private_subnet_mappings
-
-}*/
-
-/*module "sagemaker_serverless" {
-  source = "../sagemaker-serverless"
-  region = "us-east-1"
-  env = var.env
-
-  code_pipeline_artifact_store_bucket = aws_s3_bucket.codepipeline_artifact_store_bucket.bucket
-  vpc_id = var.vpc_id
-  ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
-  private_subnet_mappings = var.private_subnet_mappings
-
-}*/

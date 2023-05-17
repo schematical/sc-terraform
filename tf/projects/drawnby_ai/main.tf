@@ -1,4 +1,7 @@
 data "aws_caller_identity" "current" {}
+locals {
+  www_lambda_arn = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:sc-drawnby-www-v1-$${stageVariables.ENV}-www/invocations"
+}
 resource "aws_acm_certificate" "drawnby_ai_cert" {
   domain_name       = aws_route53_zone.drawnby_ai.name
   subject_alternative_names = ["*.${aws_route53_zone.drawnby_ai.name}"]
@@ -114,8 +117,34 @@ resource "aws_api_gateway_integration" "api_gateway_root_resource_method_integra
   type                    = "AWS_PROXY"
   passthrough_behavior    = "WHEN_NO_MATCH"
   content_handling        = "CONVERT_TO_BINARY"
-  uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:sc-drawnby-www-v1-$${stageVariables.ENV}/invocations"
+  uri = local.www_lambda_arn
 }
+
+resource "aws_api_gateway_resource" "api_gateway_proxy_resource" {
+  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  parent_id   = aws_api_gateway_rest_api.api_gateway.root_resource_id
+  path_part   = "{proxy+}"
+}
+resource "aws_api_gateway_method" "api_gateway_proxy_method" {
+  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
+  resource_id   = aws_api_gateway_resource.api_gateway_proxy_resource.id
+  http_method   = "ANY"
+  authorization = "NONE"
+
+}
+
+resource "aws_api_gateway_integration" "api_gateway_proxy_resource_method_integration" {
+  rest_api_id          = aws_api_gateway_rest_api.api_gateway.id
+  resource_id          = aws_api_gateway_resource.api_gateway_proxy_resource.id
+  http_method          = aws_api_gateway_method.api_gateway_proxy_method.http_method
+
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  passthrough_behavior    = "WHEN_NO_MATCH"
+  content_handling        = "CONVERT_TO_BINARY"
+  uri = local.www_lambda_arn
+}
+
 
 module "dev_env_drawnby_ai" {
   # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
