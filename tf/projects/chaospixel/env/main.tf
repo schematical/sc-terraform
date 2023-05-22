@@ -206,11 +206,13 @@ resource "aws_iam_policy" "lambda_iam_policy" {
         {
           "Effect" : "Allow",
           "Action" : [
-            "s3:getObject",
-            "s3:putObject"
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:ListBucket"
           ],
           "Resource" : [
-            aws_s3_bucket.dreambooth_storage_bucket.arn
+            aws_s3_bucket.dreambooth_storage_bucket.arn,
+            "${aws_s3_bucket.dreambooth_storage_bucket.arn}/**"
           ]
         },
         {
@@ -264,7 +266,7 @@ module "kinesis_worker_lambda_service" {
     AWS_S3_BUCKET: var.secrets.chaospixel_dev_lambda_service_AWS_S3_BUCKET
     OPENAI_API_KEY: var.secrets.chaospixel_dev_lambda_service_OPENAI_API_KEY
     AWS_KINESIS_STREAM_ARN = aws_kinesis_stream.kinesis_stream.arn
-    AWS_BATCH_TRAINING_JOB_DEFINITION = module.dreambooth_batch_worker.batch_job_definition.arn
+    AWS_BATCH_JOB_DEFINITION = module.dreambooth_batch_worker.batch_job_definition.arn
     AWS_BATCH_JOB_QUEUE = module.dreambooth_batch_worker.batch_job_queue.arn
   }//jsondecode(aws_secretsmanager_secret_version.lambda_secret_version.secret_string)
 }
@@ -280,7 +282,10 @@ resource "aws_iam_role_policy_attachment" "kinesis_worker_lambda_iam_policy_atta
   role = module.kinesis_worker_lambda_service.iam_role.name
   policy_arn = aws_iam_policy.lambda_iam_policy.arn
 }
-
+resource "aws_iam_role_policy_attachment" "batch_worker_lambda_iam_policy_attach" {
+  role = module.dreambooth_batch_worker.batch_job_definition_iam_role.name
+  policy_arn = aws_iam_policy.lambda_iam_policy.arn
+}
 module "dreambooth_batch_worker" {
   service_name = "dreambooth"
   source = "../../../../modules/aws-batch-pytorch-gpu-service"

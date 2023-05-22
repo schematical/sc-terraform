@@ -7,6 +7,11 @@ resource "aws_api_gateway_deployment" "api_gateway_deployment" {
 }
 
 resource "aws_api_gateway_stage" "api_gateway_stage" {
+  lifecycle {
+    ignore_changes = [
+      deployment_id
+    ]
+  }
   deployment_id = aws_api_gateway_deployment.api_gateway_deployment.id
   stage_name   = var.env
   rest_api_id  = var.api_gateway_id

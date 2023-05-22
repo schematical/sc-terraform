@@ -163,6 +163,10 @@ resource "aws_batch_job_definition" "job_definition" {
        {
          name  = "PYTHONUNBUFFERED"
          value = "1"
+       },
+       {
+         name  = "NODE_ENV"
+         value = var.env
        }
      ]
      executionRoleArn = var.ecs_task_execution_iam_role.arn
@@ -367,7 +371,11 @@ resource "aws_efs_file_system" "efs_file_system" {
 
 resource "aws_efs_file_system_policy" "efs_file_system_policy" {
   file_system_id = aws_efs_file_system.efs_file_system.id
-
+  lifecycle {
+    ignore_changes = [
+      policy
+    ]
+  }
   policy = jsonencode({
     Version: "2012-10-17",
     Statement: [{
