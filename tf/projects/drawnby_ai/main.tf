@@ -78,7 +78,37 @@ resource "aws_route53_record" "drawnby-ai-cname-mc-2" {
     "dkim3.mcsv.net"
   ]
 }
+/*resource "aws_route53_record" "drawnby-ai-cname-ses-1" {
+  zone_id = aws_route53_zone.drawnby_ai.zone_id
+  name    = "hgnkmsxuufxakjudjpc4nxnq5773alki._domainkey.drawnby.ai"
+  type    = "CNAME"
+  ttl     = "30"
+  records = [
+    "hgnkmsxuufxakjudjpc4nxnq5773alki.dkim.amazonses.com"
+  ]
+}
+resource "aws_route53_record" "drawnby-ai-cname-ses-2" {
+  zone_id = aws_route53_zone.drawnby_ai.zone_id
+  name    = "prhdpfubkmjsbrxuzqjgizkrgqusshmx._domainkey.drawnby.ai"
+  type    = "CNAME"
+  ttl     = "30"
+  records = [
+    "prhdpfubkmjsbrxuzqjgizkrgqusshmx.dkim.amazonses.com"
+  ]
+}
+resource "aws_route53_record" "drawnby-ai-cname-ses-3" {
+  zone_id = aws_route53_zone.drawnby_ai.zone_id
+  name    = "uyhbrw7gnfyphw3mx6pa4qr2yklcrmt6._domainkey.drawnby.ai"
+  type    = "CNAME"
+  ttl     = "30"
+  records = [
+    "uyhbrw7gnfyphw3mx6pa4qr2yklcrmt6.dkim.amazonses.com"
+  ]
+}*/
 
+resource "aws_ses_domain_identity" "ses_domain_identity" {
+  domain = "drawnby.ai"
+}
 
 
 resource "aws_api_gateway_rest_api" "api_gateway" {

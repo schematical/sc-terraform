@@ -206,6 +206,15 @@ resource "aws_iam_policy" "lambda_iam_policy" {
         {
           "Effect" : "Allow",
           "Action" : [
+            "batch:DescribeJobs"
+          ],
+          "Resource" : [
+            "*"
+          ]
+        },
+        {
+          "Effect" : "Allow",
+          "Action" : [
             "s3:GetObject",
             "s3:PutObject",
             "s3:ListBucket"
@@ -235,7 +244,17 @@ resource "aws_iam_policy" "lambda_iam_policy" {
           ],
           Resource : [
             module.dreambooth_batch_worker.batch_job_queue.arn,
-            module.dreambooth_batch_worker.batch_job_definition.arn
+            "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/${module.dreambooth_batch_worker.batch_job_definition.name}:*"
+          ]
+        },
+        {
+          Effect : "Allow",
+          Action : [
+            "ses:SendEmail",
+            "ses:SendRawEmail"
+          ],
+          Resource : [
+            "*"
           ]
         }
       ]

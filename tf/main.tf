@@ -102,6 +102,7 @@ resource "aws_iam_role" "ecs_task_execution_iam_role" {
     "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
   ]
 }
+
 module "vpc" {
   source = "../modules/vpc"
   vpc_name = "dev"

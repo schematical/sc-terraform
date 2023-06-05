@@ -7,4 +7,4 @@ terraform import module.project_drawnby_ai.aws_route53_record.drawnby-ai-cname-w
 terraform import module.project_drawnby_ai.aws_route53_record.drawnby-ai-cname-mc-1 Z05221893OMTB83C5RDU5_k2._domainkey.drawnby.ai_CNAME
 terraform import module.project_drawnby_ai.aws_route53_record.drawnby-ai-cname-mc-2 Z05221893OMTB83C5RDU5_k3._domainkey.drawnby.ai_CNAME
 terraform import module.project_drawnby_ai.module.dev_env_drawnby_ai.aws_s3_bucket.codepipeline_artifact_store_bucket codebuild-bucket-dev-us-east-1
-
+terraform import module.project_drawnby_ai.aws_ses_domain_identity.ses_domain_identity drawnby.ai

@@ -43,8 +43,20 @@ AWS's BuildPipeline/CodeBuild allows us to deploy standardized CI/CD pipelines t
 [./modules/buildpipeline](./modules/buildpipeline)
 
 
-## Need some help?
 
-### We Consult!
-If you need some help reach out to us at [Schematical.com](https://schematical.com?utm_source=github_sc_terraform_readme). 
-We advise, oversea and even train big teams on how to use this tech, and we would love to work with you as well.
+### Need Help:
+
+#### Jump On The Discord:
+This stuff can be a bit complex. Luckily we have a small community of people that like to help.
+So head on over to the [Discord](https://discord.gg/F6cErPe6VJ) and feel free to ask any questions you might have.
+
+#### Need more help:
+I do consult on this so feel free to hop on over to [Schematical.com](https://schematical.com?utm_source=github_sc_terraform_readmee) and signup for a consultation.  
+
+
+### Support:
+Interested in supporting me as I maintain these free scripts? Click the link below:
+
+<a href="https://www.buymeacoffee.com/schematical" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+
