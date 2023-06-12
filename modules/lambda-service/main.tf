@@ -68,21 +68,24 @@ resource "aws_security_group" "service_lambda_sg" {
     Terraform = "true"
   }
 }
+locals {
+  zip_file = "/tmp/index.zip"
+}
 data "archive_file" "lambda" {
   type        = "zip"
   source_file = "${path.module}/build/index.js"
-  output_path = "index.zip"
+  output_path = local.zip_file
 }
 resource "aws_lambda_function" "service_lambda_web"  {
   # If the file is not in the current working directory you will need to include a
   # path.module in the filename.
-  filename      = var.use_s3_source ? null : "index.zip"
+  filename      = var.use_s3_source ? null : data.archive_file.lambda.output_path
   function_name = var.service_name
   role          = aws_iam_role.service_lambda_iam_role.arn
   handler       = var.handler
   source_code_hash = var.use_s3_source ? null : data.archive_file.lambda.output_base64sha256
-  s3_bucket = var.s3_bucket
-  s3_key = var.s3_key
+  # s3_bucket = var.s3_bucket
+  # s3_key = var.s3_key
   layers = var.layers
   # The filebase64sha256() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
@@ -110,6 +113,9 @@ resource "aws_lambda_function" "service_lambda_web"  {
       environment,
       timeout
     ]
+  }
+  tracing_config {
+    mode = "Active"
   }
 }
 /*resource "aws_api_gateway_resource" "api_gateway_resource" {

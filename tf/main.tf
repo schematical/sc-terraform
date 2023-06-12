@@ -1,18 +1,27 @@
 # Terraform configuration
 
+
+terraform {
+  backend "s3" {
+    bucket = "schematical-terraform-v1"
+    region = "us-east-1"
+    key    = "schematical/terraform.tfstate"
+  }
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.61.0"
+    }
+  }
+
+  required_version = ">= 1.2.0"
+}
 provider "aws" {
   profile  = "schematical"
   region = "us-east-1"
   default_tags {
     tags = {
     }
-  }
-}
-terraform {
-  backend "s3" {
-    bucket = "schematical-terraform-v1"
-    region = "us-east-1"
-    key    = "schematical/terraform.tfstate"
   }
 }
 locals {
@@ -124,6 +133,19 @@ module "dev_env" {
   //ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
 
 }
+module "prod_env" {
+  source = "../modules/apigateway-env"
+  env = "prod"
+  acm_cert_arn = "arn:aws:acm:us-east-1:368590945923:certificate/2df7c33d-9569-41ab-94ed-0d2638369c21"
+  api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
+  hosted_zone_id = local.default_hosted_zone_id
+  hosted_zone_name = local.default_hosted_zone_name
+  //vpc_id = module.vpc.vpc_id
+  //private_subnet_mappings = module.vpc.private_subnet_mappings
+  //bastion_security_group = module.vpc.bastion_security_group
+  //ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
+
+}
 locals {
   env_info = {
     dev: {
@@ -133,6 +155,16 @@ locals {
       codepipeline_artifact_store_bucket = aws_s3_bucket.codepipeline_artifact_store_bucket
       api_gateway_stage_id = module.dev_env.api_gateway_stage_id
       bastion_security_group = module.vpc.bastion_security_group
+      secrets: var.dev_secrets
+    },
+    prod: {
+      name = "prod"
+      vpc_id = module.vpc.vpc_id
+      private_subnet_mappings = module.vpc.private_subnet_mappings
+      codepipeline_artifact_store_bucket = aws_s3_bucket.codepipeline_artifact_store_bucket
+      api_gateway_stage_id = module.prod_env.api_gateway_stage_id
+      bastion_security_group = module.vpc.bastion_security_group
+      secrets: var.prod_secrets
     }
   }
 }
@@ -144,7 +176,6 @@ module "project_chaospixel" {
   hosted_zone_id = local.default_hosted_zone_id
   hosted_zone_name = local.default_hosted_zone_name
   env_info = local.env_info
-  secrets = var.secrets
 }
 module "project_drawnby_ai" {
   source = "./projects/drawnby_ai"

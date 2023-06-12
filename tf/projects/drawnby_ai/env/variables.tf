@@ -30,3 +30,6 @@ variable "private_subnet_mappings" {
 variable "codepipeline_artifact_store_bucket" {
 
 }
+variable "domain_name" {
+  default = ""
+}

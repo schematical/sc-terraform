@@ -2,6 +2,10 @@ data "aws_caller_identity" "current" {}
 locals {
   www_lambda_arn = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:sc-drawnby-www-v1-$${stageVariables.ENV}-www/invocations"
 }
+provider "aws" {
+  region = "us-east-1"
+  alias  = "east"
+}
 resource "aws_acm_certificate" "drawnby_ai_cert" {
   domain_name       = aws_route53_zone.drawnby_ai.name
   subject_alternative_names = ["*.${aws_route53_zone.drawnby_ai.name}"]
@@ -42,16 +46,8 @@ resource "aws_route53_record" "drawnby-ai-mx" {
     "15 x3l2qeaeoiryilvskwynklcu7wsxyy7gdmad3c4ygchmtrgzx4qa.mx-verification.google.com"
   ]
 }
-/*resource "aws_route53_record" "drawnby-ai-soa" {
-  zone_id = aws_route53_zone.drawnby_ai.zone_id
-  name    = ""
-  type    = "SOA"
-  ttl     = "30"
-  records = [
-    aws_route53_zone.drawnby_ai.primary_name_server
-  ]
-}*/
-resource "aws_route53_record" "drawnby-ai-cname-www" {
+
+/*resource "aws_route53_record" "drawnby-ai-cname-www" {
   zone_id = aws_route53_zone.drawnby_ai.zone_id
   name    = "www"
   type    = "CNAME"
@@ -59,7 +55,7 @@ resource "aws_route53_record" "drawnby-ai-cname-www" {
   records = [
     "us21-93119a0c-eca5fb707a2d3f78196c48655.pages.mailchi.mp"
   ]
-}
+}*/
 resource "aws_route53_record" "drawnby-ai-cname-mc-1" {
   zone_id = aws_route53_zone.drawnby_ai.zone_id
   name    = "k2._domainkey"
@@ -78,33 +74,7 @@ resource "aws_route53_record" "drawnby-ai-cname-mc-2" {
     "dkim3.mcsv.net"
   ]
 }
-/*resource "aws_route53_record" "drawnby-ai-cname-ses-1" {
-  zone_id = aws_route53_zone.drawnby_ai.zone_id
-  name    = "hgnkmsxuufxakjudjpc4nxnq5773alki._domainkey.drawnby.ai"
-  type    = "CNAME"
-  ttl     = "30"
-  records = [
-    "hgnkmsxuufxakjudjpc4nxnq5773alki.dkim.amazonses.com"
-  ]
-}
-resource "aws_route53_record" "drawnby-ai-cname-ses-2" {
-  zone_id = aws_route53_zone.drawnby_ai.zone_id
-  name    = "prhdpfubkmjsbrxuzqjgizkrgqusshmx._domainkey.drawnby.ai"
-  type    = "CNAME"
-  ttl     = "30"
-  records = [
-    "prhdpfubkmjsbrxuzqjgizkrgqusshmx.dkim.amazonses.com"
-  ]
-}
-resource "aws_route53_record" "drawnby-ai-cname-ses-3" {
-  zone_id = aws_route53_zone.drawnby_ai.zone_id
-  name    = "uyhbrw7gnfyphw3mx6pa4qr2yklcrmt6._domainkey.drawnby.ai"
-  type    = "CNAME"
-  ttl     = "30"
-  records = [
-    "uyhbrw7gnfyphw3mx6pa4qr2yklcrmt6.dkim.amazonses.com"
-  ]
-}*/
+
 
 resource "aws_ses_domain_identity" "ses_domain_identity" {
   domain = "drawnby.ai"
@@ -191,4 +161,23 @@ module "dev_env_drawnby_ai" {
   # bastion_security_group = var.bastion_security_group
 
   api_gateway_base_path_mapping = aws_api_gateway_rest_api.api_gateway.root_resource_id
+  domain_name = "dev"
+}
+
+module "prod_env_drawnby_ai" {
+  # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
+  source = "./env"
+  env = "prod"
+  vpc_id = var.env_info.dev.vpc_id
+  hosted_zone_id = aws_route53_zone.drawnby_ai.id
+  hosted_zone_name = aws_route53_zone.drawnby_ai.name
+  ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
+  api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
+  private_subnet_mappings = var.env_info.dev.private_subnet_mappings
+  acm_cert_arn = aws_acm_certificate.drawnby_ai_cert.arn
+  codepipeline_artifact_store_bucket = var.env_info.dev.codepipeline_artifact_store_bucket
+  # bastion_security_group = var.bastion_security_group
+
+  api_gateway_base_path_mapping = aws_api_gateway_rest_api.api_gateway.root_resource_id
+  domain_name = "www"
 }

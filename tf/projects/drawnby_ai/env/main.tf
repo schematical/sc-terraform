@@ -148,15 +148,17 @@ resource "aws_iam_role_policy_attachment" "codebuild_iam_policy_attach" {
   role = module.buildpipeline.code_build_iam_role.name
   policy_arn = aws_iam_policy.codebuild_iam_policy.arn
 }
-module "dev_env" {
+module "apigateway_env" {
 
   source = "../../../../modules/apigateway-env"
-  env = "dev"
+  env = var.env
   // vpc_id = var.vpc_id
   // ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
   api_gateway_id = var.api_gateway_id
   hosted_zone_id = var.hosted_zone_id
   hosted_zone_name = var.hosted_zone_name
   acm_cert_arn = var.acm_cert_arn
+  domain_name = var.domain_name
   // private_subnet_mappings = var.private_subnet_mappings
 }
+

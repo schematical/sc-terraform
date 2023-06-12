@@ -21,14 +21,20 @@ resource "aws_kinesis_stream" "kinesis_stream" {
   }
 }
 
-resource "aws_s3_bucket" "dreambooth_storage_bucket" {
-  bucket = "dreambooth-worker-v1-${var.env}-${var.region}"
+resource "aws_s3_bucket" "chaospixel_storage_bucket" {
+  bucket = "chaospixel-worker-v1-${var.env}-${var.region}"
 }
 
+resource "aws_lambda_permission" "apigw_lambda" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambda_service.lambda_function.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${var.api_gateway_id}/*/*/*"
+}
 
-
-resource "aws_s3_bucket_cors_configuration" "dreambooth_storage_bucket" {
-  bucket = aws_s3_bucket.dreambooth_storage_bucket.bucket
+resource "aws_s3_bucket_cors_configuration" "chaospixel_storage_bucket" {
+  bucket = aws_s3_bucket.chaospixel_storage_bucket.bucket
 
   cors_rule {
     allowed_headers = ["*"]
@@ -65,45 +71,16 @@ module "lambda_service" {
   service_uri = "chaospixel"*/
   env_vars =  {
     ENV: var.env,
-    DB_URL: var.secrets.chaospixel_dev_lambda_service_DB_URL
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_dev_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_dev_lambda_service_AUTH_USER_POOL_ID
-    AWS_S3_BUCKET: var.secrets.chaospixel_dev_lambda_service_AWS_S3_BUCKET
-    OPENAI_API_KEY: var.secrets.chaospixel_dev_lambda_service_OPENAI_API_KEY
-    AWS_KINESIS_STREAM_ARN = aws_kinesis_stream.kinesis_stream.arn
+    DB_URL: var.secrets.chaospixel_lambda_service_DB_URL
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+    AWS_S3_BUCKET: var.secrets.chaospixel_lambda_service_AWS_S3_BUCKET
+    OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
+    AWS_KINESIS_STREAM_ARN: aws_kinesis_stream.kinesis_stream.arn
+    AWS_BATCH_JOB_QUEUE: module.chaospixel_batch_worker.batch_job_queue.arn
   }//jsondecode(aws_secretsmanager_secret_version.lambda_secret_version.secret_string)
 }
-resource "aws_api_gateway_resource" "api_gateway_resource" {
-  rest_api_id = var.api_gateway_id # aws_api_gateway_rest_api.MyDemoAPI.id
-  parent_id   = var.api_gateway_base_path_mapping # aws_api_gateway_rest_api.MyDemoAPI.root_resource_id
-  path_part   = "chaospixel"
-}
-resource "aws_api_gateway_method" "api_gateway_method" {
-  rest_api_id   = var.api_gateway_id
-  resource_id   = aws_api_gateway_resource.api_gateway_resource.id
-  http_method   = "ANY"
-  authorization = "NONE"
 
-}
-
-resource "aws_api_gateway_integration" "api_gateway_root_resource_method_integration" {
-  rest_api_id          = var.api_gateway_id
-  resource_id          = aws_api_gateway_resource.api_gateway_resource.id
-  http_method          = aws_api_gateway_method.api_gateway_method.http_method
-
-  integration_http_method = "POST"
-  type                    = "AWS_PROXY"
-  // passthrough_behavior    = "WHEN_NO_MATCH"
-  // content_handling        = "CONVERT_TO_BINARY"
-  uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:sc-chaospixel-v1-$${stageVariables.ENV}-gql/invocations"
-}
-resource "aws_lambda_permission" "apigw_lambda" {
-  statement_id  = "AllowExecutionFromAPIGateway"
-  action        = "lambda:InvokeFunction"
-  function_name = module.lambda_service.lambda_function.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${var.api_gateway_id}/*/*/*"
-}
 module "buildpipeline" {
   source = "../../../../modules/buildpipeline"# "github.com/schematical/sc-terraform/modules/buildpipeline"
   service_name = "chaospixel-v1"
@@ -118,14 +95,15 @@ module "buildpipeline" {
   source_buildspec_path = "lambda/buildspec.yml"
   env_vars =  {
     // ENV: var.env,
-    AUTH_CLIENT_ID: var.secrets.chaospixel_dev_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_dev_lambda_service_AUTH_USER_POOL_ID
-    DB_URL: var.secrets.chaospixel_dev_lambda_service_DB_URL
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_dev_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_dev_lambda_service_AUTH_USER_POOL_ID
-    AWS_S3_BUCKET: var.secrets.chaospixel_dev_lambda_service_AWS_S3_BUCKET
-    OPENAI_API_KEY: var.secrets.chaospixel_dev_lambda_service_OPENAI_API_KEY
-    AWS_KINESIS_STREAM_ARN = aws_kinesis_stream.kinesis_stream.arn
+    AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+    DB_URL: var.secrets.chaospixel_lambda_service_DB_URL
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+    AWS_S3_BUCKET: var.secrets.chaospixel_lambda_service_AWS_S3_BUCKET
+    OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
+    AWS_BATCH_JOB_DEFINITION: module.chaospixel_batch_worker.batch_job_definition.arn
+    AWS_BATCH_JOB_QUEUE: module.chaospixel_batch_worker.batch_job_queue.arn
   }
 }
 
@@ -199,8 +177,8 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             "batch:SubmitJob"
           ],
           "Resource" : [
-            "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/dreambooth-worker-v1-${var.env}-${var.env}:*"
-            // TODO: Import Job Queue `dreambooth-worker-v1-\${AWS::Region}-\${opt:stage, "test"}-JobQueue`
+            "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/chaospixel-worker-v1-${var.env}-${var.env}:*"
+            // TODO: Import Job Queue `chaospixel-worker-v1-\${AWS::Region}-\${opt:stage, "test"}-JobQueue`
           ]
         },
         {
@@ -220,8 +198,8 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             "s3:ListBucket"
           ],
           "Resource" : [
-            aws_s3_bucket.dreambooth_storage_bucket.arn,
-            "${aws_s3_bucket.dreambooth_storage_bucket.arn}/**"
+            aws_s3_bucket.chaospixel_storage_bucket.arn,
+            "${aws_s3_bucket.chaospixel_storage_bucket.arn}/**"
           ]
         },
         {
@@ -243,8 +221,8 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             "batch:SubmitJob"
           ],
           Resource : [
-            module.dreambooth_batch_worker.batch_job_queue.arn,
-            "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/${module.dreambooth_batch_worker.batch_job_definition.name}:*"
+            module.chaospixel_batch_worker.batch_job_queue.arn,
+            "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/${module.chaospixel_batch_worker.batch_job_definition.name}:*"
           ]
         },
         {
@@ -279,14 +257,14 @@ module "kinesis_worker_lambda_service" {
   handler = "src/functions/kinesis-worker/handler.main"
   env_vars =  {
     ENV: var.env,
-    DB_URL: var.secrets.chaospixel_dev_lambda_service_DB_URL
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_dev_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_dev_lambda_service_AUTH_USER_POOL_ID
-    AWS_S3_BUCKET: var.secrets.chaospixel_dev_lambda_service_AWS_S3_BUCKET
-    OPENAI_API_KEY: var.secrets.chaospixel_dev_lambda_service_OPENAI_API_KEY
+    DB_URL: var.secrets.chaospixel_lambda_service_DB_URL
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+    AWS_S3_BUCKET: var.secrets.chaospixel_lambda_service_AWS_S3_BUCKET
+    OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
     AWS_KINESIS_STREAM_ARN = aws_kinesis_stream.kinesis_stream.arn
-    AWS_BATCH_JOB_DEFINITION = module.dreambooth_batch_worker.batch_job_definition.arn
-    AWS_BATCH_JOB_QUEUE = module.dreambooth_batch_worker.batch_job_queue.arn
+    AWS_BATCH_JOB_DEFINITION = module.chaospixel_batch_worker.batch_job_definition.arn
+    AWS_BATCH_JOB_QUEUE = module.chaospixel_batch_worker.batch_job_queue.arn
   }//jsondecode(aws_secretsmanager_secret_version.lambda_secret_version.secret_string)
 }
 
@@ -302,11 +280,11 @@ resource "aws_iam_role_policy_attachment" "kinesis_worker_lambda_iam_policy_atta
   policy_arn = aws_iam_policy.lambda_iam_policy.arn
 }
 resource "aws_iam_role_policy_attachment" "batch_worker_lambda_iam_policy_attach" {
-  role = module.dreambooth_batch_worker.batch_job_definition_iam_role.name
+  role = module.chaospixel_batch_worker.batch_job_definition_iam_role.name
   policy_arn = aws_iam_policy.lambda_iam_policy.arn
 }
-module "dreambooth_batch_worker" {
-  service_name = "dreambooth"
+module "chaospixel_batch_worker" {
+  service_name = "chaospixel-worker"
   source = "../../../../modules/aws-batch-pytorch-gpu-service"
   region = "us-east-1"
   env = var.env
@@ -315,7 +293,7 @@ module "dreambooth_batch_worker" {
   private_subnet_mappings = var.private_subnet_mappings
 
   codepipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket
-  output_bucket                      = aws_s3_bucket.dreambooth_storage_bucket
+  output_bucket                      = aws_s3_bucket.chaospixel_storage_bucket
   bastion_security_group = var.bastion_security_group
 
   codepipeline_github_owner = "schematical"

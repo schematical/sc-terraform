@@ -27,9 +27,10 @@ resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
   stage_name  = aws_api_gateway_stage.api_gateway_stage.stage_name
 }
 
+
 resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
   certificate_arn = var.acm_cert_arn
-  domain_name     = "${var.env}-v1-${var.region}-api.${var.hosted_zone_name}"
+  domain_name     = var.domain_name != "" ? "${var.domain_name}.${var.hosted_zone_name}" : "${var.env}-v1-${var.region}-api.${var.hosted_zone_name}"
   endpoint_configuration {
     types = ["EDGE"]
   }
@@ -37,7 +38,7 @@ resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
 
 
 resource "aws_route53_record" "route53_record" {
-  name = "${var.env}-v1-${var.region}-api.${var.hosted_zone_name}."
+  name = aws_api_gateway_domain_name.api_gateway_domain_name.domain_name # "${var.env}-v1-${var.region}-api.${var.hosted_zone_name}."
   type = "A"
   alias {
     name                   = aws_api_gateway_domain_name.api_gateway_domain_name.cloudfront_domain_name
@@ -52,13 +53,6 @@ data "aws_route53_zone" "hosted_zone" {
 }
 
 
-/*resource "aws_route53_record" "dev-ns" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "${var.env}"
-  type    = "NS"
-  ttl     = "30"
-  records = aws_route53_zone.dev.name_servers
-}*/
 
 
 

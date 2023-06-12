@@ -3,6 +3,9 @@ variable "envs" {
   type        = list(string)
   default     = ["dev", "stage", "prod"]
 }
-variable "secrets" {
+variable "dev_secrets" {
+  type = map(string)
+}
+variable "prod_secrets" {
   type = map(string)
 }
