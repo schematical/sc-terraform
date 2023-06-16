@@ -26,4 +26,7 @@ variable "codepipeline_artifact_store_bucket" {
 variable "bastion_security_group" {}
 variable "api_gateway_base_path_mapping" {}
 variable "api_gateway_stage_id" {}
+variable "hosted_zone_id" {}
+variable "hosted_zone_name" {}
+variable "acm_cert_arn" {}
 

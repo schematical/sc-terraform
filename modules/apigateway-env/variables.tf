@@ -18,6 +18,10 @@ variable "hosted_zone_id" {
 
 variable "acm_cert_arn" {
 }
+variable "xray_tracing_enabled" {
+  default = false
+  type=bool
+}
 
 /*
 variable "ecs_task_execution_iam_role" {}

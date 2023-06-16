@@ -74,8 +74,27 @@ resource "aws_route53_record" "drawnby-ai-cname-mc-2" {
     "dkim3.mcsv.net"
   ]
 }
-
-
+resource "aws_route53_record" "verification_record" {
+  zone_id = aws_route53_zone.drawnby_ai.zone_id
+  name    = "_amazonses.email"
+  type    = "TXT"
+  ttl     = "600"
+  records = ["${aws_ses_domain_identity.ses_domain_identity.verification_token}"]
+}
+resource "aws_route53_record" "verification_record_2" {
+  zone_id = aws_route53_zone.drawnby_ai.zone_id
+  name    = "_amazonses"
+  type    = "TXT"
+  ttl     = "600"
+  records = [aws_ses_domain_identity.ses_domain_identity.verification_token]
+}
+resource "aws_route53_record" "verification_record_3" {
+  zone_id = aws_route53_zone.drawnby_ai.zone_id
+  name    = ""
+  type    = "TXT"
+  ttl     = "600"
+  records = ["amazonses:${aws_ses_domain_identity.ses_domain_identity.verification_token}"]
+}
 resource "aws_ses_domain_identity" "ses_domain_identity" {
   domain = "drawnby.ai"
 }

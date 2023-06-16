@@ -30,8 +30,8 @@ module "dev_env_chaospixel" {
   env = "dev"
   secrets = var.env_info.dev.secrets
   vpc_id = var.env_info.dev.vpc_id
-  # hosted_zone_id = var.hosted_zone_id
-  # hosted_zone_name = var.hosted_zone_name
+  hosted_zone_id = var.env_info.dev.hosted_zone_id
+  hosted_zone_name = var.env_info.dev.hosted_zone_name
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
 
   private_subnet_mappings = var.env_info.dev.private_subnet_mappings
@@ -41,6 +41,7 @@ module "dev_env_chaospixel" {
   api_gateway_base_path_mapping = var.api_gateway_base_path_mapping
   api_gateway_stage_id          = var.env_info.dev.api_gateway_stage_id
   bastion_security_group        = var.env_info.dev.bastion_security_group
+  acm_cert_arn = var.env_info.dev.acm_cert_arn
 }
 
 module "prod_env_chaospixel" {
@@ -49,8 +50,8 @@ module "prod_env_chaospixel" {
   env = "prod"
   secrets = var.env_info.prod.secrets
   vpc_id = var.env_info.prod.vpc_id
-  # hosted_zone_id = var.hosted_zone_id
-  # hosted_zone_name = var.hosted_zone_name
+  hosted_zone_id = var.env_info.prod.hosted_zone_id
+  hosted_zone_name = var.env_info.prod.hosted_zone_name
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
 
   private_subnet_mappings = var.env_info.prod.private_subnet_mappings
@@ -60,4 +61,5 @@ module "prod_env_chaospixel" {
   api_gateway_base_path_mapping = var.api_gateway_base_path_mapping
   api_gateway_stage_id          = var.env_info.prod.api_gateway_stage_id
   bastion_security_group        = var.env_info.prod.bastion_security_group
+  acm_cert_arn = var.env_info.prod.acm_cert_arn
 }

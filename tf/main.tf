@@ -27,6 +27,7 @@ provider "aws" {
 locals {
   default_hosted_zone_name = "schematical.com"
   default_hosted_zone_id = "ZC4VPG65C2OOQ"
+  acm_cert_arn = "arn:aws:acm:us-east-1:368590945923:certificate/2df7c33d-9569-41ab-94ed-0d2638369c21"
 }
 resource "aws_api_gateway_rest_api" "api_gateway" {
   body = jsonencode({
@@ -123,10 +124,11 @@ resource "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
 module "dev_env" {
   source = "../modules/apigateway-env"
   env = "dev"
-  acm_cert_arn = "arn:aws:acm:us-east-1:368590945923:certificate/2df7c33d-9569-41ab-94ed-0d2638369c21"
+  acm_cert_arn = local.acm_cert_arn
   api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
   hosted_zone_id = local.default_hosted_zone_id
   hosted_zone_name = local.default_hosted_zone_name
+  xray_tracing_enabled=true
   //vpc_id = module.vpc.vpc_id
   //private_subnet_mappings = module.vpc.private_subnet_mappings
   //bastion_security_group = module.vpc.bastion_security_group
@@ -136,10 +138,11 @@ module "dev_env" {
 module "prod_env" {
   source = "../modules/apigateway-env"
   env = "prod"
-  acm_cert_arn = "arn:aws:acm:us-east-1:368590945923:certificate/2df7c33d-9569-41ab-94ed-0d2638369c21"
+  acm_cert_arn = local.acm_cert_arn
   api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
   hosted_zone_id = local.default_hosted_zone_id
   hosted_zone_name = local.default_hosted_zone_name
+  xray_tracing_enabled=true
   //vpc_id = module.vpc.vpc_id
   //private_subnet_mappings = module.vpc.private_subnet_mappings
   //bastion_security_group = module.vpc.bastion_security_group
@@ -156,6 +159,9 @@ locals {
       api_gateway_stage_id = module.dev_env.api_gateway_stage_id
       bastion_security_group = module.vpc.bastion_security_group
       secrets: var.dev_secrets
+      hosted_zone_id = local.default_hosted_zone_id
+      hosted_zone_name = local.default_hosted_zone_name
+      acm_cert_arn = local.acm_cert_arn
     },
     prod: {
       name = "prod"
@@ -165,6 +171,9 @@ locals {
       api_gateway_stage_id = module.prod_env.api_gateway_stage_id
       bastion_security_group = module.vpc.bastion_security_group
       secrets: var.prod_secrets
+      hosted_zone_id = local.default_hosted_zone_id
+      hosted_zone_name = local.default_hosted_zone_name
+      acm_cert_arn = local.acm_cert_arn
     }
   }
 }

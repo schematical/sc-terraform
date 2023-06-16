@@ -18,6 +18,7 @@ resource "aws_api_gateway_stage" "api_gateway_stage" {
   variables    = {
     ENV = var.env
   }
+  xray_tracing_enabled=var.xray_tracing_enabled
 }
 
 resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {

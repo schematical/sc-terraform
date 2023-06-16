@@ -2,6 +2,8 @@ data "aws_caller_identity" "current" {}
 locals {
   lambda_service_name = "sc-chaospixel-v1-${var.env}-gql"
   kinesis_worker_lambda_service_name = "sc-chaospixel-v1-${var.env}-kinesis-worker"
+  service_name = "chaospixel-v1"
+  cloud_front_subdomain = "chaospixel-v1-${var.env}"
 }
 resource "aws_kinesis_stream" "kinesis_stream" {
   name             = "chaospixel-${var.env}-${var.region}"
@@ -24,6 +26,186 @@ resource "aws_kinesis_stream" "kinesis_stream" {
 resource "aws_s3_bucket" "chaospixel_storage_bucket" {
   bucket = "chaospixel-worker-v1-${var.env}-${var.region}"
 }
+
+
+
+
+resource "aws_s3_bucket_ownership_controls" "s3_bucket_ownership_controls" {
+  bucket = aws_s3_bucket.chaospixel_storage_bucket.id
+
+  rule {
+    object_ownership = "ObjectWriter"
+  }
+}
+resource "aws_s3_bucket_acl" "b_acl" {
+  bucket = aws_s3_bucket.chaospixel_storage_bucket.id
+  acl    = "public-read"
+  depends_on = [aws_s3_bucket_ownership_controls.s3_bucket_ownership_controls]
+}
+
+locals {
+  s3_origin_id = "myS3Origin"
+}
+resource "aws_cloudfront_origin_access_control" "default" {
+  name                              = "${local.service_name}-${var.env}-${var.region}-cloudfront-policy"
+  description                       = "${local.service_name}-${var.env}-${var.region}-cloudfront-policy"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+resource "aws_s3_bucket_policy" "b" {
+  bucket = aws_s3_bucket.chaospixel_storage_bucket.id
+
+  policy = jsonencode({
+    "Version": "2008-10-17",
+    "Id": "PolicyForCloudFrontPrivateContent",
+    "Statement": [
+      {
+        "Sid": "1",
+        "Effect": "Allow",
+        "Principal": {
+          "Service": "cloudfront.amazonaws.com" # "AWS": "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${aws_cloudfront_origin_access_control.default.id}"
+        },
+        "Action": "s3:GetObject",
+        "Resource": "${aws_s3_bucket.chaospixel_storage_bucket.arn}/*"
+        "Condition": {
+          "StringEquals": {
+            "AWS:SourceArn": aws_cloudfront_distribution.s3_distribution.arn
+          }
+        }
+      }
+    ]
+  })#
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+resource "aws_s3_bucket_public_access_block" "example" {
+  bucket = aws_s3_bucket.chaospixel_storage_bucket.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+resource "tls_private_key" "keypair" {
+  algorithm = "RSA"
+}
+resource "aws_cloudfront_public_key" "cloudfront_public_key" {
+  comment     = "${local.service_name}-${var.env}-${var.region}-public-key"
+  # encoded_key = var.secrets.chaospixel_cloudfront_pem
+  encoded_key = tls_private_key.keypair.public_key_pem
+  name        = "${local.service_name}-${var.env}-${var.region}-public-key"
+}
+resource "aws_cloudfront_key_group" "cloudfront_key_group" {
+  comment ="${local.service_name}-${var.env}-${var.region}-keygroup"
+  items   = [aws_cloudfront_public_key.cloudfront_public_key.id]
+  name    = "${local.service_name}-${var.env}-${var.region}-keygroup"
+}
+
+
+
+resource "aws_cloudfront_distribution" "s3_distribution" {
+  origin {
+    domain_name              = aws_s3_bucket.chaospixel_storage_bucket.bucket_regional_domain_name
+    origin_access_control_id = aws_cloudfront_origin_access_control.default.id
+    origin_id                = local.s3_origin_id
+  }
+
+  enabled             = true
+  is_ipv6_enabled     = true
+  comment             = "Some comment"
+  default_root_object = "index.html"
+
+  /*
+    logging_config {
+      include_cookies = false
+      bucket          = "mylogs.s3.amazonaws.com"
+      prefix          = "myprefix"
+    }
+  */
+
+  aliases = [  "${local.cloud_front_subdomain}.${var.hosted_zone_name}" ]
+
+  default_cache_behavior {
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = local.s3_origin_id
+
+    forwarded_values {
+      query_string = false
+
+      cookies {
+        forward = "none"
+      }
+    }
+  /*  trusted_key_groups = [
+      aws_cloudfront_key_group.cloudfront_key_group.id
+    ]*/
+    viewer_protocol_policy = "allow-all"
+    min_ttl                = 0
+    default_ttl            = 3600
+    max_ttl                = 86400
+  }
+
+
+  price_class = "PriceClass_100"
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+      locations        = []
+    }
+  }
+
+  tags = {
+    env = var.env,
+    region = var.region,
+    Service = "chaospixel-v1"
+  }
+
+  viewer_certificate {
+    acm_certificate_arn = var.acm_cert_arn
+    ssl_support_method = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
+  }
+}
+resource "aws_route53_record" "drawnby-ai-cloudfront-domain" {
+  zone_id = var.hosted_zone_id
+  name    = local.cloud_front_subdomain
+  type    = "A"
+  # ttl     = "30"
+  alias {
+    evaluate_target_health = false
+    name                   = aws_cloudfront_distribution.s3_distribution.domain_name
+    zone_id                = aws_cloudfront_distribution.s3_distribution.hosted_zone_id
+  }
+  /*  records = [
+  aws_cloudfront_distribution.s3_distribution.domain_name
+    ]*/
+}
+
+
+
+
+
+
+
+
 
 resource "aws_lambda_permission" "apigw_lambda" {
   statement_id  = "AllowExecutionFromAPIGateway"
@@ -78,7 +260,11 @@ module "lambda_service" {
     OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
     AWS_KINESIS_STREAM_ARN: aws_kinesis_stream.kinesis_stream.arn
     AWS_BATCH_JOB_QUEUE: module.chaospixel_batch_worker.batch_job_queue.arn
-  }//jsondecode(aws_secretsmanager_secret_version.lambda_secret_version.secret_string)
+    CLOUD_FRONT_DOMAIN: "${local.cloud_front_subdomain}.${var.hosted_zone_name}" #  aws_cloudfront_distribution.s3_distribution.domain_name
+    CLOUD_FRONT_PEM: tls_private_key.keypair.private_key_pem
+    CLOUD_FRONT_PUBLIC_KEY_ID: aws_cloudfront_public_key.cloudfront_public_key.id
+
+  }
 }
 
 module "buildpipeline" {
@@ -104,6 +290,10 @@ module "buildpipeline" {
     OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
     AWS_BATCH_JOB_DEFINITION: module.chaospixel_batch_worker.batch_job_definition.arn
     AWS_BATCH_JOB_QUEUE: module.chaospixel_batch_worker.batch_job_queue.arn
+    AWS_KINESIS_STREAM_ARN = aws_kinesis_stream.kinesis_stream.arn
+    CLOUD_FRONT_DOMAIN: "${local.cloud_front_subdomain}.${var.hosted_zone_name}"  #  aws_cloudfront_distribution.s3_distribution.domain_name
+    CLOUD_FRONT_PEM: tls_private_key.keypair.private_key_pem
+    CLOUD_FRONT_PUBLIC_KEY_ID: aws_cloudfront_public_key.cloudfront_public_key.id
   }
 }
 
@@ -244,6 +434,10 @@ resource "aws_iam_role_policy_attachment" "lambda_iam_policy_attach" {
   role = module.lambda_service.iam_role.name
   policy_arn = aws_iam_policy.lambda_iam_policy.arn
 }
+resource "aws_iam_role_policy_attachment" "lambda_iam_xray_policy_attach" {
+  role = module.lambda_service.iam_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
+}
 
 
 
@@ -265,6 +459,7 @@ module "kinesis_worker_lambda_service" {
     AWS_KINESIS_STREAM_ARN = aws_kinesis_stream.kinesis_stream.arn
     AWS_BATCH_JOB_DEFINITION = module.chaospixel_batch_worker.batch_job_definition.arn
     AWS_BATCH_JOB_QUEUE = module.chaospixel_batch_worker.batch_job_queue.arn
+    CLOUD_FRONT_DOMAIN: aws_cloudfront_distribution.s3_distribution.domain_name
   }//jsondecode(aws_secretsmanager_secret_version.lambda_secret_version.secret_string)
 }
 

@@ -33,6 +33,9 @@ variable env_info {
     api_gateway_stage_id = string
     bastion_security_group = string
     secrets  = map(string)
+    hosted_zone_id = string
+    hosted_zone_name = string
+    acm_cert_arn = string
   }))
 }
 

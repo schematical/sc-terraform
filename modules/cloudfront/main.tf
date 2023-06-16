@@ -161,19 +161,3 @@ aws_cloudfront_distribution.s3_distribution.domain_name
   ]*/
 }
 
-/*
-module "buildpipeline" {
-  source = "../buildpipeline"
-  service_name = var.service_name
-  region = var.region
-  env = var.env
-  github_owner = "schematical"
-  github_project_name = "sc-terraform"
-  github_source_branch = "main"
-  code_pipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket.bucket
-  vpc_id = var.vpc_id
-  private_subnet_mappings = var.private_subnet_mappings
-  source_buildspec_path = "modules/aws-batch-pytorch-gpu-service/build/buildspec.yml"
-  # codestar_connection_arn ="arn:aws:codestar-connections:us-east-1:368590945923:connection/67d17ca5-a542-49db-9256-157204b67b1d"
-}
-*/
