@@ -82,6 +82,10 @@ module "buildpipeline" {
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
   source_buildspec_path = "buildspec.yml"
+  env_vars = {
+    REACT_APP_STRIPE_PUBLIC_KEY: var.secrets.drawnby_frontend_REACT_APP_STRIPE_PUBLIC_KEY
+  }
+
 }
 resource "aws_s3_bucket_policy" "cloudfront_bucket_policy" {
   bucket = module.cloudfront.s3_bucket.bucket

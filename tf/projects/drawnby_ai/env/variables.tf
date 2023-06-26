@@ -33,3 +33,6 @@ variable "codepipeline_artifact_store_bucket" {
 variable "domain_name" {
   default = ""
 }
+variable "secrets" {
+  type = map(string)
+}

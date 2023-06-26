@@ -263,7 +263,9 @@ module "lambda_service" {
     CLOUD_FRONT_DOMAIN: "${local.cloud_front_subdomain}.${var.hosted_zone_name}" #  aws_cloudfront_distribution.s3_distribution.domain_name
     CLOUD_FRONT_PEM: tls_private_key.keypair.private_key_pem
     CLOUD_FRONT_PUBLIC_KEY_ID: aws_cloudfront_public_key.cloudfront_public_key.id
-
+    SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
+    STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
+    STRIPE_PRODUCT_PRICE_ID: var.secrets.chaospixel_lambda_service_STRIPE_PRODUCT_PRICE_ID
   }
 }
 
@@ -288,12 +290,16 @@ module "buildpipeline" {
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
     AWS_S3_BUCKET: var.secrets.chaospixel_lambda_service_AWS_S3_BUCKET
     OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
+    SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
     AWS_BATCH_JOB_DEFINITION: module.chaospixel_batch_worker.batch_job_definition.arn
     AWS_BATCH_JOB_QUEUE: module.chaospixel_batch_worker.batch_job_queue.arn
     AWS_KINESIS_STREAM_ARN = aws_kinesis_stream.kinesis_stream.arn
     CLOUD_FRONT_DOMAIN: "${local.cloud_front_subdomain}.${var.hosted_zone_name}"  #  aws_cloudfront_distribution.s3_distribution.domain_name
     CLOUD_FRONT_PEM: tls_private_key.keypair.private_key_pem
     CLOUD_FRONT_PUBLIC_KEY_ID: aws_cloudfront_public_key.cloudfront_public_key.id
+    SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
+    STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
+    STRIPE_PRODUCT_PRICE_ID: var.secrets.chaospixel_lambda_service_STRIPE_PRODUCT_PRICE_ID
   }
 }
 
@@ -460,6 +466,9 @@ module "kinesis_worker_lambda_service" {
     AWS_BATCH_JOB_DEFINITION = module.chaospixel_batch_worker.batch_job_definition.arn
     AWS_BATCH_JOB_QUEUE = module.chaospixel_batch_worker.batch_job_queue.arn
     CLOUD_FRONT_DOMAIN: aws_cloudfront_distribution.s3_distribution.domain_name
+    SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
+    STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
+    STRIPE_PRODUCT_PRICE_ID: var.secrets.chaospixel_lambda_service_STRIPE_PRODUCT_PRICE_ID
   }//jsondecode(aws_secretsmanager_secret_version.lambda_secret_version.secret_string)
 }
 

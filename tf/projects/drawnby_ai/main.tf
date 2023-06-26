@@ -95,6 +95,27 @@ resource "aws_route53_record" "verification_record_3" {
   ttl     = "600"
   records = ["amazonses:${aws_ses_domain_identity.ses_domain_identity.verification_token}"]
 }
+resource "aws_route53_record" "sendgrid_verification_record_1" {
+  zone_id = aws_route53_zone.drawnby_ai.zone_id
+  name    = "em9202"
+  type    = "CNAME"
+  ttl     = "600"
+  records = ["u34811792.wl043.sendgrid.net"]
+}
+resource "aws_route53_record" "sendgrid_verification_record_2" {
+  zone_id = aws_route53_zone.drawnby_ai.zone_id
+  name    = "s1._domainkey"
+  type    = "CNAME"
+  ttl     = "600"
+  records = ["s1.domainkey.u34811792.wl043.sendgrid.net"]
+}
+resource "aws_route53_record" "sendgrid_verification_record_3" {
+  zone_id = aws_route53_zone.drawnby_ai.zone_id
+  name    = "s2._domainkey"
+  type    = "CNAME"
+  ttl     = "600"
+  records = ["s2.domainkey.u34811792.wl043.sendgrid.net"]
+}
 resource "aws_ses_domain_identity" "ses_domain_identity" {
   domain = "drawnby.ai"
 }
@@ -181,6 +202,8 @@ module "dev_env_drawnby_ai" {
 
   api_gateway_base_path_mapping = aws_api_gateway_rest_api.api_gateway.root_resource_id
   domain_name = "dev"
+
+  secrets = var.env_info.dev.secrets
 }
 
 module "prod_env_drawnby_ai" {
@@ -199,4 +222,6 @@ module "prod_env_drawnby_ai" {
 
   api_gateway_base_path_mapping = aws_api_gateway_rest_api.api_gateway.root_resource_id
   domain_name = "www"
+
+  secrets = var.env_info.prod.secrets
 }

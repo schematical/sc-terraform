@@ -24,6 +24,7 @@ variable env_info {
     })
     api_gateway_stage_id = string
     bastion_security_group = string
+    secrets  = map(string)
   }))
 }
 
