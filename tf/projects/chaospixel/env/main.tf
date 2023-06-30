@@ -265,7 +265,10 @@ module "lambda_service" {
     CLOUD_FRONT_PUBLIC_KEY_ID: aws_cloudfront_public_key.cloudfront_public_key.id
     SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
     STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
-    STRIPE_PRODUCT_PRICE_ID: var.secrets.chaospixel_lambda_service_STRIPE_PRODUCT_PRICE_ID
+    STRIPE_PRODUCT_PRICE_ID: var.secrets.chaospixel_lambda_service_STRIPE_PRODUCT_PRICE_ID,
+    DISCORD_APP_ID: var.secrets.chaospixel_lambda_service_DISCORD_APP_ID,
+    DISCORD_PUBLIC_KEY: var.secrets.chaospixel_lambda_service_DISCORD_PUBLIC_KEY,
+    DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN,
   }
 }
 
@@ -299,7 +302,10 @@ module "buildpipeline" {
     CLOUD_FRONT_PUBLIC_KEY_ID: aws_cloudfront_public_key.cloudfront_public_key.id
     SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
     STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
-    STRIPE_PRODUCT_PRICE_ID: var.secrets.chaospixel_lambda_service_STRIPE_PRODUCT_PRICE_ID
+    STRIPE_PRODUCT_PRICE_ID: var.secrets.chaospixel_lambda_service_STRIPE_PRODUCT_PRICE_ID,
+    DISCORD_APP_ID: var.secrets.chaospixel_lambda_service_DISCORD_APP_ID,
+    DISCORD_PUBLIC_KEY: var.secrets.chaospixel_lambda_service_DISCORD_PUBLIC_KEY,
+    DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN,
   }
 }
 

@@ -23,6 +23,10 @@ variable "private_subnet_mappings" {
 variable "subdomain" {
   type = string
 }
+
+variable "cors_allowed_hosts" {
+  type = list(string)
+}
 /*
 variable "output_bucket" {
 }

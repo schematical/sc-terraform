@@ -38,7 +38,28 @@ resource "aws_s3_bucket_public_access_block" "example" {
   ignore_public_acls      = false
   restrict_public_buckets = false
 }
+resource "aws_cloudfront_response_headers_policy" "cloudfront_response_headers_policy" {
+  name    = "${var.service_name}-${var.env}-${var.region}-cloudfront_response_headers_policy"
+  comment = "${var.service_name}-${var.env}-${var.region}-cloudfront_response_headers_policy"
 
+  cors_config {
+     access_control_allow_credentials = false
+
+    access_control_allow_headers {
+      items = ["*"]
+    }
+
+    access_control_allow_methods {
+      items = ["GET"]
+    }
+
+    access_control_allow_origins {
+      items = var.cors_allowed_hosts
+    }
+
+    origin_override = true
+  }
+}
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
     domain_name              = aws_s3_bucket.bucket.bucket_regional_domain_name
@@ -78,6 +99,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     min_ttl                = 0
     default_ttl            = 3600
     max_ttl                = 86400
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.cloudfront_response_headers_policy.id
   }
 
   # Cache behavior with precedence 0
