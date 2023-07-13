@@ -93,7 +93,7 @@ resource "aws_lambda_function" "service_lambda_web"  {
   # source_code_hash = filebase64sha256("lambda_function_payload.zip")
 
   runtime = "nodejs16.x"
-
+  memory_size = var.lambda_memory_size
   vpc_config {
     # Every subnet should be able to reach an EFS mount target in the same Availability Zone. Cross-AZ mounts are not permitted.
     subnet_ids         = [for o in var.private_subnet_mappings : o.id]

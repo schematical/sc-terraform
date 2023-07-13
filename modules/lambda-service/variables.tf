@@ -64,3 +64,7 @@ variable "env_vars" {
   type = map(string)
   default = {}
 }
+variable "lambda_memory_size" {
+  type = number
+  default = 128
+}

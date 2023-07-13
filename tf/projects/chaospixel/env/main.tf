@@ -251,6 +251,7 @@ module "lambda_service" {
   api_gateway_parent_id = var.api_gateway_base_path_mapping
   api_gateway_stage_id = var.api_gateway_stage_id
   service_uri = "chaospixel"*/
+  lambda_memory_size = 512
   env_vars =  {
     ENV: var.env,
     DB_URL: var.secrets.chaospixel_lambda_service_DB_URL
@@ -507,9 +508,9 @@ module "chaospixel_batch_worker" {
   bastion_security_group = var.bastion_security_group
 
   codepipeline_github_owner = "schematical"
-  codepipeline_github_project_name = "chaos-ville"
+  codepipeline_github_project_name = "chaospixel-batch-worker"
   codepipeline_github_source_branch = var.env
-  codepipeline_source_buildspec_path = "batch/buildspec.yml"
+  codepipeline_source_buildspec_path = "buildspec.yml"
 
 }
 
