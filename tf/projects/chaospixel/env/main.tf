@@ -270,6 +270,7 @@ module "lambda_service" {
     DISCORD_APP_ID: var.secrets.chaospixel_lambda_service_DISCORD_APP_ID,
     DISCORD_PUBLIC_KEY: var.secrets.chaospixel_lambda_service_DISCORD_PUBLIC_KEY,
     DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN,
+    FIRST_PROMOTER_API_KEY: var.secrets.chaospixel_lambda_service_FIRST_PROMOTER_API_KEY
   }
 }
 
@@ -307,6 +308,7 @@ module "buildpipeline" {
     DISCORD_APP_ID: var.secrets.chaospixel_lambda_service_DISCORD_APP_ID,
     DISCORD_PUBLIC_KEY: var.secrets.chaospixel_lambda_service_DISCORD_PUBLIC_KEY,
     DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN,
+    FIRST_PROMOTER_API_KEY: var.secrets.chaospixel_lambda_service_FIRST_PROMOTER_API_KEY
   }
 }
 
@@ -462,6 +464,7 @@ module "kinesis_worker_lambda_service" {
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
   handler = "src/functions/kinesis-worker/handler.main"
+  lambda_memory_size = 512
   env_vars =  {
     ENV: var.env,
     DB_URL: var.secrets.chaospixel_lambda_service_DB_URL
@@ -476,7 +479,8 @@ module "kinesis_worker_lambda_service" {
     SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
     STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
     STRIPE_PRODUCT_PRICE_ID: var.secrets.chaospixel_lambda_service_STRIPE_PRODUCT_PRICE_ID
-  }//jsondecode(aws_secretsmanager_secret_version.lambda_secret_version.secret_string)
+    FIRST_PROMOTER_API_KEY: var.secrets.chaospixel_lambda_service_FIRST_PROMOTER_API_KEY
+  }
 }
 
 resource "aws_lambda_event_source_mapping" "example" {
