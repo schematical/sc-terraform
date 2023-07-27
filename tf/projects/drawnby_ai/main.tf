@@ -31,11 +31,29 @@ resource "aws_route53_record" "drawnby-ai-a" {
   zone_id = aws_route53_zone.drawnby_ai.zone_id
   name    = ""
   type    = "A"
-  ttl     = "30"
-  records = [
-    "148.105.251.18"
-  ]
+  alias {
+    name                   = aws_api_gateway_domain_name.api_gateway_domain_name.cloudfront_domain_name
+    zone_id                = aws_api_gateway_domain_name.api_gateway_domain_name.cloudfront_zone_id
+    evaluate_target_health = false
+  }
 }
+
+resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
+  base_path   = ""
+  domain_name = aws_api_gateway_domain_name.api_gateway_domain_name.id
+  api_id = aws_api_gateway_rest_api.api_gateway.id
+  stage_name  = module.prod_env_drawnby_ai.apigateway_env.api_gateway_stage_name
+}
+
+
+resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
+  certificate_arn = aws_acm_certificate.drawnby_ai_cert.arn
+  domain_name     = "drawnby.ai"
+  endpoint_configuration {
+    types = ["EDGE"]
+  }
+}
+
 resource "aws_route53_record" "drawnby-ai-mx" {
   zone_id = aws_route53_zone.drawnby_ai.zone_id
   name    = ""
