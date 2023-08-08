@@ -6,20 +6,20 @@ variable "vpc_name" {
   default     = "example-vpc"
 }
 variable "region" {
-  description = "The Region the VPC will be booted up in"
+  description = "The AWS Region the VPC will be booted up in"
   type        = string
   default     = "us-east-1"
 }
 
 variable "vpc_cidr" {
-  description = "CIDR block for VPC"
+  description = "CIDR block for VPC. This is more important when peering multiple VPCs"
   type        = string
   default     = "10.0.0.0/16"
 }
 variable "bastion_keypair_name" {
-  description = "The keypair you created"
+  description = "The keypair you created for the bastion. If this is left empty no bastion should be booted up"
   type        = string
-  default = null
+  default = ""
 }
 variable "bastion_ingress_rule" {
   description = "IP Address For Bastion"
@@ -27,6 +27,7 @@ variable "bastion_ingress_rule" {
   default     = "0.0.0.0/0"
 }
 variable "private_subnets" {
+  description = "This is a list of the private availability zones(az), cidr blocks (cidr), and subnet names for each subnet you want. I recommend at least 1 public and 1 private for each availability zone you wish to support."
   type = list(object({
     az = string
     cidr = string
@@ -48,6 +49,7 @@ variable "private_subnets" {
 
 
 variable "public_subnets" {
+  description = "This is a list of the private availability zones(az), cidr blocks (cidr), and subnet names for each subnet you want. I recommend at least 1 public and 1 private for each availability zone you wish to support."
   type = list(object({
     az = string
     cidr = string
@@ -65,16 +67,6 @@ variable "public_subnets" {
       name = "public-b"
     }
   ]
-}
-variable "vpc_enable_nat_gateway" {
-  description = "Enable NAT gateway for VPC"
-  type        = bool
-  default     = true
-}
-variable "vpc_enable_bastion" {
-  description = "Enable Bastion for VPC"
-  type        = bool
-  default     = true
 }
 
 variable "vpc_tags" {

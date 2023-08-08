@@ -137,8 +137,8 @@ resource "aws_vpc_endpoint_route_table_association" "s3_vpc_endpoint_route_table
   route_table_id  = aws_route_table.private_route_table.id
   vpc_endpoint_id = aws_vpc_endpoint.s3_vpc_endpoint.id
 }
-/*
 resource "aws_instance" "bastion" {
+  count = var.bastion_keypair_name != "" ? 1 : 0
   ami                          = "ami-0557a15b87f6559cf"
   instance_type                = "t2.nano"
   key_name                     = var.bastion_keypair_name
@@ -154,7 +154,6 @@ resource "aws_instance" "bastion" {
     "Region"                    = var.region
   }
 }
-*/
 
 resource "aws_security_group" "bastion" {
   name_prefix                  = join("-", [var.vpc_name, var.region, "bastion"])

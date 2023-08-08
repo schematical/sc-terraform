@@ -253,6 +253,7 @@ module "lambda_service" {
   service_uri = "chaospixel"*/
   lambda_memory_size = 512
   env_vars =  {
+    NODE_ENV: var.env,
     ENV: var.env,
     DB_URL: var.secrets.chaospixel_lambda_service_DB_URL
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
@@ -288,6 +289,7 @@ module "buildpipeline" {
   source_buildspec_path = "lambda/buildspec.yml"
   env_vars =  {
     // ENV: var.env,
+    NODE_ENV: var.env,
     AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
     DB_URL: var.secrets.chaospixel_lambda_service_DB_URL
