@@ -116,7 +116,7 @@ resource "aws_iam_role" "ecs_task_execution_iam_role" {
 module "vpc" {
   source = "../modules/vpc"
   vpc_name = "dev"
-  bastion_keypair_name = "schematical_node_1"
+  # bastion_keypair_name = "schematical_node_1"
 }
 resource "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
   bucket = "schematical-codebuild-v1"
