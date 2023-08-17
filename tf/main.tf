@@ -193,4 +193,10 @@ module "project_drawnby_ai" {
   env_info = local.env_info
 }
 
+module "project_schematical_com" {
+  source = "./projects/schematical_com"
+  ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
+  // api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
+  env_info = local.env_info
+}
 

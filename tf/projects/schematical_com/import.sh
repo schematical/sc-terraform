@@ -1,0 +1,5 @@
+terraform import module.project_schematical_com.aws_route53_zone.schematical_com ZC4VPG65C2OOQ
+terraform import module.project_schematical_com.aws_route53_record.schematical-com-a ZC4VPG65C2OOQ_schematical.com_A
+# terraform import module.project_schematical_com.aws_route53_record.schematical-com-ns ZC4VPG65C2OOQ_schematical.com_NS
+terraform import module.project_schematical_com.aws_route53_record.schematical-com-mx ZC4VPG65C2OOQ_schematical.com_MX
+terraform import module.project_schematical_com.aws_ses_domain_identity.ses_domain_identity schematical.com
