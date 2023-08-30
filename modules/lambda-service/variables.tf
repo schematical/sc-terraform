@@ -68,3 +68,7 @@ variable "lambda_memory_size" {
   type = number
   default = 128
 }
+variable "lambda_runtime" {
+  type = string
+  default = "nodejs16.x"
+}

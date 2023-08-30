@@ -20,7 +20,7 @@ module "cloudfront" {
 
 data "aws_caller_identity" "current" {}
 module "lambda_service" {
-  service_name = "sc-schematical-com-v1-${var.env}-www"
+  service_name = "schematical-com-v1-${var.env}-www"
   source = "../../../../modules/lambda-service"
   region = var.region
   env = var.env

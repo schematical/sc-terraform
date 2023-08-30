@@ -4,3 +4,6 @@ output "lambda_function" {
 output "iam_role" {
   value = aws_iam_role.service_lambda_iam_role
 }
+output "lambda_sg_id" {
+  value = aws_security_group.service_lambda_sg.id
+}
