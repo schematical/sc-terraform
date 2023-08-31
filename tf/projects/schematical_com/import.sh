@@ -4,3 +4,6 @@ terraform import module.project_schematical_com.aws_route53_record.schematical-c
 terraform import module.project_schematical_com.aws_route53_record.schematical-com-mx ZC4VPG65C2OOQ_schematical.com_MX
 terraform import module.project_schematical_com.aws_ses_domain_identity.ses_domain_identity schematical.com
 terraform import  module.project_schematical_com.module.dev_env_schematical_com.module.apigateway_env.aws_route53_record.route53_record ZC4VPG65C2OOQ_dev.schematical.com_CNAME
+
+terraform import  module.project_schematical_com.module.prod_env_schematical_com.module.apigateway_env.aws_route53_record.route53_record ZC4VPG65C2OOQ_www.schematical.com_A
+

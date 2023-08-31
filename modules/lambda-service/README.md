@@ -1,28 +1,23 @@
-# AWS Build Pipeline Module
-This module allows you to quickly boot up a build pipeline that automatically reads from a Github repo and then runs any build commands in the `buildspec.yml` to allow you to build, test and deploy your code quickly.
+# AWS Lambda MicroService
+This module allows you to quickly boot up an AWS Lambda MicroService with IAM Roles and Security Groups
 
-
-## What is AWS CodePipeline/CodeBuild and how does it work?
+## How does it work?
 Most of the answers you are looking for is in this video that specifically covers these modules
-[![](./thumb.png)](https://youtu.be/55JnqNeHcQU)
+[![](./thumb.png)](https://youtu.be/UDkZC-SmbFM)
 
 ## How to use it:
 ```
-module "buildpipeline" {
-  source = "git::https://github.com/schematical/sc-terraform.git//modules/buildpipeline"
-  service_name = "chaospixel-v1"
+
+data "aws_caller_identity" "current" {}
+module "lambda_service" {
+  service_name = "schematical-com-v1-${var.env}-www"
+  source = "git::https://github.com/schematical/sc-terraform.git//modules/lambda-service"
   region = var.region
   env = var.env
-  github_owner = "schematical"
-  github_project_name = "chaos-pixel"
-  github_source_branch = var.env
-  code_pipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket.bucket # create this and pass it in.
   vpc_id = var.vpc_id
-  private_subnet_mappings = var.private_subnet_mappings # see github.com/schematical/sc-terraform/modules/vpc for this
-  source_buildspec_path = "buildspec.yml"
-  env_vars =  {
-    NODE_ENV: var.env
-  }
+  private_subnet_mappings = var.private_subnet_mappings
+  handler = "handler.main"
+
 }
 ```
 
