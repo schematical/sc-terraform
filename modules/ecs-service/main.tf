@@ -86,14 +86,14 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
       valueFrom = aws_secretsmanager_secret.secret_manager_secret.arn
     }]
 
-    port_mappings = [{
-      container_port = 80
-      host_port      = 80
+    portMappings  = [{
+      containerPort = 80
+      hostPort      = 80
       protocol       = "tcp"
     }]
 
-    log_configuration = {
-      log_driver = "awslogs"
+    logConfiguration = {
+      logDriver = "awslogs"
       options    = {
         "awslogs-group" = aws_cloudwatch_log_group.ecs_task_log_group.name
         "awslogs-region" = var.region

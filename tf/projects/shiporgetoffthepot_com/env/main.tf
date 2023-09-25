@@ -1,8 +1,17 @@
+resource "aws_ecr_repository" "prod_ecr_repo" {
+  name                 = "sogotp-com-v1-${var.env}-${var.region}"
+  image_tag_mutability = "MUTABLE"
 
-module "prod_env_shiporgetofthepot_com_tg" {
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}
+module "prod_env_shiporgetoffthepot_com_tg" {
   source = "../../../../modules/alb-ecs-service-association"
   env = "prod"
+  service_name = "sogotp-com"
   vpc_id = var.env_info.vpc_id
+  hosted_zone_id = var.hosted_zone_id
   hosted_zone_name = var.hosted_zone_name
   acm_cert_arn = var.acm_cert_arn
   subdomain = var.subdomain
@@ -10,13 +19,13 @@ module "prod_env_shiporgetofthepot_com_tg" {
   alb_dns_name = var.env_info.shared_alb.alb_dns_name
   alb_hosted_zone_id = var.env_info.shared_alb.alb_hosted_zone_id
 }
-module "prod_env_shiporgetofthepot_com_ecs_service" {
+module "prod_env_shiporgetoffthepot_com_ecs_service" {
   source = "../../../../modules/ecs-service"
   env = "prod"
   vpc_id = var.env_info.vpc_id
-
+  service_name = "sogotp-com-v1"
   private_subnet_mappings = var.env_info.private_subnet_mappings
-  aws_lb_target_group_arn = module.prod_env_shiporgetofthepot_com_tg.aws_lb_target_group_arn
+  aws_lb_target_group_arn = module.prod_env_shiporgetoffthepot_com_tg.aws_lb_target_group_arn
   ecs_cluster = var.env_info.ecs_cluster.id
   ingress_security_groups = [
     var.env_info.shared_alb.alb_sg_id
@@ -24,7 +33,7 @@ module "prod_env_shiporgetofthepot_com_ecs_service" {
 }
 module "buildpipeline" {
   source = "../../../../modules/buildpipeline"# "github.com/schematical/sc-terraform/modules/buildpipeline"
-  service_name = "shiporgetoffthepot-com-v1"
+  service_name = "sogotp-com-v1"
   region = var.region
   env = var.env
   github_owner = "schematical"

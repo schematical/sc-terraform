@@ -45,6 +45,7 @@ resource "aws_lb_target_group" "alb_target_group" {
   }
 }*/
 
+/*
 resource "aws_route53_health_check" "route53_health_check" {
   port                         = 443
   type                         = "HTTPS"
@@ -55,11 +56,12 @@ resource "aws_route53_health_check" "route53_health_check" {
   measure_latency              = true
   enable_sni                   = true
 }
+*/
 
 resource "aws_route53_record" "route53_record" {
   name    = "${var.subdomain}.${var.hosted_zone_name}"
   type    = "A"
-  zone_id = var.hosted_zone_name
+  zone_id = var.hosted_zone_id
 
   alias {
     name                   = var.alb_dns_name
@@ -67,5 +69,5 @@ resource "aws_route53_record" "route53_record" {
     evaluate_target_health = true
   }
 
-  health_check_id = aws_route53_health_check.route53_health_check.id
+  # health_check_id = aws_route53_health_check.route53_health_check.id
 }

@@ -3,6 +3,9 @@ variable "service_name" {
   default = "sc-ecs-service"
 }
 
+variable "hosted_zone_id" {
+  type    = string
+}
 variable "hosted_zone_name" {
   type    = string
   default = "schematical.com."
