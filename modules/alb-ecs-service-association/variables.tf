@@ -17,6 +17,9 @@ variable "region" {
   default = "us-east-1"
 }
 
+variable "subdomain" {
+  type    = string
+}
 variable "vpc_id" {
   description = "The id of the VPC your working with"
   type        = string

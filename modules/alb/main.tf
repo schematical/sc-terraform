@@ -1,6 +1,6 @@
 resource "aws_lb" "application_load_balancer" {
   name               = "${var.service_name}-v1-${var.env}-alb"
-  subnets            = var.public_subnet_mappings
+  subnets            =  [for o in var.public_subnet_mappings : o.id]
   security_groups    = [aws_security_group.alb_security_group.id]
 
 }

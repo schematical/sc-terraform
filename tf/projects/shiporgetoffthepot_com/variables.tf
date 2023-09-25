@@ -25,19 +25,19 @@ variable env_info {
     api_gateway_stage_id = string
     bastion_security_group = string
     secrets  = map(string)
-    shared_alb = object({
+    shared_alb = optional(object({
       alb_sg_id: string
       alb_arn: string
       alb_hosted_zone_id: string
       alb_dns_name: string
-    })
-    ecs_cluster = object({
+    }))
+    ecs_cluster = optional(object({
       arn: string
       id: string
-    })
-    rds_instance = object({
+    }))
+    rds_instance = optional(object({
       address: string
-    })
+    }))
 
   }))
 }

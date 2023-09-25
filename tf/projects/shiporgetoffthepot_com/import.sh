@@ -1,0 +1,2 @@
+terraform import module.project_shiporgetoffthepot_com.aws_route53_zone.shiporgetoffthepot_com ZHY93WZQTUP2L
+terraform import module.project_shiporgetoffthepot_com.aws_route53_record.shiporgetoffthepot-com-a ZHY93WZQTUP2L_shiporgetoffthepot.com_A

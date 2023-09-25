@@ -48,9 +48,6 @@ resource "aws_iam_role" "task_iam_role" {
 resource "aws_secretsmanager_secret" "secret_manager_secret" {
   description = "${var.service_name}-${var.region}-v1-${var.env}-task"
   name        = "${var.service_name}-${var.region}-v1-${var.env}-task"
-  secret_string = jsonencode({
-    "hello" : "world"
-  })
 
   tags = {
     Service = var.service_name
@@ -110,25 +107,22 @@ resource "aws_ecs_service" "ecs_service" {
   name    = "${var.service_name}-${var.region}-v1-${var.env}"
   cluster = var.ecs_cluster
 
-  deployment_configuration {
-    maximum_percent         = 100
-    minimum_healthy_percent = 50
-  }
+  deployment_maximum_percent         = 100
+  deployment_minimum_healthy_percent = 50
+
 
   deployment_controller {
     type = "ECS"
   }
 
   desired_count              = var.ecs_desired_task_count
-  health_check_grace_period = 60
+  health_check_grace_period_seconds  = 60
   launch_type                = "FARGATE"
 
   network_configuration {
-    awsvpc_configuration {
-      assign_public_ip = "DISABLED"
-      security_groups = [aws_security_group.task_security_group.id]
-      subnets         = var.private_subnet_mappings
-    }
+    assign_public_ip = false
+    security_groups = [aws_security_group.task_security_group.id]
+    subnets         = [for o in var.private_subnet_mappings : o.id]
   }
 
   load_balancer {

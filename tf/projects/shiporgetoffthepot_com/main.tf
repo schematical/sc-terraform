@@ -31,7 +31,6 @@ resource "aws_route53_zone" "shiporgetoffthepot_com" {
 
 
 module "prod_env_shiporgetoffthepot_com" {
-  # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
   source = "./env"
   env = "prod"
   vpc_id = var.env_info.dev.vpc_id
@@ -41,10 +40,9 @@ module "prod_env_shiporgetoffthepot_com" {
   private_subnet_mappings = var.env_info.dev.private_subnet_mappings
   acm_cert_arn = aws_acm_certificate.shiporgetoffthepot_com_cert.arn
   codepipeline_artifact_store_bucket = var.env_info.dev.codepipeline_artifact_store_bucket
-  # bastion_security_group = var.bastion_security_group
 
-  domain_name = "www"
+  subdomain = "www"
 
   secrets = var.env_info.prod.secrets
-  env_info = var.env_info
+  env_info = var.env_info.prod
 }

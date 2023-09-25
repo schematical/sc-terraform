@@ -198,7 +198,7 @@ module "prod_shared_alb" {
   service_name = "shared"
   env = "prod"
   public_subnet_mappings = module.vpc.public_subnet_mappings
-  vpc_id = local.env_info.prod.vpc_id
+  vpc_id = module.vpc.vpc_id
 }
 resource "aws_ecs_cluster" "prod_ecs_cluster" {
   name = "prod-v1"
