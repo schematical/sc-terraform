@@ -121,6 +121,7 @@ module "vpc" {
 resource "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
   bucket = "schematical-codebuild-v1"
 }
+
 module "dev_env" {
   source = "../modules/apigateway-env"
   env = "dev"
@@ -149,12 +150,71 @@ module "prod_env" {
   //ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
 
 }
+
+
+
+
+resource "aws_security_group" "prod_rds_sg" {
+  name        = "shared-us-east1-v1-prod-alb"
+  description = "shared-us-east1-v1-prod-alb"
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  vpc_id = module.vpc.vpc_id
+}
+resource "aws_db_instance" "prod_rds" {
+  allocated_storage    = 10
+  db_name              = "mydb"
+  engine               = "mysql"
+  engine_version       = "5.7"
+  instance_class       = "db.t3.micro"
+  username             = "foo"
+  password             = "foobarbaz"
+  parameter_group_name = "default.mysql5.7"
+  skip_final_snapshot  = true
+  vpc_security_group_ids = [aws_security_group.prod_rds_sg.id]
+}
+module "prod_shared_alb" {
+  source = "../modules/alb"
+  service_name = "shared"
+  env = "prod"
+  public_subnet_mappings = module.vpc.public_subnet_mappings
+  vpc_id = local.env_info.prod.vpc_id
+}
+resource "aws_ecs_cluster" "prod_ecs_cluster" {
+  name = "prod-v1"
+
+  /*setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }*/
+}
 locals {
   env_info = {
     dev: {
       name = "dev"
       vpc_id = module.vpc.vpc_id
       private_subnet_mappings = module.vpc.private_subnet_mappings
+      public_subnet_mappings = module.vpc.public_subnet_mappings
       codepipeline_artifact_store_bucket = aws_s3_bucket.codepipeline_artifact_store_bucket
       api_gateway_stage_id = module.dev_env.api_gateway_stage_id
       bastion_security_group = module.vpc.bastion_security_group
@@ -162,11 +222,13 @@ locals {
       hosted_zone_id = local.default_hosted_zone_id
       hosted_zone_name = local.default_hosted_zone_name
       acm_cert_arn = local.acm_cert_arn
+
     },
     prod: {
       name = "prod"
       vpc_id = module.vpc.vpc_id
       private_subnet_mappings = module.vpc.private_subnet_mappings
+      public_subnet_mappings = module.vpc.public_subnet_mappings
       codepipeline_artifact_store_bucket = aws_s3_bucket.codepipeline_artifact_store_bucket
       api_gateway_stage_id = module.prod_env.api_gateway_stage_id
       bastion_security_group = module.vpc.bastion_security_group
@@ -174,9 +236,14 @@ locals {
       hosted_zone_id = local.default_hosted_zone_id
       hosted_zone_name = local.default_hosted_zone_name
       acm_cert_arn = local.acm_cert_arn
+      shared_alb = module.prod_shared_alb
+      ecs_cluster = aws_ecs_cluster.prod_ecs_cluster
+      rds_instance = aws_db_instance.prod_rds
     }
   }
 }
+
+
 module "project_chaospixel" {
   source = "./projects/chaospixel"
   ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
@@ -199,4 +266,11 @@ module "project_schematical_com" {
   // api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
   env_info = local.env_info
 }
+
+module "project_shiporgetoffthepot_com" {
+  source = "./projects/shiporgetoffthepot_com"
+  ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
+  env_info = local.env_info
+}
+
 
