@@ -53,4 +53,11 @@ variable "ecs_desired_task_count" {
 variable "aws_lb_target_group_arn" {
   type    = string
 }
+variable "ecr_image_uri" {
+  type    = string
+}
+variable "container_port" {
+  type    = number
+  default = 80
+}
 

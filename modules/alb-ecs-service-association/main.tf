@@ -28,7 +28,7 @@ resource "aws_lb_target_group" "alb_target_group" {
     path = var.alb_target_group_health_check_path
   }
   name                = "${var.service_name}-v1-${var.env}-tg"
-  port                = 80
+  port                = var.container_port
   protocol            = "HTTP"
   target_type         = "ip"
   vpc_id              = var.vpc_id

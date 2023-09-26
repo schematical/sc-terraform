@@ -18,18 +18,23 @@ module "prod_env_shiporgetoffthepot_com_tg" {
   alb_arn = var.env_info.shared_alb.alb_arn
   alb_dns_name = var.env_info.shared_alb.alb_dns_name
   alb_hosted_zone_id = var.env_info.shared_alb.alb_hosted_zone_id
+  container_port = 2368
+  alb_target_group_health_check_path = "/"
 }
 module "prod_env_shiporgetoffthepot_com_ecs_service" {
   source = "../../../../modules/ecs-service"
   env = "prod"
   vpc_id = var.env_info.vpc_id
   service_name = "sogotp-com-v1"
+  ecs_desired_task_count = 1
   private_subnet_mappings = var.env_info.private_subnet_mappings
   aws_lb_target_group_arn = module.prod_env_shiporgetoffthepot_com_tg.aws_lb_target_group_arn
   ecs_cluster = var.env_info.ecs_cluster.id
   ingress_security_groups = [
     var.env_info.shared_alb.alb_sg_id
   ]
+  ecr_image_uri = "${aws_ecr_repository.prod_ecr_repo.repository_url}:${var.env}"
+  container_port = 2368
 }
 module "buildpipeline" {
   source = "../../../../modules/buildpipeline"# "github.com/schematical/sc-terraform/modules/buildpipeline"

@@ -6,8 +6,8 @@ resource "aws_security_group" "task_security_group" {
   description = "${var.service_name}-v1-${var.env}-ecs"
 
   ingress {
-    from_port       = 80
-    to_port         = 80
+    from_port       = var.container_port
+    to_port         = var.container_port
     protocol        = "tcp"
     security_groups = var.ingress_security_groups
   }
@@ -23,7 +23,7 @@ resource "aws_security_group" "task_security_group" {
 }
 
 resource "aws_iam_role" "task_iam_role" {
-  name = "${var.service_name}-${var.region}-v1-${var.env}-codebuild"
+  name = "${var.service_name}-${var.region}-v1-${var.env}-ecs"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -37,7 +37,19 @@ resource "aws_iam_role" "task_iam_role" {
   })
 
   managed_policy_arns = ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
-
+  inline_policy {
+    name = "my_inline_policy"
+    policy = jsonencode({
+      Version   = "2012-10-17"
+      Statement = [
+        {
+          Effect   = "Allow"
+          Resource = aws_secretsmanager_secret.secret_manager_secret.arn
+          Action   = "secretsmanager:GetSecretValue"
+        }
+      ]
+    })
+  }
   tags = {
     Service = var.service_name
     Env     = var.env
@@ -74,7 +86,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
 
   container_definitions = jsonencode([{
     name  = var.service_name
-    image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/${var.service_name}:${var.env}"
+    image = var.ecr_image_uri
 
     cpu    = var.task_cpu
     memory = var.task_memory
@@ -87,8 +99,8 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
     }]
 
     portMappings  = [{
-      containerPort = 80
-      hostPort      = 80
+      containerPort = var.container_port
+      hostPort      = var.container_port
       protocol       = "tcp"
     }]
 
@@ -127,7 +139,7 @@ resource "aws_ecs_service" "ecs_service" {
 
   load_balancer {
     container_name   = var.service_name
-    container_port   = 80
+    container_port   = var.container_port
     target_group_arn = var.aws_lb_target_group_arn
   }
 

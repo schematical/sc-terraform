@@ -44,3 +44,7 @@ variable "alb_target_group_health_check_path" {
   type    = string
   default = "/heartbeat"
 }
+variable "container_port" {
+  type    = number
+  default = 80
+}
