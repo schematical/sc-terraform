@@ -18,7 +18,7 @@ module "prod_env_shiporgetoffthepot_com_tg" {
   alb_arn = var.env_info.shared_alb.alb_arn
   alb_dns_name = var.env_info.shared_alb.alb_dns_name
   alb_hosted_zone_id = var.env_info.shared_alb.alb_hosted_zone_id
-  container_port = 2368
+  container_port = 80
   alb_target_group_health_check_path = "/"
 }
 module "prod_env_shiporgetoffthepot_com_ecs_service" {
@@ -34,7 +34,7 @@ module "prod_env_shiporgetoffthepot_com_ecs_service" {
     var.env_info.shared_alb.alb_sg_id
   ]
   ecr_image_uri = "${aws_ecr_repository.prod_ecr_repo.repository_url}:${var.env}"
-  container_port = 2368
+  container_port = 80
 }
 module "buildpipeline" {
   source = "../../../../modules/buildpipeline"# "github.com/schematical/sc-terraform/modules/buildpipeline"
