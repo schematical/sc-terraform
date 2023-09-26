@@ -122,6 +122,7 @@ resource "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
   bucket = "schematical-codebuild-v1"
 }
 
+//TODO: Move this to the `projects/shared/env` module
 module "dev_env" {
   source = "../modules/apigateway-env"
   env = "dev"
@@ -136,6 +137,7 @@ module "dev_env" {
   //ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
 
 }
+//TODO: Move this to the `projects/shared/env` module
 module "prod_env" {
   source = "../modules/apigateway-env"
   env = "prod"
@@ -152,64 +154,14 @@ module "prod_env" {
 }
 
 
-
-
-resource "aws_security_group" "prod_rds_sg" {
-  name        = "shared-us-east1-v1-prod-alb"
-  description = "shared-us-east1-v1-prod-alb"
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  vpc_id = module.vpc.vpc_id
+module "shared_env" {
+  source = "./projects/shared"
+  private_subnet_mappings = module.vpc.private_subnet_mappings
+  public_subnet_mappings  = module.vpc.public_subnet_mappings
+  vpc_id                  = module.vpc.vpc_id
 }
-resource "aws_db_subnet_group" "prod_rds_subnet_group" {
-  name       = "prod_rds_subnet_group"
-  subnet_ids = [for o in module.vpc.private_subnet_mappings : o.id]
 
-  tags = {
-    Env = "prod"
-  }
-}
-resource "aws_db_instance" "prod_rds" {
-  identifier = "shared-v1-prod"
-  allocated_storage    = 10
-  db_name              = "mydb"
-  engine               = "mysql"
-  engine_version       = "5.7"
-  instance_class       = "db.t3.micro"
-  username             = "foo"
-  password             = "foobarbaz"
-  parameter_group_name = "default.mysql5.7"
-  skip_final_snapshot  = true
-  vpc_security_group_ids = [aws_security_group.prod_rds_sg.id]
-  db_subnet_group_name = aws_db_subnet_group.prod_rds_subnet_group.name
-}
-module "prod_shared_alb" {
-  source = "../modules/alb"
-  service_name = "shared"
-  env = "prod"
-  public_subnet_mappings = module.vpc.public_subnet_mappings
-  vpc_id = module.vpc.vpc_id
-}
+
 resource "aws_ecs_cluster" "prod_ecs_cluster" {
   name = "prod-v1"
 
@@ -246,9 +198,8 @@ locals {
       hosted_zone_id = local.default_hosted_zone_id
       hosted_zone_name = local.default_hosted_zone_name
       acm_cert_arn = local.acm_cert_arn
-      shared_alb = module.prod_shared_alb
+      shared_alb = module.shared_env.prod_shared_env.shared_alb
       ecs_cluster = aws_ecs_cluster.prod_ecs_cluster
-      rds_instance = aws_db_instance.prod_rds
     }
   }
 }
