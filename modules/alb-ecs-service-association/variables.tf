@@ -36,9 +36,13 @@ variable "alb_hosted_zone_id" {
 variable "alb_dns_name" {
   type    = string
 }
-variable "acm_cert_arn" {
-  type = string
+variable "lb_http_listener_arn" {
+  type    = string
 }
+variable "lb_https_listener_arn" {
+  type    = string
+}
+
 
 variable "alb_target_group_health_check_path" {
   type    = string

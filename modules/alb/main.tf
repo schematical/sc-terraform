@@ -36,4 +36,37 @@ resource "aws_security_group" "alb_security_group" {
 }
 
 
+resource "aws_lb_listener" "alb_listener_http" {
+  default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Fixed response content"
+      status_code  = "200"
+    }
+  }
+
+  load_balancer_arn = aws_lb.application_load_balancer.arn
+  port              = 80
+  protocol          = "HTTP"
+}
+
+resource "aws_lb_listener" "alb_listener_https" {
+  default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Fixed response content"
+      status_code  = "200"
+    }
+  }
+
+  load_balancer_arn = aws_lb.application_load_balancer.arn
+  port              = 443
+  protocol          = "HTTPS"
+
+  certificate_arn = var.acm_cert_arn
+}
 

@@ -25,6 +25,7 @@ variable env_info {
     api_gateway_stage_id = string
     bastion_security_group = string
     secrets  = map(string)
+    shared_acm_cert_arn = optional(string)
     shared_alb = optional(object({
       alb_sg_id: string
       alb_arn: string

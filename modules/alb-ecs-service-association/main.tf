@@ -1,27 +1,4 @@
 
-resource "aws_lb_listener" "alb_listener_http" {
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.alb_target_group.arn
-  }
-
-  load_balancer_arn = var.alb_arn
-  port              = 80
-  protocol          = "HTTP"
-}
-
-resource "aws_lb_listener" "alb_listener_https" {
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.alb_target_group.arn
-  }
-
-  load_balancer_arn = var.alb_arn
-  port              = 443
-  protocol          = "HTTPS"
-
-  certificate_arn = var.acm_cert_arn
-}
 
 resource "aws_lb_target_group" "alb_target_group" {
   health_check  {
@@ -32,6 +9,44 @@ resource "aws_lb_target_group" "alb_target_group" {
   protocol            = "HTTP"
   target_type         = "ip"
   vpc_id              = var.vpc_id
+}
+
+resource "aws_lb_listener_rule" "health_check" {
+  listener_arn = var.lb_http_listener_arn
+
+  action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "HEALTHY"
+      status_code  = "200"
+    }
+  }
+
+  condition {
+    query_string {
+      key   = "health"
+      value = "check"
+    }
+
+    query_string {
+      value = "bar"
+    }
+  }
+}
+resource "aws_route53_record" "route53_record" {
+  name    = "${var.subdomain}.${var.hosted_zone_name}"
+  type    = "A"
+  zone_id = var.hosted_zone_id
+
+  alias {
+    name                   = var.alb_dns_name
+    zone_id                = var.alb_hosted_zone_id
+    evaluate_target_health = true
+  }
+
+  # health_check_id = aws_route53_health_check.route53_health_check.id
 }
 /*resource "aws_route53_record" "route53_record" {
   name    = "${var.service_name}-${var.env}-${var.region}.${var.hosted_zone_name}"
@@ -58,16 +73,3 @@ resource "aws_route53_health_check" "route53_health_check" {
 }
 */
 
-resource "aws_route53_record" "route53_record" {
-  name    = "${var.subdomain}.${var.hosted_zone_name}"
-  type    = "A"
-  zone_id = var.hosted_zone_id
-
-  alias {
-    name                   = var.alb_dns_name
-    zone_id                = var.alb_hosted_zone_id
-    evaluate_target_health = true
-  }
-
-  # health_check_id = aws_route53_health_check.route53_health_check.id
-}
