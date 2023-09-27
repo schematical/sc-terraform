@@ -24,7 +24,6 @@ module "prod_env_shiporgetoffthepot_com" {
   hosted_zone_name = aws_route53_zone.shiporgetoffthepot_com.name
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
   private_subnet_mappings = var.env_info.prod.private_subnet_mappings
-  acm_cert_arn =  var.env_info.prod.shared_acm_cert_arn
   codepipeline_artifact_store_bucket = var.env_info.prod.codepipeline_artifact_store_bucket
 
   subdomain = "www"

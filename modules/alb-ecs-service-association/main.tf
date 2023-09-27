@@ -11,27 +11,36 @@ resource "aws_lb_target_group" "alb_target_group" {
   vpc_id              = var.vpc_id
 }
 
-resource "aws_lb_listener_rule" "health_check" {
+resource "aws_lb_listener_rule" "aws_lb_listener_rule_http" {
   listener_arn = var.lb_http_listener_arn
 
-  action {
-    type = "fixed-response"
+  priority     = 99
 
-    fixed_response {
-      content_type = "text/plain"
-      message_body = "HEALTHY"
-      status_code  = "200"
+  action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.alb_target_group.arn
+  }
+
+
+  condition {
+    host_header {
+      values = ["${var.subdomain}.${var.hosted_zone_name}"]
     }
+  }
+}
+resource "aws_lb_listener_rule" "aws_lb_listener_rule_https" {
+  listener_arn = var.lb_https_listener_arn
+
+  priority     = 99
+
+  action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.alb_target_group.arn
   }
 
   condition {
-    query_string {
-      key   = "health"
-      value = "check"
-    }
-
-    query_string {
-      value = "bar"
+    host_header {
+      values = ["${var.subdomain}.${var.hosted_zone_name}"]
     }
   }
 }

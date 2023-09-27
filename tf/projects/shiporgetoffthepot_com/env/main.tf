@@ -13,13 +13,14 @@ module "prod_env_shiporgetoffthepot_com_tg" {
   vpc_id = var.env_info.vpc_id
   hosted_zone_id = var.hosted_zone_id
   hosted_zone_name = var.hosted_zone_name
-  acm_cert_arn = var.acm_cert_arn
   subdomain = var.subdomain
   alb_arn = var.env_info.shared_alb.alb_arn
   alb_dns_name = var.env_info.shared_alb.alb_dns_name
   alb_hosted_zone_id = var.env_info.shared_alb.alb_hosted_zone_id
   container_port = 80
   alb_target_group_health_check_path = "/"
+  lb_http_listener_arn =  var.env_info.shared_alb_http_listener_arn
+  lb_https_listener_arn = var.env_info.shared_alb_https_listener_arn
 }
 module "prod_env_shiporgetoffthepot_com_ecs_service" {
   source = "../../../../modules/ecs-service"

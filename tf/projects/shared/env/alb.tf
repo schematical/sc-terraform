@@ -4,4 +4,5 @@ module "shared_alb" {
   env = var.env
   public_subnet_mappings = var.public_subnet_mappings
   vpc_id = var.vpc_id
+  acm_cert_arn = var.shared_acm_cert_arn
 }

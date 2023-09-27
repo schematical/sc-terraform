@@ -199,8 +199,11 @@ locals {
       hosted_zone_name = local.default_hosted_zone_name
       acm_cert_arn = local.acm_cert_arn
       shared_alb = module.shared_env.prod_shared_env.shared_alb
+      shared_alb_http_listener_arn = module.shared_env.prod_shared_env.shared_alb_http_listener_arn
+      shared_alb_https_listener_arn = module.shared_env.prod_shared_env.shared_alb_https_listener_arn
       ecs_cluster = aws_ecs_cluster.prod_ecs_cluster
       shared_acm_cert_arn = module.shared_env.shared_acm_cert.arn
+
     }
   }
 }

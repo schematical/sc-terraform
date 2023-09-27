@@ -22,12 +22,7 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "lb_http_listener_arn" {
-  type = string
-}
-variable "lb_https_listener_arn" {
-  type = string
-}
+
 variable "acm_cert_arn" {
   type = string
 }

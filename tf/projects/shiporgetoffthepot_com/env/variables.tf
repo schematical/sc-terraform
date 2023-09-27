@@ -16,8 +16,6 @@ variable "hosted_zone_id" {
 }
 
 
-variable "acm_cert_arn" {
-}
 
 variable "ecs_task_execution_iam_role" {}
 variable "vpc_id" {}
@@ -56,6 +54,8 @@ variable env_info {
       alb_hosted_zone_id: string
       alb_dns_name: string
     }))
+    shared_alb_http_listener_arn = optional(string)
+    shared_alb_https_listener_arn = optional(string)
     ecs_cluster = optional(object({
       arn: string
       id: string
