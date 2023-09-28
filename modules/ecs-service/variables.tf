@@ -79,4 +79,8 @@ variable "launch_type" {
   default = "FARGATE"
   type = string
 }
+variable "create_secrets" {
+  default = true
+  type = bool
+}
 
