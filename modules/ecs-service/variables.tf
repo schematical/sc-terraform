@@ -85,5 +85,6 @@ variable "create_secrets" {
 }
 variable "extra_iam_policies" {
   type    = list(string)
-  default = []}
+  default = []
+}
 
