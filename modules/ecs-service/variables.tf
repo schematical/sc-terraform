@@ -23,7 +23,7 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "ecs_cluster" {
+variable "ecs_cluster_id" {
   description = "The id of the VPC your working with"
   type        = string
 }
@@ -59,5 +59,16 @@ variable "ecr_image_uri" {
 variable "container_port" {
   type    = number
   default = 80
+}
+variable "extra_secrets" {
+  type    = list(object({
+    name = string
+    valueFrom = string
+  }))
+  default = []
+}
+variable "retention_in_days" {
+  type    = number
+  default = 90
 }
 

@@ -162,14 +162,7 @@ module "shared_env" {
 }
 
 
-resource "aws_ecs_cluster" "prod_ecs_cluster" {
-  name = "prod-v1"
 
-  /*setting {
-    name  = "containerInsights"
-    value = "enabled"
-  }*/
-}
 locals {
   env_info = {
     dev: {
@@ -201,7 +194,7 @@ locals {
       shared_alb = module.shared_env.prod_shared_env.shared_alb
       shared_alb_http_listener_arn = module.shared_env.prod_shared_env.shared_alb_http_listener_arn
       shared_alb_https_listener_arn = module.shared_env.prod_shared_env.shared_alb_https_listener_arn
-      ecs_cluster = aws_ecs_cluster.prod_ecs_cluster
+      ecs_cluster = module.shared_env.prod_shared_env.ecs_cluster
       shared_acm_cert_arn = module.shared_env.shared_acm_cert.arn
 
     }

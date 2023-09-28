@@ -60,7 +60,6 @@ resource "aws_iam_role" "task_iam_role" {
 resource "aws_secretsmanager_secret" "secret_manager_secret" {
   description = "${var.service_name}-${var.region}-v1-${var.env}-task"
   name        = "${var.service_name}-${var.region}-v1-${var.env}-task"
-
   tags = {
     Service = var.service_name
     Env     = var.env
@@ -68,11 +67,14 @@ resource "aws_secretsmanager_secret" "secret_manager_secret" {
   }
 }
 
-
+resource "aws_secretsmanager_secret_version" "secretsmanager_secret_version" {
+  secret_id     = aws_secretsmanager_secret.secret_manager_secret.id
+  secret_string = jsonencode({ foo: "bar" })
+}
 
 resource "aws_cloudwatch_log_group" "ecs_task_log_group" {
   name              = "${var.service_name}-${var.region}-v1-${var.env}"
-  retention_in_days = 90
+  retention_in_days = var.retention_in_days
 }
 
 resource "aws_ecs_task_definition" "ecs_task_definition" {
@@ -93,10 +95,15 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
 
     essential = true
 
-    secrets = [{
-      name      = "CONFIG"
-      valueFrom = aws_secretsmanager_secret.secret_manager_secret.arn
-    }]
+    secrets = concat(
+      tolist([
+        {
+          name      = "CONFIG"
+          valueFrom = aws_secretsmanager_secret.secret_manager_secret.arn
+        }
+      ]),
+      tolist(var.extra_secrets)
+    )
 
     portMappings  = [{
       containerPort = var.container_port
@@ -117,7 +124,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
 
 resource "aws_ecs_service" "ecs_service" {
   name    = "${var.service_name}-${var.region}-v1-${var.env}"
-  cluster = var.ecs_cluster
+  cluster = var.ecs_cluster_id
 
   deployment_maximum_percent         = 100
   deployment_minimum_healthy_percent = 50

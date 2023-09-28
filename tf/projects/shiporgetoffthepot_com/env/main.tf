@@ -30,7 +30,7 @@ module "prod_env_shiporgetoffthepot_com_ecs_service" {
   ecs_desired_task_count = 1
   private_subnet_mappings = var.env_info.private_subnet_mappings
   aws_lb_target_group_arn = module.prod_env_shiporgetoffthepot_com_tg.aws_lb_target_group_arn
-  ecs_cluster = var.env_info.ecs_cluster.id
+  ecs_cluster_id = var.env_info.ecs_cluster.id
   ingress_security_groups = [
     var.env_info.shared_alb.alb_sg_id
   ]
