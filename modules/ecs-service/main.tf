@@ -22,6 +22,45 @@ resource "aws_security_group" "task_security_group" {
   vpc_id = var.vpc_id
 }
 
+
+resource "aws_secretsmanager_secret" "secret_manager_secret" {
+  count = var.create_secrets ? 1 : 0
+  description = "${var.service_name}-${var.region}-v1-${var.env}-task"
+  name        = "${var.service_name}-${var.region}-v1-${var.env}-task"
+  tags = {
+    Service = var.service_name
+    Env     = var.env
+    Region  = var.region
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "secretsmanager_secret_version" {
+  count = var.create_secrets ? 1 : 0
+  secret_id     = aws_secretsmanager_secret.secret_manager_secret[0].id
+  secret_string = jsonencode({ foo: "bar" })
+}
+
+resource "aws_cloudwatch_log_group" "ecs_task_log_group" {
+  name              = "${var.service_name}-${var.region}-v1-${var.env}"
+  retention_in_days = var.retention_in_days
+}
+locals {
+  baseSecrets = var.create_secrets ? [
+    {
+      name      = "CONFIG"
+      valueFrom = aws_secretsmanager_secret.secret_manager_secret[0].arn
+    }
+  ] : []
+  basePolicy = var.create_secrets ? [
+      {
+        Effect   = "Allow"
+        Resource = aws_secretsmanager_secret.secret_manager_secret[0].arn
+        Action   = "secretsmanager:GetSecretValue"
+      }
+  ] : []
+}
+
+
 resource "aws_iam_role" "task_iam_role" {
   name = "${var.service_name}-${var.region}-v1-${var.env}-ecs"
 
@@ -41,13 +80,7 @@ resource "aws_iam_role" "task_iam_role" {
     name = "my_inline_policy"
     policy = jsonencode({
       Version   = "2012-10-17"
-      Statement = [
-        {
-          Effect   = "Allow"
-          Resource = aws_secretsmanager_secret.secret_manager_secret.arn
-          Action   = "secretsmanager:GetSecretValue"
-        }
-      ]
+      Statement = local.basePolicy
     })
   }
   tags = {
@@ -55,26 +88,6 @@ resource "aws_iam_role" "task_iam_role" {
     Env     = var.env
     Region  = var.region
   }
-}
-
-resource "aws_secretsmanager_secret" "secret_manager_secret" {
-  description = "${var.service_name}-${var.region}-v1-${var.env}-task"
-  name        = "${var.service_name}-${var.region}-v1-${var.env}-task"
-  tags = {
-    Service = var.service_name
-    Env     = var.env
-    Region  = var.region
-  }
-}
-
-resource "aws_secretsmanager_secret_version" "secretsmanager_secret_version" {
-  secret_id     = aws_secretsmanager_secret.secret_manager_secret.id
-  secret_string = jsonencode({ foo: "bar" })
-}
-
-resource "aws_cloudwatch_log_group" "ecs_task_log_group" {
-  name              = "${var.service_name}-${var.region}-v1-${var.env}"
-  retention_in_days = var.retention_in_days
 }
 
 resource "aws_ecs_task_definition" "ecs_task_definition" {
@@ -96,12 +109,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
     essential = true
 
     secrets = concat(
-      tolist([
-        {
-          name      = "CONFIG"
-          valueFrom = aws_secretsmanager_secret.secret_manager_secret.arn
-        }
-      ]),
+      tolist(local.baseSecrets),
       tolist(var.extra_secrets)
     )
 
