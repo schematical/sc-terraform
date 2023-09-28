@@ -80,7 +80,7 @@ resource "aws_cloudwatch_log_group" "ecs_task_log_group" {
 resource "aws_ecs_task_definition" "ecs_task_definition" {
   family                   = "${var.service_name}-${var.region}-v1-${var.env}-container"
   network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
+  requires_compatibilities = [var.launch_type]
   execution_role_arn       = aws_iam_role.task_iam_role.arn
 
   cpu    = var.task_cpu
@@ -136,11 +136,14 @@ resource "aws_ecs_service" "ecs_service" {
 
   desired_count              = var.ecs_desired_task_count
   health_check_grace_period_seconds  = 60
-  launch_type                = "FARGATE"
+  launch_type                = var.launch_type
 
   network_configuration {
     assign_public_ip = false
-    security_groups = [aws_security_group.task_security_group.id]
+    security_groups = concat(
+      tolist([aws_security_group.task_security_group.id]),
+      tolist(var.extra_security_groups)
+    )
     subnets         = [for o in var.private_subnet_mappings : o.id]
   }
 

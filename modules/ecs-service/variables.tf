@@ -71,4 +71,12 @@ variable "retention_in_days" {
   type    = number
   default = 90
 }
+variable "extra_security_groups" {
+  type    = list(string)
+  default = []
+}
+variable "launch_type" {
+  default = "FARGATE"
+  type = string
+}
 
