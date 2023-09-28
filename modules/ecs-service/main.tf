@@ -68,7 +68,10 @@ resource "aws_iam_role" "task_iam_role" {
     }]
   })
 
-  managed_policy_arns = ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
+  managed_policy_arns = concat(
+    tolist(["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]),
+    tolist(var.extra_iam_policies)
+  )
   dynamic "inline_policy" {
     for_each = local.baseSecrets
     content {

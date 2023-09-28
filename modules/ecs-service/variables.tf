@@ -83,4 +83,7 @@ variable "create_secrets" {
   default = true
   type = bool
 }
+variable "extra_iam_policies" {
+  type    = list(string)
+  default = []}
 
