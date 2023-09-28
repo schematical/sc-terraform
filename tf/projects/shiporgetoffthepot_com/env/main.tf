@@ -36,6 +36,7 @@ module "prod_env_shiporgetoffthepot_com_ecs_service" {
   ]
   ecr_image_uri = "${aws_ecr_repository.prod_ecr_repo.repository_url}:${var.env}"
   container_port = 80
+  create_secrets = false
 }
 module "buildpipeline" {
   source = "../../../../modules/buildpipeline"# "github.com/schematical/sc-terraform/modules/buildpipeline"

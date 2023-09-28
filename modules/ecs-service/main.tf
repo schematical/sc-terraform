@@ -51,13 +51,6 @@ locals {
       valueFrom = aws_secretsmanager_secret.secret_manager_secret[0].arn
     }
   ] : []
-  basePolicy = var.create_secrets ? [
-      {
-        Effect   = "Allow"
-        Resource = aws_secretsmanager_secret.secret_manager_secret[0].arn
-        Action   = "secretsmanager:GetSecretValue"
-      }
-  ] : []
 }
 
 
@@ -76,12 +69,22 @@ resource "aws_iam_role" "task_iam_role" {
   })
 
   managed_policy_arns = ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
-  inline_policy {
-    name = "my_inline_policy"
-    policy = jsonencode({
-      Version   = "2012-10-17"
-      Statement = local.basePolicy
-    })
+  dynamic "inline_policy" {
+    for_each = local.baseSecrets
+    content {
+      name   = "my_inline_policy"
+      policy = jsonencode({
+        Version   = "2012-10-17"
+        Statement = [
+          {
+            Effect   = "Allow"
+            Resource = aws_secretsmanager_secret.secret_manager_secret[0].arn
+            Action   = "secretsmanager:GetSecretValue"
+          }
+        ]
+      })
+    }
+
   }
   tags = {
     Service = var.service_name
