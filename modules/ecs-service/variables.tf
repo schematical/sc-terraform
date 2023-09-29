@@ -63,8 +63,14 @@ variable "container_port" {
 variable "extra_secrets" {
   type    = list(object({
     name = string
-    valueFrom = optional(string)
-    value = optional(string)
+    valueFrom = string
+  }))
+  default = []
+}
+variable "task_definition_environment_vars" {
+  type    = list(object({
+    name = string
+    value = string
   }))
   default = []
 }

@@ -113,7 +113,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
     memory = var.task_memory
 
     essential = true
-
+    environment = var.task_definition_environment_vars
     secrets = concat(
       tolist(local.baseSecrets),
       tolist(var.extra_secrets)
