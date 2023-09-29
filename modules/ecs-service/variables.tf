@@ -63,7 +63,8 @@ variable "container_port" {
 variable "extra_secrets" {
   type    = list(object({
     name = string
-    valueFrom = string
+    valueFrom = optional(string)
+    value = optional(string)
   }))
   default = []
 }
