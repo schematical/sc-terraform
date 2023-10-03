@@ -160,11 +160,13 @@ resource "aws_ecs_service" "ecs_service" {
     )
     subnets         = [for o in var.private_subnet_mappings : o.id]
   }
-
-  load_balancer {
-    container_name   = var.service_name
-    container_port   = var.container_port
-    target_group_arn = var.aws_lb_target_group_arn
+  dynamic "load_balancer" {
+    for_each = var.aws_lb_target_group_arns
+    content {
+      container_name   = var.service_name
+      container_port   = var.container_port
+      target_group_arn = load_balancer.value
+    }
   }
 
   task_definition = aws_ecs_task_definition.ecs_task_definition.arn

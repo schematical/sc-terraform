@@ -50,8 +50,9 @@ variable "ecs_desired_task_count" {
   default = 0
 }
 
-variable "aws_lb_target_group_arn" {
-  type    = string
+variable "aws_lb_target_group_arns" {
+  type    =list(string)
+  default = []
 }
 variable "ecr_image_uri" {
   type    = string
