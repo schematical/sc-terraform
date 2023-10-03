@@ -91,6 +91,10 @@ variable "create_secrets" {
   default = true
   type = bool
 }
+variable "task_definition_command" {
+  default = null
+  type = string
+}
 variable "extra_iam_policies" {
   type    = list(string)
   default = []

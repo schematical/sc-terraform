@@ -114,6 +114,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
 
     essential = true
     environment = var.task_definition_environment_vars
+    command = var.task_definition_command
     secrets = concat(
       tolist(local.baseSecrets),
       tolist(var.extra_secrets)
