@@ -93,7 +93,7 @@ variable "create_secrets" {
 }
 variable "task_definition_command" {
   default = null
-  type = string
+  type    = list(string)
 }
 variable "extra_iam_policies" {
   type    = list(string)
