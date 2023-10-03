@@ -150,7 +150,7 @@ resource "aws_ecs_service" "ecs_service" {
   }
 
   desired_count              = var.ecs_desired_task_count
-  health_check_grace_period_seconds  = var.aws_lb_target_group_arns.length > 0 ? 60 : null
+  health_check_grace_period_seconds  = var.aws_lb_target_group_arns != null ? 60 : null
   launch_type                = var.launch_type
 
   network_configuration {
