@@ -95,6 +95,10 @@ variable "task_definition_command" {
   default = null
   type    = list(string)
 }
+variable "ecs_task_definition_working_dir" {
+  default = null
+  type    = string
+}
 variable "extra_iam_policies" {
   type    = list(string)
   default = []
