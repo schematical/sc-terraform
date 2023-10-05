@@ -5,11 +5,14 @@ resource "aws_security_group" "task_security_group" {
   name        = "${var.service_name}-v1-${var.env}-ecs"
   description = "${var.service_name}-v1-${var.env}-ecs"
 
-  ingress {
-    from_port       = var.container_port
-    to_port         = var.container_port
-    protocol        = "tcp"
-    security_groups = var.ingress_security_groups
+  dynamic ingress  {
+    for_each = var.ingress_security_groups
+    content {
+      from_port       = var.container_port
+      to_port         = var.container_port
+      protocol        = "tcp"
+      security_groups = [ingress.value]
+    }
   }
 
   egress {

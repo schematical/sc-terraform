@@ -14,7 +14,7 @@ terraform {
     }
   }
 
-  required_version = ">= 1.2.0"
+  required_version = ">= 1.5.7"
 }
 provider "aws" {
   profile  = "schematical"
