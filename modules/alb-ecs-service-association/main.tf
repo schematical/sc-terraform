@@ -31,7 +31,7 @@ resource "aws_lb_listener_rule" "aws_lb_listener_rule_http" {
 resource "aws_lb_listener_rule" "aws_lb_listener_rule_https" {
   listener_arn = var.lb_https_listener_arn
 
-  priority     = 99
+  priority     = var.lb_listener_rule_http_rule_priority
 
   action {
     type = "forward"
