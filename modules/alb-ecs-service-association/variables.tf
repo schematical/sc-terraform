@@ -42,6 +42,10 @@ variable "lb_http_listener_arn" {
 variable "lb_https_listener_arn" {
   type    = string
 }
+variable "lb_listener_rule_http_rule_priority" {
+  type    = number
+  default = 99
+}
 
 
 variable "alb_target_group_health_check_path" {

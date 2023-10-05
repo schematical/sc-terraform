@@ -14,7 +14,7 @@ resource "aws_lb_target_group" "alb_target_group" {
 resource "aws_lb_listener_rule" "aws_lb_listener_rule_http" {
   listener_arn = var.lb_http_listener_arn
 
-  priority     = 99
+  priority     = var.lb_listener_rule_http_rule_priority
 
   action {
     type = "forward"
