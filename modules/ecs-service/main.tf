@@ -122,7 +122,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
       tolist(local.baseSecrets),
       tolist(var.extra_secrets)
     )
-    workingDir = var.task_definition_working_dir
+    workingDirectory = var.task_definition_working_dir
     portMappings  = [{
       containerPort = var.container_port
       hostPort      = var.container_port
