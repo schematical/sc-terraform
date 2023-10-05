@@ -95,7 +95,7 @@ variable "task_definition_command" {
   default = null
   type    = list(string)
 }
-variable "ecs_task_definition_working_dir" {
+variable "task_definition_working_dir" {
   default = null
   type    = string
 }
