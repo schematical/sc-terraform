@@ -104,3 +104,7 @@ variable "extra_iam_policies" {
   default = []
 }
 
+variable "enable_execute_command" {
+  type   = bool
+  default = false
+}
