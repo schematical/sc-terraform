@@ -86,7 +86,7 @@ resource "aws_iam_role" "task_iam_ecs_service_role" {
       Action = "sts:AssumeRole"
     }]
   })
-   managed_policy_arns = tolist([aws_iam_policy.execute_ecs_connect_policy.arn]),
+   managed_policy_arns = tolist([aws_iam_policy.execute_ecs_connect_policy.arn])
 }
 resource "aws_iam_role" "task_iam_role" {
   name = "${var.service_name}-${var.region}-v1-${var.env}-ecs"
