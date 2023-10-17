@@ -169,7 +169,7 @@ resource "aws_ecs_service" "ecs_service" {
   dynamic "load_balancer" {
     for_each = var.aws_lb_target_group_arns
     content {
-      container_name   = var.service_name
+      container_name   = try(var.container_name, var.service_name)
       container_port   = var.container_port
       target_group_arn = load_balancer.value
     }
