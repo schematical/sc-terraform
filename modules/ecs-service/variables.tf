@@ -103,4 +103,8 @@ variable "extra_iam_policies" {
   type    = list(string)
   default = []
 }
+variable "task_role_arn" {
+  default = null
+  type = string
+}
 
