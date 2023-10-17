@@ -114,5 +114,5 @@ variable "enable_execute_command" {
 }
 variable "container_name" {
   type   = string
-  default = null
+  default = false
 }
