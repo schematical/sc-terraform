@@ -152,9 +152,10 @@ resource "aws_ecs_service" "ecs_service" {
   deployment_controller {
     type = "ECS"
   }
-
+  
   desired_count              = var.ecs_desired_task_count
   health_check_grace_period_seconds  = length (var.aws_lb_target_group_arns) > 0 ? 60 : null
+  enable_execute_command = var.enable_execute_command
   launch_type                = var.launch_type
 
   network_configuration {

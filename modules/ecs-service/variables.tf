@@ -108,3 +108,7 @@ variable "task_role_arn" {
   type = string
 }
 
+variable "enable_execute_command" {
+  type   = bool
+  default = false
+}
