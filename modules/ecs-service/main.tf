@@ -143,7 +143,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
 resource "aws_ecs_service" "ecs_service" {
   name    = "${var.service_name}-${var.region}-v1-${var.env}"
   cluster = var.ecs_cluster_id
-
+  iam_role = aws_iam_role.task_iam_role
   deployment_maximum_percent         = 100
   deployment_minimum_healthy_percent = 50
 
