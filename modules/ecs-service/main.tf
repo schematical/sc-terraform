@@ -143,6 +143,15 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
 
 resource "aws_ecs_service" "ecs_service" {
   name    = "${var.service_name}-${var.region}-v1-${var.env}"
+
+  lifecycle {
+    ignore_changes = [
+      # Ignore changes to tags, e.g. because a management agent
+      # updates these based on some ruleset managed elsewhere.
+      task_definition,
+    ]
+  }
+
   cluster = var.ecs_cluster_id
 
   deployment_maximum_percent         = 100
