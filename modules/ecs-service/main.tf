@@ -55,6 +55,8 @@ locals {
     }
   ] : []
 }
+
+
 resource "aws_iam_role" "task_iam_role" {
   name = "${var.service_name}-${var.region}-v1-${var.env}-ecs"
 
