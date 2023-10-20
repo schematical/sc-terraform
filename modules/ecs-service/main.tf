@@ -130,17 +130,18 @@ resource "aws_iam_role" "task_iam_role" {
   }
 }
 
+
 resource "aws_ecs_task_definition" "ecs_task_definition" {
   family                   = "${var.service_name}-${var.region}-v1-${var.env}-container"
   network_mode             = "awsvpc"
   requires_compatibilities = [var.launch_type]
   execution_role_arn       = aws_iam_role.task_iam_role.arn
-
+  task_role_arn = var.task_role_arn
   cpu    = var.task_cpu
   memory = var.task_memory
 
   container_definitions = jsonencode([{
-    name  = var.service_name
+    name  = try(var.container_name, var.service_name)
     image = var.ecr_image_uri
 
     cpu    = var.task_cpu
@@ -173,6 +174,15 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
 
 resource "aws_ecs_service" "ecs_service" {
   name    = "${var.service_name}-${var.region}-v1-${var.env}"
+
+  lifecycle {
+    ignore_changes = [
+      # Ignore changes to tags, e.g. because a management agent
+      # updates these based on some ruleset managed elsewhere.
+      task_definition,
+    ]
+  }
+
   cluster = var.ecs_cluster_id
   iam_role = aws_iam_role.task_iam_ecs_service_role.arn
   deployment_maximum_percent         = 100
@@ -199,7 +209,7 @@ resource "aws_ecs_service" "ecs_service" {
   dynamic "load_balancer" {
     for_each = var.aws_lb_target_group_arns
     content {
-      container_name   = var.service_name
+      container_name   = try(var.container_name, var.service_name)
       container_port   = var.container_port
       target_group_arn = load_balancer.value
     }
