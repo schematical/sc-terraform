@@ -96,13 +96,12 @@ resource "aws_iam_role" "task_iam_role" {
     Region  = var.region
   }
 }
-
 resource "aws_ecs_task_definition" "ecs_task_definition" {
   family                   = "${var.service_name}-${var.region}-v1-${var.env}-container"
   network_mode             = "awsvpc"
   requires_compatibilities = [var.launch_type]
   execution_role_arn       = aws_iam_role.task_iam_role.arn
-
+  task_role_arn = var.task_role_arn
   cpu    = var.task_cpu
   memory = var.task_memory
 
@@ -150,6 +149,7 @@ resource "aws_ecs_service" "ecs_service" {
   }
 
   cluster = var.ecs_cluster_id
+
   deployment_maximum_percent         = 100
   deployment_minimum_healthy_percent = 50
 
