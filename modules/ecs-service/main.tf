@@ -86,16 +86,6 @@ resource "aws_iam_role" "task_iam_role" {
             Effect   = "Allow"
             Resource = aws_secretsmanager_secret.secret_manager_secret[0].arn
             Action   = "secretsmanager:GetSecretValue"
-          },
-          {
-            "Effect": "Allow",
-            "Action": [
-                  "ssmmessages:CreateControlChannel",
-                  "ssmmessages:CreateDataChannel",
-                  "ssmmessages:OpenControlChannel",
-                  "ssmmessages:OpenDataChannel"
-            ],
-            "Resource": "*"
           }
         ]
       })
