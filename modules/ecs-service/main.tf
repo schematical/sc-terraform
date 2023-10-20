@@ -68,16 +68,6 @@ resource "aws_iam_role" "task_iam_role" {
         Service = "ecs-tasks.amazonaws.com"
       },
       Action = "sts:AssumeRole"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-          "ssmmessages:CreateControlChannel",
-          "ssmmessages:CreateDataChannel",
-          "ssmmessages:OpenControlChannel",
-          "ssmmessages:OpenDataChannel"
-      ],
-      "Resource": "*"
     }]
   })
 
@@ -104,6 +94,16 @@ resource "aws_iam_role" "task_iam_role" {
                   "ssmmessages:CreateDataChannel",
                   "ssmmessages:OpenControlChannel",
                   "ssmmessages:OpenDataChannel"
+            ],
+            "Resource": "*"
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+                "ssmmessages:CreateControlChannel",
+                "ssmmessages:CreateDataChannel",
+                "ssmmessages:OpenControlChannel",
+                "ssmmessages:OpenDataChannel"
             ],
             "Resource": "*"
           }
