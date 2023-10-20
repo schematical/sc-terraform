@@ -98,6 +98,8 @@ resource "aws_iam_role" "task_iam_role" {
     Region  = var.region
   }
 }
+
+
 resource "aws_ecs_task_definition" "ecs_task_definition" {
   family                   = "${var.service_name}-${var.region}-v1-${var.env}-container"
   network_mode             = "awsvpc"
