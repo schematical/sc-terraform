@@ -103,8 +103,16 @@ variable "extra_iam_policies" {
   type    = list(string)
   default = []
 }
+variable "task_role_arn" {
+  default = null
+  type = string
+}
 
 variable "enable_execute_command" {
   type   = bool
+  default = false
+}
+variable "container_name" {
+  type   = string
   default = false
 }

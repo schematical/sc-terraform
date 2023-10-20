@@ -56,7 +56,38 @@ locals {
   ] : []
 }
 
-
+resource "aws_iam_policy" "execute_ecs_connect_policy" {
+    name = "${var.service_name}-${var.env}-${var.region}-ecs-connect"
+    policy = jsonencode(
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "ecs:ExecuteCommand"
+                    ],
+                    
+                    "Resource":"arn:aws:ecs:*"
+                }
+            ]
+          }
+    )
+}
+resource "aws_iam_role" "task_iam_ecs_service_role" {
+  name = "${var.service_name}-${var.region}-v1-${var.env}-ecs-service"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect    = "Allow",
+      Principal = {
+        Service = "ecs-tasks.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
+   managed_policy_arns = tolist([aws_iam_policy.execute_ecs_connect_policy.arn])
+}
 resource "aws_iam_role" "task_iam_role" {
   name = "${var.service_name}-${var.region}-v1-${var.env}-ecs"
 
@@ -109,7 +140,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
   memory = var.task_memory
 
   container_definitions = jsonencode([{
-    name  = var.service_name
+    name  = try(var.container_name, var.service_name)
     image = var.ecr_image_uri
 
     cpu    = var.task_cpu
@@ -142,8 +173,17 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
 
 resource "aws_ecs_service" "ecs_service" {
   name    = "${var.service_name}-${var.region}-v1-${var.env}"
+
+  lifecycle {
+    ignore_changes = [
+      # Ignore changes to tags, e.g. because a management agent
+      # updates these based on some ruleset managed elsewhere.
+      task_definition,
+    ]
+  }
+
   cluster = var.ecs_cluster_id
-  iam_role = aws_iam_role.task_iam_role
+  iam_role = aws_iam_role.task_iam_ecs_service_role.arn
   deployment_maximum_percent         = 100
   deployment_minimum_healthy_percent = 50
 
@@ -151,6 +191,7 @@ resource "aws_ecs_service" "ecs_service" {
   deployment_controller {
     type = "ECS"
   }
+  
   desired_count              = var.ecs_desired_task_count
   health_check_grace_period_seconds  = length (var.aws_lb_target_group_arns) > 0 ? 60 : null
   enable_execute_command = var.enable_execute_command
@@ -167,7 +208,7 @@ resource "aws_ecs_service" "ecs_service" {
   dynamic "load_balancer" {
     for_each = var.aws_lb_target_group_arns
     content {
-      container_name   = var.service_name
+      container_name   = try(var.container_name, var.service_name)
       container_port   = var.container_port
       target_group_arn = load_balancer.value
     }
