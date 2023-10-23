@@ -116,3 +116,7 @@ variable "container_name" {
   type   = string
   default = false
 }
+variable "force_deployment" {
+  type   = bool
+  default = false
+}
