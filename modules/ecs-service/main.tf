@@ -157,6 +157,7 @@ resource "aws_ecs_service" "ecs_service" {
   deployment_maximum_percent         = 100
   deployment_minimum_healthy_percent = 50
 
+
   deployment_controller {
     type = "ECS"
   }
