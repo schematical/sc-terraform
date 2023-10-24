@@ -155,7 +155,7 @@ resource "aws_ecs_service" "ecs_service" {
   cluster = var.ecs_cluster_id
 
   deployment_maximum_percent         = 100
-  deployment_minimum_healthy_percent = 50
+  deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
 
 
   deployment_controller {

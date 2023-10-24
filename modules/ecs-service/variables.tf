@@ -120,3 +120,7 @@ variable "force_deployment" {
   type   = bool
   default = false
 }
+variable "deployment_minimum_healthy_percent" {
+  type   = number
+  default = 50
+}
