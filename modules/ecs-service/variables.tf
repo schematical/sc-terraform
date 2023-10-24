@@ -124,3 +124,7 @@ variable "deployment_minimum_healthy_percent" {
   type   = number
   default = 50
 }
+variable "deployment_maximum_percent" {
+  type   = number
+  default = 100
+}
