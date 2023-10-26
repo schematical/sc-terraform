@@ -185,5 +185,13 @@ resource "aws_ecs_service" "ecs_service" {
   }
 
   task_definition = aws_ecs_task_definition.ecs_task_definition.arn
+  dynamic "capacity_provider_strategies" {
+    for_each = var.aws_lb_target_group_arns
+    content {
+      base = capacity_provider_strategies.value.base
+      capacity_provider = capacity_provider_strategies.value.capacity_provider
+      weight = capacity_provider_strategies.value.weight
+    }
+  }
 }
 

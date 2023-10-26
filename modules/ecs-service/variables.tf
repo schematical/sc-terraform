@@ -120,3 +120,11 @@ variable "force_deployment" {
   type   = bool
   default = false
 }
+variable "capacity_provider_strategies" {
+  type   = list(object({
+    base: number,
+    capacity_provider: string,
+    weight: number
+  }))
+  default = []
+}
