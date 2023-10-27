@@ -1,18 +1,32 @@
-# AWS VPC Terraform Module
-This is one of the most basic building blocks for setting up infrastructure on AWS. 
+# AWS ECS Service
+This allows you to spin up an AWS ECS Service
 
 
 ## What is an AWS VPC and how does it work?
 Most of the answers you are looking for is in this video that specifically covers these modules
-[![](./thumb.png)](https://youtu.be/x2V_CQr1z5A)
+[![](./thumb.png)](https://www.youtube.com/watch?v=2nShwCkPDDo)
 
 ## How to use it:
 ```
-module "vpc" {
-  source = "git::https://github.com/schematical/sc-terraform.git//modules/vpc"
-  vpc_name = "dev"
-  bastion_keypair_name = "schematical_node_1"
-}
+module "ecs_service" {
+  source = "git::https://github.com/schematical/sc-terraform.git//modules/ecs-service"
+  env = "prod"
+  vpc_id = var.env_info.vpc_id
+  service_name = "sogotp-com-v1"
+  ecs_desired_task_count = 1
+  private_subnet_mappings = var.env_info.private_subnet_mappings
+  // aws_lb_target_group_arns = [module.prod_env_shiporgetoffthepot_com_tg.aws_lb_target_group_arn]
+  ecs_cluster_id = var.env_info.ecs_cluster.id
+  ingress_security_groups = [
+    var.env_info.shared_alb.alb_sg_id
+  ]
+  ecr_image_uri = "${aws_ecr_repository.prod_ecr_repo.repository_url}:${var.env}"
+  container_port = 80
+  create_secrets = false
+  task_definition_environment_vars = [{
+    name: "NODE_ENV ",
+    value: var.env
+  }]
 ```
 
 

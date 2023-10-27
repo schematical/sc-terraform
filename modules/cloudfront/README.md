@@ -1,4 +1,4 @@
-# AWS Lambda MicroService
+# AWS CloudFront
 This module allows you to quickly boot up an AWS CloudFront CDN to quickly and cost efficiently serve up static assets for your website.
 
 ## How does it work?
