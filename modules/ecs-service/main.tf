@@ -186,7 +186,7 @@ resource "aws_ecs_service" "ecs_service" {
 
   task_definition = aws_ecs_task_definition.ecs_task_definition.arn
   dynamic "capacity_provider_strategy" {
-    for_each = var.aws_lb_target_group_arns
+    for_each = var.capacity_provider_strategies
     content {
       base = capacity_provider_strategy.value.base
       capacity_provider = capacity_provider_strategy.value.capacity_provider
