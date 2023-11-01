@@ -145,11 +145,11 @@ resource "aws_ecs_service" "ecs_service" {
   name    = "${var.service_name}-${var.region}-v1-${var.env}"
 
   lifecycle {
-    ignore_changes = [
+    ignore_changes = var.autoscale_enabled == false ? [
       # Ignore changes to tags, e.g. because a management agent
       # updates these based on some ruleset managed elsewhere.
       task_definition,
-    ]
+    ] : [task_definition, desired_count]
   }
   force_new_deployment = var.force_deployment
   cluster = var.ecs_cluster_id
