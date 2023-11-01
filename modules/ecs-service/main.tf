@@ -144,13 +144,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
 resource "aws_ecs_service" "ecs_service" {
   name    = "${var.service_name}-${var.region}-v1-${var.env}"
 
-  lifecycle {
-    ignore_changes = var.autoscale_enabled == false ? [
-      # Ignore changes to tags, e.g. because a management agent
-      # updates these based on some ruleset managed elsewhere.
-      task_definition,
-    ] : [task_definition, desired_count]
-  }
+  
   force_new_deployment = var.force_deployment
   cluster = var.ecs_cluster_id
 
@@ -175,6 +169,15 @@ resource "aws_ecs_service" "ecs_service" {
     )
     subnets         = [for o in var.private_subnet_mappings : o.id]
   }
+
+  lifecycle {
+    ignore_changes = [
+      # Ignore changes to tags, e.g. because a management agent
+      # updates these based on some ruleset managed elsewhere.
+      task_definition, desired_count
+    ]
+  }
+
   dynamic "load_balancer" {
     for_each = var.aws_lb_target_group_arns
     content {

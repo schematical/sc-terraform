@@ -128,10 +128,6 @@ variable "deployment_maximum_percent" {
   type   = number
   default = 100
 }
-variable "autoscale_enabled" {
-  type = bool
-  default = false
-}
 variable "capacity_provider_strategies" {
   type   = list(object({
     base: number,
