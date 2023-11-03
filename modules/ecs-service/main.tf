@@ -148,7 +148,7 @@ resource "aws_ecs_service" "ecs_service" {
     ignore_changes = [
       # Ignore changes to tags, e.g. because a management agent
       # updates these based on some ruleset managed elsewhere.
-      task_definition, desired_count
+      task_definition
     ] 
   }
   force_new_deployment = var.force_deployment

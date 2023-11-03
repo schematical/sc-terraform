@@ -3,6 +3,8 @@
 resource "aws_lb_target_group" "alb_target_group" {
   health_check  {
     path = var.alb_target_group_health_check_path
+    interval = var.health_interval
+    healthy_threshold = var.health_threshold
   }
   name                = "${var.service_name}-v1-${var.env}-tg"
   port                = var.container_port
