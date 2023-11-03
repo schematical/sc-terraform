@@ -64,3 +64,7 @@ variable "health_threshold" {
   type    = number
   default = 3
 }
+variable "health_timeout" {
+  type    = number
+  default = 15
+}
