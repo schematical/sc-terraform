@@ -56,3 +56,15 @@ variable "container_port" {
   type    = number
   default = 80
 }
+variable "health_interval" {
+  type    = number
+  default = 30
+}
+variable "health_threshold" {
+  type    = number
+  default = 3
+}
+variable "health_timeout" {
+  type    = number
+  default = 5
+}
