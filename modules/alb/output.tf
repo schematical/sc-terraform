@@ -25,3 +25,6 @@ output "alb_id" {
 output "alb_name_prefix" {
   value    = aws_lb.application_load_balancer.name_prefix
 }
+output "alb_arn_suffix" {
+  value    = aws_lb.application_load_balancer.arn_suffix
+}
