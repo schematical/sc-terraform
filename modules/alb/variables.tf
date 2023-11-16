@@ -39,3 +39,7 @@ variable "alb_target_group_health_check_path" {
   default = "/heartbeat"
 }
 */
+variable "load_balancer_type" {
+  type = string
+  default = "network"
+}
