@@ -2,6 +2,10 @@ variable "service_name" {
   type    = string
   default = "sc-ecs-service"
 }
+variable "alb_idle_timeout" {
+  type = number
+  default = 60
+}
 
 /*variable "hosted_zone_name" {
   type    = string
