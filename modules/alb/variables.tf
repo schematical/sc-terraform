@@ -47,3 +47,7 @@ variable "fixed_message_body" {
   default = "Hello World"
   type = string
 }
+variable "fixed_content_type" {
+  default = "text/html"
+  type = string
+}
