@@ -43,3 +43,7 @@ variable "load_balancer_type" {
   type = string
   default = "application"
 }
+variable "fixed_message_body" {
+  default = "Hello World"
+  type = string
+}

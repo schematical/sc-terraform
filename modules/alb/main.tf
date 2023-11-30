@@ -53,13 +53,14 @@ resource "aws_lb_listener" "alb_listener_http" {
   protocol          = "HTTP"
 }
 
+
 resource "aws_lb_listener" "alb_listener_https" {
   default_action {
     type = "fixed-response"
 
     fixed_response {
       content_type = "text/plain"
-      message_body = "Fixed response content"
+      message_body = var.fixed_message_body
       status_code  = "200"
     }
   }
