@@ -214,9 +214,9 @@ locals {
       hosted_zone_id = local.default_hosted_zone_id
       hosted_zone_name = local.default_hosted_zone_name
       acm_cert_arn = local.acm_cert_arn
-      shared_alb = module.shared_env.prod_shared_env.shared_alb
+     /* shared_alb = module.shared_env.prod_shared_env.shared_alb
       shared_alb_http_listener_arn = module.shared_env.prod_shared_env.shared_alb_http_listener_arn
-      shared_alb_https_listener_arn = module.shared_env.prod_shared_env.shared_alb_https_listener_arn
+      shared_alb_https_listener_arn = module.shared_env.prod_shared_env.shared_alb_https_listener_arn*/
       ecs_cluster = module.shared_env.prod_shared_env.ecs_cluster
       shared_acm_cert_arn = module.shared_env.shared_acm_cert.arn
 
@@ -248,10 +248,10 @@ module "project_schematical_com" {
   env_info = local.env_info
 }
 
-module "project_shiporgetoffthepot_com" {
+/*module "project_shiporgetoffthepot_com" {
   source = "./projects/shiporgetoffthepot_com"
   ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
   env_info = local.env_info
-}
+}*/
 
 

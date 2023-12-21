@@ -44,6 +44,35 @@ module "lambda_service" {
   handler = "handler.main"
 
 }
+
+resource "aws_iam_policy" "lambda_iam_policy" {
+  name = "schematical-com-v1-${var.env}-lambda"
+
+  policy = jsonencode(
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Sid": "DynamoDB",
+          "Effect": "Allow",
+          "Action": [
+            "lambda:UpdateFunctionCode",
+            "lambda:GetFunction",
+            "lambda:UpdateFunctionConfiguration"
+          ],
+          "Resource": [
+            var.dynamodb_table_post_arn
+          ]
+        }
+
+      ]
+    }
+  )
+}
+resource "aws_iam_role_policy_attachment" "lambda_iam_policy_attach" {
+  role = module.lambda_service.iam_role.name
+  policy_arn = aws_iam_policy.lambda_iam_policy.arn
+}
 resource "aws_lambda_permission" "apigw_lambda" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
@@ -53,6 +82,7 @@ resource "aws_lambda_permission" "apigw_lambda" {
   # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
   source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${var.api_gateway_id}/*/*/*"
 }
+
 /*resource "aws_lambda_layer_version" "asset_lambda_layer" {
   s3_bucket = var.codepipeline_artifact_store_bucket.bucket
   s3_key = "schematical-com-v1-${var.env}/assetsLayer.zip"

@@ -4,7 +4,7 @@ locals {
 }
 provider "aws" {
   region = "us-east-1"
-  alias  = "east"
+  # alias  = "east"
 }
 resource "aws_acm_certificate" "schematical_com_cert" {
   domain_name       = aws_route53_zone.schematical_com.name
@@ -136,6 +136,50 @@ resource "aws_api_gateway_integration" "api_gateway_proxy_resource_method_integr
   uri = local.www_lambda_arn
 }
 
+resource "aws_dynamodb_table" "dynamodb_table_post" {
+  name           = "SchematicalComPost"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "PostId"
+  range_key      = "PublicDate"
+
+  attribute {
+    name = "PostId"
+    type = "S"
+  }
+
+/*  attribute {
+    name = "Title"
+    type = "S"
+  }
+
+  attribute {
+    name = "Body"
+    type = "S"
+  }*/
+  attribute {
+    name = "PublicDate"
+    type = "N"
+  }
+/*
+  ttl {
+    attribute_name = "TimeToExist"
+    enabled        = false
+  }*/
+
+ /* global_secondary_index {
+    name               = "GameTitleIndex"
+    hash_key           = "GameTitle"
+    range_key          = "TopScore"
+    write_capacity     = 10
+    read_capacity      = 10
+    projection_type    = "INCLUDE"
+    non_key_attributes = ["UserId"]
+  }*/
+
+  tags = {
+    Name        = "schematical-com"
+  }
+}
 
 module "dev_env_schematical_com" {
   # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
@@ -155,6 +199,7 @@ module "dev_env_schematical_com" {
   domain_name = "dev"
 
   secrets = var.env_info.dev.secrets
+  dynamodb_table_post_arn = aws_dynamodb_table.dynamodb_table_post.arn
 }
 
 module "prod_env_schematical_com" {
@@ -175,4 +220,5 @@ module "prod_env_schematical_com" {
   domain_name = "www"
 
   secrets = var.env_info.prod.secrets
+  dynamodb_table_post_arn = aws_dynamodb_table.dynamodb_table_post.arn
 }

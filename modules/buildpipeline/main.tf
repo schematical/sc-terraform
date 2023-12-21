@@ -1,4 +1,11 @@
-
+/*terraform {
+  required_providers {
+    aws = {
+      source  = "registry.terraform.io/hashicorp/aws"
+      version = "4.61.0"
+    }
+  }
+}*/
 provider "aws" {
   profile  = "schematical"
   region = "us-east-1"

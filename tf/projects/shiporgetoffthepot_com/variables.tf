@@ -32,8 +32,8 @@ variable env_info {
       alb_hosted_zone_id: string
       alb_dns_name: string
     }))
-    shared_alb_http_listener_arn = optional(string)
-    shared_alb_https_listener_arn = optional(string)
+/*    shared_alb_http_listener_arn = optional(string)
+    shared_alb_https_listener_arn = optional(string)*/
     ecs_cluster = optional(object({
       arn: string
       id: string

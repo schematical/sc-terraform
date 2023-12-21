@@ -36,3 +36,6 @@ variable "domain_name" {
 variable "secrets" {
   type = map(string)
 }
+variable "dynamodb_table_post_arn" {
+  type = string
+}

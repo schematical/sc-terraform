@@ -4,7 +4,7 @@ locals {
 }
 provider "aws" {
   region = "us-east-1"
-  alias  = "east"
+  # alias  = "east"
 }
 resource "aws_acm_certificate" "drawnby_ai_cert" {
   domain_name       = aws_route53_zone.drawnby_ai.name

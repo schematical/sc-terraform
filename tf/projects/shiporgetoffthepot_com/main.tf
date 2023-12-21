@@ -16,6 +16,7 @@ resource "aws_route53_zone" "shiporgetoffthepot_com" {
 }*/
 
 
+/*
 module "prod_env_shiporgetoffthepot_com" {
   source = "./env"
   env = "prod"
@@ -31,3 +32,4 @@ module "prod_env_shiporgetoffthepot_com" {
   secrets = var.env_info.prod.secrets
   env_info = var.env_info.prod
 }
+*/
