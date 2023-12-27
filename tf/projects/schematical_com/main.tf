@@ -158,7 +158,7 @@ resource "aws_dynamodb_table" "dynamodb_table_post" {
   }*/
   attribute {
     name = "PublicDate"
-    type = "N"
+    type = "S"
   }
 /*
   ttl {

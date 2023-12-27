@@ -27,6 +27,9 @@ module "lambda_service" {
   env = var.env
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
+  env_vars = {
+    REACT_APP_SERVER_URL:  "https://${var.domain_name}.${var.hosted_zone_name}"
+  }
 /*  api_gateway_id = var.api_gateway_id
   api_gateway_parent_id = var.api_gateway_base_path_mapping
   api_gateway_stage_id = module.dev_env.api_gateway_stage_id
@@ -56,9 +59,7 @@ resource "aws_iam_policy" "lambda_iam_policy" {
           "Sid": "DynamoDB",
           "Effect": "Allow",
           "Action": [
-            "lambda:UpdateFunctionCode",
-            "lambda:GetFunction",
-            "lambda:UpdateFunctionConfiguration"
+            "dynamodb:Scan"
           ],
           "Resource": [
             var.dynamodb_table_post_arn
@@ -117,6 +118,7 @@ module "buildpipeline" {
   private_subnet_mappings = var.private_subnet_mappings
   source_buildspec_path = "buildspec.yml"
   env_vars = {
+    REACT_APP_SERVER_URL:  "https://${var.domain_name}.${var.hosted_zone_name}"
   }
 
 }
