@@ -29,6 +29,8 @@ module "lambda_service" {
   private_subnet_mappings = var.private_subnet_mappings
   env_vars = {
     REACT_APP_SERVER_URL:  "https://${var.domain_name}.${var.hosted_zone_name}"
+    AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
   }
 /*  api_gateway_id = var.api_gateway_id
   api_gateway_parent_id = var.api_gateway_base_path_mapping
@@ -59,7 +61,9 @@ resource "aws_iam_policy" "lambda_iam_policy" {
           "Sid": "DynamoDB",
           "Effect": "Allow",
           "Action": [
-            "dynamodb:Scan"
+            "dynamodb:Scan",
+            "dynamodb:GetItem",
+            "dynamodb:PutItem"
           ],
           "Resource": [
             var.dynamodb_table_post_arn
@@ -119,6 +123,8 @@ module "buildpipeline" {
   source_buildspec_path = "buildspec.yml"
   env_vars = {
     REACT_APP_SERVER_URL:  "https://${var.domain_name}.${var.hosted_zone_name}"
+    AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
   }
 
 }

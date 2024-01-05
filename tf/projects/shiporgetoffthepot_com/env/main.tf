@@ -27,7 +27,7 @@ module "prod_env_shiporgetoffthepot_com_ecs_service" {
   env = "prod"
   vpc_id = var.env_info.vpc_id
   service_name = "sogotp-com-v1"
-  ecs_desired_task_count = 0
+  ecs_desired_task_count =55
   private_subnet_mappings = var.env_info.private_subnet_mappings
   // aws_lb_target_group_arns = [module.prod_env_shiporgetoffthepot_com_tg.aws_lb_target_group_arn]
   ecs_cluster_id = var.env_info.ecs_cluster.id
