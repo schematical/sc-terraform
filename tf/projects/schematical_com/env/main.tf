@@ -1,10 +1,12 @@
-
+locals {
+  cloudfront_subdomain = "assets-${var.env}"
+}
 module "cloudfront" {
   service_name = "schematical-com-v1"
   source = "../../../../modules/cloudfront"
   region = var.region
   env = var.env
-  subdomain = "assets-${var.env}"
+  subdomain = local.cloudfront_subdomain
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
   hosted_zone_id = var.hosted_zone_id
@@ -17,7 +19,22 @@ module "cloudfront" {
     var.hosted_zone_name
   ]
 }
+resource "aws_s3_bucket_cors_configuration" "chaospixel_storage_bucket" {
+  bucket = module.cloudfront.s3_bucket.bucket
 
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["PUT", "POST"]
+    allowed_origins = ["*"] ## https://s3-website-test.hashicorp.com"]
+    expose_headers  = ["ETag"]
+    max_age_seconds = 3000
+  }
+
+  cors_rule {
+    allowed_methods = ["GET"]
+    allowed_origins = ["*"]
+  }
+}
 
 data "aws_caller_identity" "current" {}
 module "lambda_service" {
@@ -28,9 +45,12 @@ module "lambda_service" {
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
   env_vars = {
+    NODE_ENV: var.env
     REACT_APP_SERVER_URL:  "https://${var.domain_name}.${var.hosted_zone_name}"
     AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+    S3_BUCKET: module.cloudfront.s3_bucket.bucket
+    PUBLIC_ASSET_URL: "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}"
   }
 /*  api_gateway_id = var.api_gateway_id
   api_gateway_parent_id = var.api_gateway_base_path_mapping
@@ -67,6 +87,17 @@ resource "aws_iam_policy" "lambda_iam_policy" {
           ],
           "Resource": [
             var.dynamodb_table_post_arn
+          ]
+        },
+        {
+          "Sid": "s3",
+          "Effect": "Allow",
+          "Action": [
+            "s3:PutObject",
+            "s3:PutObjectAcl"
+          ],
+          "Resource": [
+            "${module.cloudfront.s3_bucket.arn}/**"
           ]
         }
 
@@ -122,9 +153,12 @@ module "buildpipeline" {
   private_subnet_mappings = var.private_subnet_mappings
   source_buildspec_path = "buildspec.yml"
   env_vars = {
+    NODE_ENV: var.env
     REACT_APP_SERVER_URL:  "https://${var.domain_name}.${var.hosted_zone_name}"
     AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+    S3_BUCKET: module.cloudfront.s3_bucket.bucket
+    PUBLIC_ASSET_URL: "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}"
   }
 
 }

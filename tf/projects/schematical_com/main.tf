@@ -37,7 +37,24 @@ resource "aws_route53_record" "schematical-com-a" {
     evaluate_target_health = false
   }
 }
-
+resource "aws_route53_record" "schematical-com-ck1" {
+  zone_id = aws_route53_zone.schematical_com.zone_id
+  name    = "ckespa.schematical.com"
+  type    = "CNAME"
+  ttl     = 300
+  records = [
+    "spf.dm-rm8vgvoy.sg7.convertkit.com."
+  ]
+}
+resource "aws_route53_record" "schematical-com-ck2" {
+  zone_id = aws_route53_zone.schematical_com.zone_id
+  name    = "cka._domainkey.schematical.com"
+  type    = "CNAME"
+  ttl     = 300
+  records = [
+    "dkim.dm-rm8vgvoy.sg7.convertkit.com."
+  ]
+}
 resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
   base_path   = ""
   domain_name = aws_api_gateway_domain_name.api_gateway_domain_name.id
