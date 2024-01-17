@@ -60,9 +60,10 @@ resource "aws_iam_role" "firehose_role" {
         {
           "Effect": "Allow",
           "Action": [
-            "glue:GetTableVersions"
+            "glue:*"
           ],
           "Resource": [
+            "*",
             aws_glue_catalog_database.glue_catalog_database.arn,
             aws_athena_data_catalog.athena_data_catalog.arn,
             "arn:aws:glue:us-east-1:${data.aws_caller_identity.current.account_id}:catalog",
@@ -125,7 +126,7 @@ resource "aws_kinesis_firehose_delivery_stream" "extended_s3_stream" {
 
       output_format_configuration {
         serializer {
-          orc_ser_de {}
+          parquet_ser_de {}
         }
       }
 
@@ -176,7 +177,16 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
   name = "chaospixel_${var.env}"
 
   create_table_default_permission {
-    permissions = ["SELECT"]
+    permissions                   = [
+      "ALL"
+    ]
+    /* permissions_with_grant_option = [
+       "ALL",
+       "ALTER",
+       "CREATE_TABLE",
+       "DESCRIBE",
+       "DROP"
+      ]*/
 
     principal {
       data_lake_principal_identifier = "IAM_ALLOWED_PRINCIPALS"
@@ -228,29 +238,113 @@ resource "aws_glue_catalog_table" "aws_glue_catalog_table" {
     }
 
     columns {
-      name = "CHANGE"
+      name = "change"
       type = "double"
     }
 
     columns {
-      name = "PRICE"
+      name = "price"
       type = "double"
     }
 
     columns {
-      name    = "TICKER_SYMBOL"
+      name    = "ticker_symbol"
       type    = "string"
       comment = ""
     }
   }
 }
-/*
-resource "aws_glue_crawler" "example" {
-  database_name = aws_athena_database.athena_database.name
-  name          = "example"
-  role          = aws_iam_role.example.arn
+resource "aws_glue_crawler" "glue_crawler" {
+  database_name = aws_glue_catalog_database.glue_catalog_database.name
+  name          = "chaospixel_${var.env}"
+  role          = aws_iam_role.glue_role.arn
 
-  dynamodb_target {
-    path = "table-name"
+  s3_target {
+    path = "s3://${aws_s3_bucket.glue_storage_bucket.bucket}"
   }
-}*/
+}
+data "aws_iam_policy_document" "glue_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["glue.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+resource "aws_s3_bucket" "glue_output_bucket" {
+  bucket = "chaospixel-${var.env}-${var.region}-glue-output"
+}
+resource "aws_iam_role" "glue_role" {
+  name               = "chaospixel-${var.env}-${var.region}-glue"
+  assume_role_policy = data.aws_iam_policy_document.glue_assume_role.json
+  inline_policy {
+    name = "my_inline_policy"
+    policy = jsonencode({
+      Version   = "2012-10-17"
+      Statement = [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "glue:*"
+          ],
+          "Resource": [
+            "*"
+          ]
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            # "s3:PutObject",
+            # "s3:PutObjectAcl",
+            "s3:GetObject",
+            "s3:ListObjects"
+          ],
+          "Resource": [
+            aws_s3_bucket.glue_storage_bucket.arn,
+            "${aws_s3_bucket.glue_storage_bucket.arn}/**"
+          ]
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:PutObject",
+            "s3:PutObjectAcl",
+            "s3:GetObject",
+            "s3:ListObjects"
+          ],
+          "Resource": [
+            aws_s3_bucket.glue_output_bucket.arn,
+            "${aws_s3_bucket.glue_output_bucket.arn}/**"
+          ]
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:GetBucketLocation",
+            "s3:ListBucket",
+            "s3:ListAllMyBuckets",
+            "s3:GetBucketAcl"
+          ],
+          "Resource": [
+            "*"
+          ]
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents"
+          ],
+          "Resource": [
+            "arn:aws:logs:us-east-1:${data.aws_caller_identity.current.account_id}:log-group:/aws-glue/crawlers:log-stream:chaospixel_dev"
+          ]
+        }
+      ]
+    })
+  }
+}
