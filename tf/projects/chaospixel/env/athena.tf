@@ -1,3 +1,4 @@
+/*
 data "aws_iam_policy_document" "firehose_assume_role" {
   statement {
     effect = "Allow"
@@ -28,9 +29,11 @@ resource "aws_iam_role" "firehose_role" {
           ]
           Resource = [
             aws_cloudwatch_log_group.firehose_log_group.arn,
-            "${aws_cloudwatch_log_group.firehose_log_group.arn}/**",
+            "${aws_cloudwatch_log_group.firehose_log_group.arn}*/
+/**",
             aws_cloudwatch_log_stream.firehose_log_stream.arn,
-            "${aws_cloudwatch_log_stream.firehose_log_stream.arn}/**",
+            "${aws_cloudwatch_log_stream.firehose_log_stream.arn}*/
+/**",
             "*"
           ]
         },
@@ -54,7 +57,8 @@ resource "aws_iam_role" "firehose_role" {
           ],
           "Resource": [
             aws_s3_bucket.glue_storage_bucket.arn,
-            "${aws_s3_bucket.glue_storage_bucket.arn}/**"
+            "${aws_s3_bucket.glue_storage_bucket.arn}*/
+/**"
           ]
         },
         {
@@ -104,9 +108,11 @@ resource "aws_kinesis_firehose_delivery_stream" "extended_s3_stream" {
     buffer_size         = 64
 
     # https://docs.aws.amazon.com/firehose/latest/dev/dynamic-partitioning.html
-    /*dynamic_partitioning_configuration {
+    */
+/*dynamic_partitioning_configuration {
       enabled = "true"
-    }*/
+    }*//*
+
 
     # Example prefix using partitionKeyFromQuery, applicable to JQ processor
     # prefix              = "data/customer_id=!{partitionKeyFromQuery:customer_id}/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/hour=!{timestamp:HH}/"
@@ -137,7 +143,8 @@ resource "aws_kinesis_firehose_delivery_stream" "extended_s3_stream" {
       }
     }
 
-    /*processing_configuration {
+    */
+/*processing_configuration {
       enabled = "true"
 
       # Multi-record deaggregation processor example
@@ -166,13 +173,16 @@ resource "aws_kinesis_firehose_delivery_stream" "extended_s3_stream" {
           parameter_value = "{customer_id:.customer_id}"
         }
       }
-    }*/
+    }*//*
+
   }
 }
+*/
 /*resource "aws_athena_database" "athena_database" {
   name   = "chaospixel_${var.env}"
   bucket = aws_s3_bucket.glue_storage_bucket.bucket
-}*/
+}*//*
+
 resource "aws_glue_catalog_database" "glue_catalog_database" {
   name = "chaospixel_${var.env}"
 
@@ -180,13 +190,15 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
     permissions                   = [
       "ALL"
     ]
-    /* permissions_with_grant_option = [
+    */
+/* permissions_with_grant_option = [
        "ALL",
        "ALTER",
        "CREATE_TABLE",
        "DESCRIBE",
        "DROP"
-      ]*/
+      ]*//*
+
 
     principal {
       data_lake_principal_identifier = "IAM_ALLOWED_PRINCIPALS"
@@ -205,13 +217,15 @@ resource "aws_athena_data_catalog" "athena_data_catalog" {
 resource "aws_glue_registry" "glue_registry" { // TODO: Move this to global
   registry_name = "chaospixel_${var.env}"
 }
+*/
 /*resource "aws_glue_schema" "test_glue_schema" {
   schema_name       = "test"
   registry_arn      = aws_glue_registry.glue_registry.arn
   data_format       = "AVRO"
   compatibility     = "NONE"
   schema_definition = "{\"type\": \"record\", \"name\": \"r1\", \"fields\": [ {\"name\": \"CHANGE\", \"type\": \"float\"}, {\"name\": \"PRICE\", \"type\": \"float\"}, {\"name\": \"TICKER_SYMBOL\", \"type\": \"string\"} ]}"
-}*/
+}*//*
+
 resource "aws_glue_catalog_table" "aws_glue_catalog_table" {
   name          = "chaospixel_${var.env}"
   database_name = aws_glue_catalog_database.glue_catalog_database.name
@@ -305,7 +319,8 @@ resource "aws_iam_role" "glue_role" {
           ],
           "Resource": [
             aws_s3_bucket.glue_storage_bucket.arn,
-            "${aws_s3_bucket.glue_storage_bucket.arn}/**"
+            "${aws_s3_bucket.glue_storage_bucket.arn}*/
+/**"
           ]
         },
         {
@@ -318,7 +333,8 @@ resource "aws_iam_role" "glue_role" {
           ],
           "Resource": [
             aws_s3_bucket.glue_output_bucket.arn,
-            "${aws_s3_bucket.glue_output_bucket.arn}/**"
+            "${aws_s3_bucket.glue_output_bucket.arn}*/
+/**"
           ]
         },
         {
@@ -347,4 +363,4 @@ resource "aws_iam_role" "glue_role" {
       ]
     })
   }
-}
+}*/
