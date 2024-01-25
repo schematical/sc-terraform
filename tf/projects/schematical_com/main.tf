@@ -197,6 +197,50 @@ resource "aws_dynamodb_table" "dynamodb_table_post" {
     Name        = "schematical-com"
   }
 }
+resource "aws_dynamodb_table" "dynamodb_table_diagram" {
+  name           = "SchematicalComDiagram"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "Username"
+  range_key      = "DiagramId"
+
+  attribute {
+    name = "DiagramId"
+    type = "S"
+  }
+
+/*  attribute {
+    name = "Title"
+    type = "S"
+  }
+
+  attribute {
+    name = "Body"
+    type = "S"
+  }*/
+  attribute {
+    name = "Username"
+    type = "S"
+  }
+/*
+  ttl {
+    attribute_name = "TimeToExist"
+    enabled        = false
+  }*/
+
+ /* global_secondary_index {
+    name               = "GameTitleIndex"
+    hash_key           = "GameTitle"
+    range_key          = "TopScore"
+    write_capacity     = 10
+    read_capacity      = 10
+    projection_type    = "INCLUDE"
+    non_key_attributes = ["UserId"]
+  }*/
+
+  tags = {
+    Name        = "schematical-com"
+  }
+}
 
 module "dev_env_schematical_com" {
   # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
