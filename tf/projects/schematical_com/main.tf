@@ -303,7 +303,11 @@ module "dev_env_schematical_com" {
   domain_name = "dev"
 
   secrets = var.env_info.dev.secrets
-  dynamodb_table_post_arn = aws_dynamodb_table.dynamodb_table_post.arn
+  dynamodb_table_arns = [
+    aws_dynamodb_table.dynamodb_table_post.arn,
+    aws_dynamodb_table.dynamodb_table_diagram.arn,
+    aws_dynamodb_table.dynamodb_table_diagram_object.arn
+  ]
 }
 
 module "prod_env_schematical_com" {
@@ -324,5 +328,9 @@ module "prod_env_schematical_com" {
   domain_name = "www"
 
   secrets = var.env_info.prod.secrets
-  dynamodb_table_post_arn = aws_dynamodb_table.dynamodb_table_post.arn
+  dynamodb_table_arns = [
+    aws_dynamodb_table.dynamodb_table_post.arn,
+    aws_dynamodb_table.dynamodb_table_diagram.arn,
+    aws_dynamodb_table.dynamodb_table_diagram_object.arn
+  ]
 }

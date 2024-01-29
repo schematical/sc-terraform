@@ -85,11 +85,10 @@ resource "aws_iam_policy" "lambda_iam_policy" {
           "Action": [
             "dynamodb:Scan",
             "dynamodb:GetItem",
-            "dynamodb:PutItem"
+            "dynamodb:PutItem",
+            "dynamodb:Query"
           ],
-          "Resource": [
-            var.dynamodb_table_post_arn
-          ]
+          "Resource": var.dynamodb_table_arns
         },
         {
           "Sid": "s3",
