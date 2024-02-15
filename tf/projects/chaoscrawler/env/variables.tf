@@ -30,6 +30,6 @@ variable "hosted_zone_id" {}
 variable "hosted_zone_name" {}
 variable "acm_cert_arn" {}
 variable "kinesis_stream_arn" {
-  type = 'string'
+  type = "string"
 }
 

@@ -6,6 +6,7 @@ locals {
   cloud_front_subdomain = "chaospixel-v1-${var.env}"
 }
 
+
 resource "aws_s3_bucket" "chaospixel_storage_bucket" {
   bucket = "chaospixel-worker-v1-${var.env}-${var.region}"
 }
@@ -136,9 +137,9 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
         forward = "none"
       }
     }
-  /*  trusted_key_groups = [
-      aws_cloudfront_key_group.cloudfront_key_group.id
-    ]*/
+    /*  trusted_key_groups = [
+        aws_cloudfront_key_group.cloudfront_key_group.id
+      ]*/
     viewer_protocol_policy = "allow-all"
     min_ttl                = 0
     default_ttl            = 3600
@@ -185,11 +186,6 @@ resource "aws_route53_record" "drawnby-ai-cloudfront-domain" {
 
 
 
-
-
-
-
-
 resource "aws_lambda_permission" "apigw_lambda" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
@@ -230,10 +226,10 @@ module "lambda_service" {
   env = var.env
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
-/*  api_gateway_id = var.api_gateway_id
-  api_gateway_parent_id = var.api_gateway_base_path_mapping
-  api_gateway_stage_id = var.api_gateway_stage_id
-  service_uri = "chaospixel"*/
+  /*  api_gateway_id = var.api_gateway_id
+    api_gateway_parent_id = var.api_gateway_base_path_mapping
+    api_gateway_stage_id = var.api_gateway_stage_id
+    service_uri = "chaospixel"*/
   lambda_memory_size = 512
   env_vars =  {
     NODE_ENV: var.env,
@@ -244,7 +240,6 @@ module "lambda_service" {
     AWS_S3_BUCKET: var.secrets.chaospixel_lambda_service_AWS_S3_BUCKET
     OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
     AWS_KINESIS_STREAM_ARN: var.kinesis_stream_arn
-    AWS_BATCH_JOB_QUEUE: module.chaospixel_batch_worker.batch_job_queue.arn
     CLOUD_FRONT_DOMAIN: "${local.cloud_front_subdomain}.${var.hosted_zone_name}" #  aws_cloudfront_distribution.s3_distribution.domain_name
     CLOUD_FRONT_PEM: tls_private_key.keypair.private_key_pem
     CLOUD_FRONT_PUBLIC_KEY_ID: aws_cloudfront_public_key.cloudfront_public_key.id
@@ -281,8 +276,6 @@ module "buildpipeline" {
     AWS_S3_BUCKET: var.secrets.chaospixel_lambda_service_AWS_S3_BUCKET
     OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
     SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
-    AWS_BATCH_JOB_DEFINITION: module.chaospixel_batch_worker.batch_job_definition.arn
-    AWS_BATCH_JOB_QUEUE: module.chaospixel_batch_worker.batch_job_queue.arn
     AWS_KINESIS_STREAM_ARN = var.kinesis_stream_arn
     CLOUD_FRONT_DOMAIN: "${local.cloud_front_subdomain}.${var.hosted_zone_name}"  #  aws_cloudfront_distribution.s3_distribution.domain_name
     CLOUD_FRONT_PEM: tls_private_key.keypair.private_key_pem
@@ -332,7 +325,7 @@ resource "aws_iam_policy" "lambda_iam_policy" {
   name = "chaospixel-v1-${var.env}-lambda"
 
   policy = jsonencode(
-   {
+    {
       Version : "2012-10-17",
       Statement : [
         {
@@ -405,7 +398,7 @@ resource "aws_iam_policy" "lambda_iam_policy" {
           ],
           Resource : var.kinesis_stream_arn,
         },
-        {
+        /*{
           Effect : "Allow",
           Action : [
             "batch:SubmitJob"
@@ -414,7 +407,7 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             module.chaospixel_batch_worker.batch_job_queue.arn,
             "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/${module.chaospixel_batch_worker.batch_job_definition.name}:*"
           ]
-        },
+        },*/
         {
           Effect : "Allow",
           Action : [
@@ -458,8 +451,6 @@ module "kinesis_worker_lambda_service" {
     AWS_S3_BUCKET: var.secrets.chaospixel_lambda_service_AWS_S3_BUCKET
     OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
     AWS_KINESIS_STREAM_ARN = var.kinesis_stream_arn
-    AWS_BATCH_JOB_DEFINITION = module.chaospixel_batch_worker.batch_job_definition.arn
-    AWS_BATCH_JOB_QUEUE = module.chaospixel_batch_worker.batch_job_queue.arn
     CLOUD_FRONT_DOMAIN: aws_cloudfront_distribution.s3_distribution.domain_name
     SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
     STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
@@ -479,30 +470,3 @@ resource "aws_iam_role_policy_attachment" "kinesis_worker_lambda_iam_policy_atta
   role = module.kinesis_worker_lambda_service.iam_role.name
   policy_arn = aws_iam_policy.lambda_iam_policy.arn
 }
-resource "aws_iam_role_policy_attachment" "batch_worker_lambda_iam_policy_attach" {
-  role = module.chaospixel_batch_worker.batch_job_definition_iam_role.name
-  policy_arn = aws_iam_policy.lambda_iam_policy.arn
-}
-module "chaospixel_batch_worker" {
-  service_name = "chaospixel-worker"
-  source = "../../../../modules/aws-batch-pytorch-gpu-service"
-  region = "us-east-1"
-  env = var.env
-  vpc_id = var.vpc_id
-  ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
-  private_subnet_mappings = var.private_subnet_mappings
-
-  codepipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket
-  output_bucket                      = aws_s3_bucket.chaospixel_storage_bucket
-  bastion_security_group = var.bastion_security_group
-
-  codepipeline_github_owner = "schematical"
-  codepipeline_github_project_name = "chaospixel-batch-worker"
-  codepipeline_github_source_branch = var.env
-  codepipeline_source_buildspec_path = "buildspec.yml"
-
-}
-
-
-
-

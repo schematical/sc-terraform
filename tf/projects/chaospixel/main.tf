@@ -42,6 +42,7 @@ module "dev_env_chaospixel" {
   api_gateway_stage_id          = var.env_info.dev.api_gateway_stage_id
   bastion_security_group        = var.env_info.dev.bastion_security_group
   acm_cert_arn = var.env_info.dev.acm_cert_arn
+  kinesis_stream_arn = var.env_info.kinesis_stream_arn
 }
 
 module "prod_env_chaospixel" {
@@ -62,4 +63,5 @@ module "prod_env_chaospixel" {
   api_gateway_stage_id          = var.env_info.prod.api_gateway_stage_id
   bastion_security_group        = var.env_info.prod.bastion_security_group
   acm_cert_arn = var.env_info.prod.acm_cert_arn
+  kinesis_stream_arn = var.env_info.kinesis_stream_arn
 }
