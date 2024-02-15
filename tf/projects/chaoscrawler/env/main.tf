@@ -1,28 +1,28 @@
 data "aws_caller_identity" "current" {}
 locals {
-  lambda_service_name = "sc-chaospixel-v1-${var.env}-gql"
-  kinesis_worker_lambda_service_name = "sc-chaospixel-v1-${var.env}-kinesis-worker"
-  service_name = "chaospixel-v1"
-  cloud_front_subdomain = "chaospixel-v1-${var.env}"
+  lambda_service_name = "chaoscrawler-v1-${var.env}-gql"
+  kinesis_worker_lambda_service_name = "chaoscrawler-v1-${var.env}-kinesis-worker"
+  service_name = "chaoscrawler-v1"
+  cloud_front_subdomain = "chaoscrawler-v1-${var.env}"
 }
 
 
-resource "aws_s3_bucket" "chaospixel_storage_bucket" {
-  bucket = "chaospixel-worker-v1-${var.env}-${var.region}"
+resource "aws_s3_bucket" "chaoscrawler_storage_bucket" {
+  bucket = "chaoscrawler-worker-v1-${var.env}-${var.region}"
 }
 
 
 
 
 resource "aws_s3_bucket_ownership_controls" "s3_bucket_ownership_controls" {
-  bucket = aws_s3_bucket.chaospixel_storage_bucket.id
+  bucket = aws_s3_bucket.chaoscrawler_storage_bucket.id
 
   rule {
     object_ownership = "ObjectWriter"
   }
 }
 resource "aws_s3_bucket_acl" "b_acl" {
-  bucket = aws_s3_bucket.chaospixel_storage_bucket.id
+  bucket = aws_s3_bucket.chaoscrawler_storage_bucket.id
   acl    = "public-read"
   depends_on = [aws_s3_bucket_ownership_controls.s3_bucket_ownership_controls]
 }
@@ -39,7 +39,7 @@ resource "aws_cloudfront_origin_access_control" "default" {
 }
 
 resource "aws_s3_bucket_policy" "b" {
-  bucket = aws_s3_bucket.chaospixel_storage_bucket.id
+  bucket = aws_s3_bucket.chaoscrawler_storage_bucket.id
 
   policy = jsonencode({
     "Version": "2008-10-17",
@@ -52,7 +52,7 @@ resource "aws_s3_bucket_policy" "b" {
           "Service": "cloudfront.amazonaws.com" # "AWS": "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${aws_cloudfront_origin_access_control.default.id}"
         },
         "Action": "s3:GetObject",
-        "Resource": "${aws_s3_bucket.chaospixel_storage_bucket.arn}/*"
+        "Resource": "${aws_s3_bucket.chaoscrawler_storage_bucket.arn}/*"
         "Condition": {
           "StringEquals": {
             "AWS:SourceArn": aws_cloudfront_distribution.s3_distribution.arn
@@ -79,7 +79,7 @@ resource "aws_s3_bucket_policy" "b" {
 
 
 resource "aws_s3_bucket_public_access_block" "example" {
-  bucket = aws_s3_bucket.chaospixel_storage_bucket.id
+  bucket = aws_s3_bucket.chaoscrawler_storage_bucket.id
 
   block_public_acls       = false
   block_public_policy     = false
@@ -91,7 +91,7 @@ resource "tls_private_key" "keypair" {
 }
 resource "aws_cloudfront_public_key" "cloudfront_public_key" {
   comment     = "${local.service_name}-${var.env}-${var.region}-public-key"
-  # encoded_key = var.secrets.chaospixel_cloudfront_pem
+  # encoded_key = var.secrets.chaoscrawler_cloudfront_pem
   encoded_key = tls_private_key.keypair.public_key_pem
   name        = "${local.service_name}-${var.env}-${var.region}-public-key"
 }
@@ -105,7 +105,7 @@ resource "aws_cloudfront_key_group" "cloudfront_key_group" {
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
-    domain_name              = aws_s3_bucket.chaospixel_storage_bucket.bucket_regional_domain_name
+    domain_name              = aws_s3_bucket.chaoscrawler_storage_bucket.bucket_regional_domain_name
     origin_access_control_id = aws_cloudfront_origin_access_control.default.id
     origin_id                = local.s3_origin_id
   }
@@ -159,7 +159,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   tags = {
     env = var.env,
     region = var.region,
-    Service = "chaospixel-v1"
+    Service = "chaoscrawler-v1"
   }
 
   viewer_certificate {
@@ -194,8 +194,8 @@ resource "aws_lambda_permission" "apigw_lambda" {
   source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${var.api_gateway_id}/*/*/*"
 }
 
-resource "aws_s3_bucket_cors_configuration" "chaospixel_storage_bucket" {
-  bucket = aws_s3_bucket.chaospixel_storage_bucket.bucket
+resource "aws_s3_bucket_cors_configuration" "chaoscrawler_storage_bucket" {
+  bucket = aws_s3_bucket.chaoscrawler_storage_bucket.bucket
 
   cors_rule {
     allowed_headers = ["*"]
@@ -229,33 +229,28 @@ module "lambda_service" {
   /*  api_gateway_id = var.api_gateway_id
     api_gateway_parent_id = var.api_gateway_base_path_mapping
     api_gateway_stage_id = var.api_gateway_stage_id
-    service_uri = "chaospixel"*/
+    service_uri = "chaoscrawler"*/
   lambda_memory_size = 512
   env_vars =  {
     NODE_ENV: var.env,
     ENV: var.env,
-    DB_URL: var.secrets.chaospixel_lambda_service_DB_URL
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
-    AWS_S3_BUCKET: var.secrets.chaospixel_lambda_service_AWS_S3_BUCKET
     OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
     AWS_KINESIS_STREAM_ARN: var.kinesis_stream_arn
     CLOUD_FRONT_DOMAIN: "${local.cloud_front_subdomain}.${var.hosted_zone_name}" #  aws_cloudfront_distribution.s3_distribution.domain_name
     CLOUD_FRONT_PEM: tls_private_key.keypair.private_key_pem
     CLOUD_FRONT_PUBLIC_KEY_ID: aws_cloudfront_public_key.cloudfront_public_key.id
-    SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
     STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
-    STRIPE_PRODUCT_PRICE_ID: var.secrets.chaospixel_lambda_service_STRIPE_PRODUCT_PRICE_ID,
     DISCORD_APP_ID: var.secrets.chaospixel_lambda_service_DISCORD_APP_ID,
     DISCORD_PUBLIC_KEY: var.secrets.chaospixel_lambda_service_DISCORD_PUBLIC_KEY,
-    DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN,
-    FIRST_PROMOTER_API_KEY: var.secrets.chaospixel_lambda_service_FIRST_PROMOTER_API_KEY
+    DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN
   }
 }
 
 module "buildpipeline" {
   source = "../../../../modules/buildpipeline"# "github.com/schematical/sc-terraform/modules/buildpipeline"
-  service_name = "chaospixel-v1"
+  service_name = "chaoscrawler-v1"
   region = var.region
   env = var.env
   github_owner = "schematical"
@@ -270,28 +265,20 @@ module "buildpipeline" {
     NODE_ENV: var.env,
     AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
-    DB_URL: var.secrets.chaospixel_lambda_service_DB_URL
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
-    AWS_S3_BUCKET: var.secrets.chaospixel_lambda_service_AWS_S3_BUCKET
     OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
-    SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
     AWS_KINESIS_STREAM_ARN = var.kinesis_stream_arn
     CLOUD_FRONT_DOMAIN: "${local.cloud_front_subdomain}.${var.hosted_zone_name}"  #  aws_cloudfront_distribution.s3_distribution.domain_name
     CLOUD_FRONT_PEM: tls_private_key.keypair.private_key_pem
     CLOUD_FRONT_PUBLIC_KEY_ID: aws_cloudfront_public_key.cloudfront_public_key.id
-    SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
     STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
-    STRIPE_PRODUCT_PRICE_ID: var.secrets.chaospixel_lambda_service_STRIPE_PRODUCT_PRICE_ID,
     DISCORD_APP_ID: var.secrets.chaospixel_lambda_service_DISCORD_APP_ID,
     DISCORD_PUBLIC_KEY: var.secrets.chaospixel_lambda_service_DISCORD_PUBLIC_KEY,
     DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN,
-    FIRST_PROMOTER_API_KEY: var.secrets.chaospixel_lambda_service_FIRST_PROMOTER_API_KEY
   }
 }
 
 resource "aws_iam_policy" "codebuild_iam_policy" {
-  name = "chaospixel-v1-${var.env}-codebuild"
+  name = "chaoscrawler-v1-${var.env}-codebuild"
 
   policy = jsonencode(
     {
@@ -322,7 +309,7 @@ resource "aws_iam_role_policy_attachment" "codebuild_iam_policy_attach" {
 
 
 resource "aws_iam_policy" "lambda_iam_policy" {
-  name = "chaospixel-v1-${var.env}-lambda"
+  name = "chaoscrawler-v1-${var.env}-lambda"
 
   policy = jsonencode(
     {
@@ -360,8 +347,8 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             "batch:SubmitJob"
           ],
           "Resource" : [
-            "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/chaospixel-worker-v1-${var.env}-${var.env}:*"
-            // TODO: Import Job Queue `chaospixel-worker-v1-\${AWS::Region}-\${opt:stage, "test"}-JobQueue`
+            "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/chaoscrawler-worker-v1-${var.env}-${var.env}:*"
+            // TODO: Import Job Queue `chaoscrawler-worker-v1-\${AWS::Region}-\${opt:stage, "test"}-JobQueue`
           ]
         },
         {
@@ -381,8 +368,8 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             "s3:ListBucket"
           ],
           "Resource" : [
-            aws_s3_bucket.chaospixel_storage_bucket.arn,
-            "${aws_s3_bucket.chaospixel_storage_bucket.arn}/**"
+            aws_s3_bucket.chaoscrawler_storage_bucket.arn,
+            "${aws_s3_bucket.chaoscrawler_storage_bucket.arn}/**"
           ]
         },
         {
@@ -404,8 +391,8 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             "batch:SubmitJob"
           ],
           Resource : [
-            module.chaospixel_batch_worker.batch_job_queue.arn,
-            "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/${module.chaospixel_batch_worker.batch_job_definition.name}:*"
+            module.chaoscrawler_batch_worker.batch_job_queue.arn,
+            "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/${module.chaoscrawler_batch_worker.batch_job_definition.name}:*"
           ]
         },*/
         {
@@ -445,17 +432,13 @@ module "kinesis_worker_lambda_service" {
   lambda_memory_size = 512
   env_vars =  {
     ENV: var.env,
-    DB_URL: var.secrets.chaospixel_lambda_service_DB_URL
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
-    AWS_S3_BUCKET: var.secrets.chaospixel_lambda_service_AWS_S3_BUCKET
     OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
     AWS_KINESIS_STREAM_ARN = var.kinesis_stream_arn
     CLOUD_FRONT_DOMAIN: aws_cloudfront_distribution.s3_distribution.domain_name
     SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
     STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
-    STRIPE_PRODUCT_PRICE_ID: var.secrets.chaospixel_lambda_service_STRIPE_PRODUCT_PRICE_ID
-    FIRST_PROMOTER_API_KEY: var.secrets.chaospixel_lambda_service_FIRST_PROMOTER_API_KEY
   }
 }
 
@@ -469,4 +452,27 @@ resource "aws_lambda_event_source_mapping" "example" {
 resource "aws_iam_role_policy_attachment" "kinesis_worker_lambda_iam_policy_attach" {
   role = module.kinesis_worker_lambda_service.iam_role.name
   policy_arn = aws_iam_policy.lambda_iam_policy.arn
+}
+resource "aws_ses_domain_identity" "example" {
+  domain = "example.com"
+}
+
+resource "aws_ses_receipt_rule" "store" {
+  name          = "store"
+  rule_set_name = "default-rule-set"
+  recipients    = ["karen@example.com"]
+  enabled       = true
+  scan_enabled  = true
+
+  add_header_action {
+    header_name  = "Custom-Header"
+    header_value = "Added by SES"
+    position     = 1
+  }
+
+  lambda_action {
+
+    function_arn = module.kinesis_worker_lambda_service.lambda_function.arn
+    position     = 0
+  }
 }

@@ -258,11 +258,11 @@ module "project_schematical_com" {
 
 
 module "project_chaoscrawler" {
-  source = "./projects/chaospixel"
+  source = "./projects/chaoscrawler"
   ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
-  api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
-  api_gateway_base_path_mapping = aws_api_gateway_integration.api_gateway_root_resource_method_integration.resource_id
-  hosted_zone_id = local.default_hosted_zone_id
-  hosted_zone_name = local.default_hosted_zone_name
+   api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
+   api_gateway_base_path_mapping = aws_api_gateway_integration.api_gateway_root_resource_method_integration.resource_id
+   /* hosted_zone_id = local.default_hosted_zone_id
+   hosted_zone_name = local.default_hosted_zone_name*/
   env_info = local.env_info
 }

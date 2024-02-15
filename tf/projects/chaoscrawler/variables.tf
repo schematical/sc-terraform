@@ -12,6 +12,12 @@ variable "private_subnet_mappings" {
 }
 variable "codepipeline_artifact_store_bucket" {}
 */
+variable "api_gateway_id" {
+  type = string
+}
+variable "api_gateway_base_path_mapping" {
+  type = string
+}
 
 variable env_info {
   type = map(object({
@@ -23,8 +29,12 @@ variable env_info {
       bucket: string
     })
     api_gateway_stage_id = string
+    hosted_zone_id = string
+    hosted_zone_name = string
     bastion_security_group = string
     secrets  = map(string)
+    kinesis_stream_arn = string
+    acm_cert_arn = string
   }))
 }
 
