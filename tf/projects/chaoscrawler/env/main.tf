@@ -2,6 +2,7 @@ data "aws_caller_identity" "current" {}
 locals {
   lambda_service_name = "chaoscrawler-v1-${var.env}-gql"
   kinesis_worker_lambda_service_name = "chaoscrawler-v1-${var.env}-kinesis-worker"
+  ses_worker_lambda_service_name = "chaoscrawler-v1-${var.env}-ses-worker"
   service_name = "chaoscrawler-v1"
   cloud_front_subdomain = "chaoscrawler-v1-${var.env}"
 }
@@ -404,7 +405,22 @@ resource "aws_iam_policy" "lambda_iam_policy" {
           Resource : [
             "*"
           ]
-        }
+        },
+        {
+          "Sid": "DynamoDB",
+          "Effect": "Allow",
+          "Action": [
+            "dynamodb:Scan",
+            "dynamodb:GetItem",
+            "dynamodb:PutItem",
+            "dynamodb:Query"
+          ],
+          "Resource": [
+            aws_dynamodb_table.dynamodb_table_user.arn,
+            aws_dynamodb_table.dynamodb_table_signupcode.arn,
+            aws_dynamodb_table.dynamodb_table_digeststream.arn
+          ]
+        },
       ]
     }
 
@@ -453,14 +469,47 @@ resource "aws_iam_role_policy_attachment" "kinesis_worker_lambda_iam_policy_atta
   role = module.kinesis_worker_lambda_service.iam_role.name
   policy_arn = aws_iam_policy.lambda_iam_policy.arn
 }
-resource "aws_ses_domain_identity" "example" {
-  domain = "example.com"
+
+
+
+
+
+module "ses_worker_lambda_service" {
+  service_name = local.ses_worker_lambda_service_name
+  source = "../../../../modules/lambda-service"
+  region = var.region
+  env = var.env
+  vpc_id = var.vpc_id
+  private_subnet_mappings = var.private_subnet_mappings
+  handler = "src/functions/ses-worker/handler.main"
+  lambda_memory_size = 512
+  env_vars =  {
+    ENV: var.env,
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+    OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
+    AWS_KINESIS_STREAM_ARN = var.kinesis_stream_arn
+    CLOUD_FRONT_DOMAIN: aws_cloudfront_distribution.s3_distribution.domain_name
+    SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
+    STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
+  }
 }
 
-resource "aws_ses_receipt_rule" "store" {
-  name          = "store"
+
+
+resource "aws_iam_role_policy_attachment" "ses_worker_lambda_iam_policy_attach" {
+  role = module.ses_worker_lambda_service.iam_role.name
+  policy_arn = aws_iam_policy.lambda_iam_policy.arn
+}
+
+resource "aws_ses_domain_identity" "ses_domain_identity_chaoscrawler_schematical_com" {
+  domain = "chaoscrawler.schematical.com"
+}
+
+resource "aws_ses_receipt_rule" "ses_receipt_rule_chaoscrawler_schematical_com" {
+  name          = "chaoscrawler-schematical-com"
   rule_set_name = "default-rule-set"
-  recipients    = ["karen@example.com"]
+  recipients    = ["chaoscrawler.schematical.com"]
   enabled       = true
   scan_enabled  = true
 
@@ -471,8 +520,15 @@ resource "aws_ses_receipt_rule" "store" {
   }
 
   lambda_action {
-
-    function_arn = module.kinesis_worker_lambda_service.lambda_function.arn
+    invocation_type = "Event"
+    function_arn = module.ses_worker_lambda_service.lambda_function.arn
     position     = 0
   }
+}
+resource "aws_lambda_permission" "ses_lambda" {
+  statement_id  = "AllowExecutionFromSES"
+  action        = "lambda:InvokeFunction"
+  function_name = module.ses_worker_lambda_service.lambda_function.function_name
+  principal     = "ses.amazonaws.com"
+  source_arn = "arn:aws:ses:${var.region}:${data.aws_caller_identity.current.account_id}:receipt-rule-set/default-rule-set:receipt-rule/chaoscrawler-schematical-com" // aws_ses_receipt_rule.ses_receipt_rule_chaoscrawler_schematical_com.arn
 }
