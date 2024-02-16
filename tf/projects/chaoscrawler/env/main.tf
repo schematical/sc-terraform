@@ -255,7 +255,7 @@ module "buildpipeline" {
   region = var.region
   env = var.env
   github_owner = "schematical"
-  github_project_name = "chaos-ville"
+  github_project_name = "chaoscrawler"
   github_source_branch = var.env
   code_pipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket.bucket
   vpc_id = var.vpc_id
@@ -295,7 +295,8 @@ resource "aws_iam_policy" "codebuild_iam_policy" {
           ],
           "Resource": [
             module.lambda_service.lambda_function.arn,
-            module.kinesis_worker_lambda_service.lambda_function.arn
+            module.kinesis_worker_lambda_service.lambda_function.arn,
+            module.ses_worker_lambda_service.lambda_function.arn
           ]
         }
       ]
@@ -505,7 +506,18 @@ resource "aws_iam_role_policy_attachment" "ses_worker_lambda_iam_policy_attach" 
 resource "aws_ses_domain_identity" "ses_domain_identity_chaoscrawler_schematical_com" {
   domain = "chaoscrawler.schematical.com"
 }
+resource "aws_route53_record" "route53_record_chaoscrawler_schematical_com" {
+  zone_id = var.hosted_zone_id
+  name    = "chaoscrawler.schematical.com"
+  type    = "TXT"
+  ttl     = "600"
+  records = [aws_ses_domain_identity.ses_domain_identity_chaoscrawler_schematical_com.verification_token]
+}
+resource "aws_ses_domain_identity_verification" "example_verification" {
+  domain = aws_ses_domain_identity.ses_domain_identity_chaoscrawler_schematical_com.id
 
+  depends_on = [aws_route53_record.route53_record_chaoscrawler_schematical_com]
+}
 resource "aws_ses_receipt_rule" "ses_receipt_rule_chaoscrawler_schematical_com" {
   name          = "chaoscrawler-schematical-com"
   rule_set_name = "default-rule-set"
@@ -513,11 +525,7 @@ resource "aws_ses_receipt_rule" "ses_receipt_rule_chaoscrawler_schematical_com" 
   enabled       = true
   scan_enabled  = true
 
-  add_header_action {
-    header_name  = "Custom-Header"
-    header_value = "Added by SES"
-    position     = 1
-  }
+
 
   lambda_action {
     invocation_type = "Event"

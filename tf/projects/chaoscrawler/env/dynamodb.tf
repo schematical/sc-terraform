@@ -139,10 +139,12 @@ resource "aws_dynamodb_table" "dynamodb_table_digeststreamitem" {
   }
 
 
+/*
   ttl {
     attribute_name = "ttl"
     enabled        = false
   }
+*/
 
 
 
