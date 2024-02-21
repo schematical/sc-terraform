@@ -1,10 +1,13 @@
+
 data "aws_caller_identity" "current" {}
+
 locals {
   lambda_service_name = "chaoscrawler-v1-${var.env}-gql"
   kinesis_worker_lambda_service_name = "chaoscrawler-v1-${var.env}-kinesis-worker"
   ses_worker_lambda_service_name = "chaoscrawler-v1-${var.env}-ses-worker"
   service_name = "chaoscrawler-v1"
   cloud_front_subdomain = "chaoscrawler-v1-${var.env}"
+  ses_domain = "chaoscrawler.schematical.com"
 }
 
 
@@ -231,7 +234,7 @@ module "lambda_service" {
     api_gateway_parent_id = var.api_gateway_base_path_mapping
     api_gateway_stage_id = var.api_gateway_stage_id
     service_uri = "chaoscrawler"*/
-  lambda_memory_size = 512
+  lambda_memory_size = 1028
   env_vars =  {
     NODE_ENV: var.env,
     ENV: var.env,
@@ -245,7 +248,10 @@ module "lambda_service" {
     STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
     DISCORD_APP_ID: var.secrets.chaospixel_lambda_service_DISCORD_APP_ID,
     DISCORD_PUBLIC_KEY: var.secrets.chaospixel_lambda_service_DISCORD_PUBLIC_KEY,
-    DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN
+    DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN,
+    ELEVEN_LABS_API_KEY: var.secrets.chaoscrawler_lambda_service_ELEVEN_LABS_API_KEY
+    AWS_S3_BUCKET: aws_s3_bucket.chaoscrawler_storage_bucket.bucket
+
   }
 }
 
@@ -275,6 +281,8 @@ module "buildpipeline" {
     DISCORD_APP_ID: var.secrets.chaospixel_lambda_service_DISCORD_APP_ID,
     DISCORD_PUBLIC_KEY: var.secrets.chaospixel_lambda_service_DISCORD_PUBLIC_KEY,
     DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN,
+    ELEVEN_LABS_API_KEY: var.secrets.chaoscrawler_lambda_service_ELEVEN_LABS_API_KEY
+    AWS_S3_BUCKET: aws_s3_bucket.chaoscrawler_storage_bucket.bucket
   }
 }
 
@@ -414,12 +422,15 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             "dynamodb:Scan",
             "dynamodb:GetItem",
             "dynamodb:PutItem",
-            "dynamodb:Query"
+            "dynamodb:Query",
+            "dynamodb:BatchGetItem"
           ],
           "Resource": [
             aws_dynamodb_table.dynamodb_table_user.arn,
             aws_dynamodb_table.dynamodb_table_signupcode.arn,
-            aws_dynamodb_table.dynamodb_table_digeststream.arn
+            aws_dynamodb_table.dynamodb_table_digeststream.arn,
+            aws_dynamodb_table.dynamodb_table_digeststreamitem.arn,
+            aws_dynamodb_table.dynamodb_table_digeststreamepisode.arn
           ]
         },
       ]
@@ -456,6 +467,7 @@ module "kinesis_worker_lambda_service" {
     CLOUD_FRONT_DOMAIN: aws_cloudfront_distribution.s3_distribution.domain_name
     SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
     STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
+    AWS_S3_BUCKET: aws_s3_bucket.chaoscrawler_storage_bucket.bucket
   }
 }
 
@@ -493,6 +505,7 @@ module "ses_worker_lambda_service" {
     CLOUD_FRONT_DOMAIN: aws_cloudfront_distribution.s3_distribution.domain_name
     SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
     STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
+    AWS_S3_BUCKET: aws_s3_bucket.chaoscrawler_storage_bucket.bucket
   }
 }
 
@@ -504,11 +517,11 @@ resource "aws_iam_role_policy_attachment" "ses_worker_lambda_iam_policy_attach" 
 }
 
 resource "aws_ses_domain_identity" "ses_domain_identity_chaoscrawler_schematical_com" {
-  domain = "chaoscrawler.schematical.com"
+  domain = local.ses_domain
 }
 resource "aws_route53_record" "route53_record_chaoscrawler_schematical_com" {
   zone_id = var.hosted_zone_id
-  name    = "chaoscrawler.schematical.com"
+  name    = local.ses_domain
   type    = "TXT"
   ttl     = "600"
   records = [aws_ses_domain_identity.ses_domain_identity_chaoscrawler_schematical_com.verification_token]
@@ -518,25 +531,82 @@ resource "aws_ses_domain_identity_verification" "example_verification" {
 
   depends_on = [aws_route53_record.route53_record_chaoscrawler_schematical_com]
 }
+
+resource "aws_ses_domain_dkim" "ses_domain_dkim_chaoscrawler_schematical_com" {
+  domain = aws_ses_domain_identity.ses_domain_identity_chaoscrawler_schematical_com.domain
+}
+resource "aws_route53_record" "route53_record_mx_chaoscrawler_schematical_com" {
+  zone_id = var.hosted_zone_id
+  name    = local.ses_domain
+  type    = "MX"
+  ttl     = "600"
+  records = ["10 inbound-smtp.${var.region}.amazonaws.com"]
+}
+
+resource "aws_route53_record" "example_amazonses_dkim_record" {
+  count   = 3
+  zone_id = var.hosted_zone_id
+  name    = "${aws_ses_domain_dkim.ses_domain_dkim_chaoscrawler_schematical_com.dkim_tokens[count.index]}._domainkey"
+  type    = "CNAME"
+  ttl     = "600"
+  records = ["${aws_ses_domain_dkim.ses_domain_dkim_chaoscrawler_schematical_com.dkim_tokens[count.index]}.dkim.amazonses.com"]
+}
 resource "aws_ses_receipt_rule" "ses_receipt_rule_chaoscrawler_schematical_com" {
-  name          = "chaoscrawler-schematical-com"
+  name          = "chaoscrawler-schematical-com-v1-${var.env}-${var.region}"
   rule_set_name = "default-rule-set"
-  recipients    = ["chaoscrawler.schematical.com"]
+  recipients    = [local.ses_domain]
   enabled       = true
   scan_enabled  = true
 
+  sns_action {
+    position  = 1
+    topic_arn = aws_sns_topic.sns_topic.arn
+  }
 
 
-  lambda_action {
+  /*lambda_action {
     invocation_type = "Event"
     function_arn = module.ses_worker_lambda_service.lambda_function.arn
-    position     = 0
-  }
+    position     = 1
+  }*/
 }
-resource "aws_lambda_permission" "ses_lambda" {
+resource "aws_sns_topic" "sns_topic" {
+  name = "chaoscrawler-v1-${var.env}-${var.region}"
+}
+/*resource "aws_lambda_permission" "ses_lambda" {
   statement_id  = "AllowExecutionFromSES"
   action        = "lambda:InvokeFunction"
   function_name = module.ses_worker_lambda_service.lambda_function.function_name
   principal     = "ses.amazonaws.com"
-  source_arn = "arn:aws:ses:${var.region}:${data.aws_caller_identity.current.account_id}:receipt-rule-set/default-rule-set:receipt-rule/chaoscrawler-schematical-com" // aws_ses_receipt_rule.ses_receipt_rule_chaoscrawler_schematical_com.arn
+  source_arn = "arn:aws:ses:${var.region}:${data.aws_caller_identity.current.account_id}:receipt-rule-set/default-rule-set:receipt-rule/chaoscrawler-schematical-com-v1-${var.env}-${var.region}" // aws_ses_receipt_rule.ses_receipt_rule_chaoscrawler_schematical_com.arn
+}*/
+resource "aws_lambda_permission" "ses_lambda" {
+  statement_id  = "AllowExecutionFromSNS"
+  action        = "lambda:InvokeFunction"
+  function_name = module.ses_worker_lambda_service.lambda_function.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn = aws_sns_topic.sns_topic.arn//"arn:aws:ses:${var.region}:${data.aws_caller_identity.current.account_id}:receipt-rule-set/default-rule-set:receipt-rule/chaoscrawler-schematical-com-v1-${var.env}-${var.region}" // aws_ses_receipt_rule.ses_receipt_rule_chaoscrawler_schematical_com.arn
 }
+resource "aws_sns_topic_subscription" "sns-topic" {
+  topic_arn = aws_sns_topic.sns_topic.arn
+  protocol  = "lambda"
+  endpoint  = module.ses_worker_lambda_service.lambda_function.arn
+}
+/*
+
+resource "aws_cloudwatch_event_rule" "console" {
+  name        = "chaoscrawler-v1-${var.env}-${var.region}"
+  description = "Capture each AWS Console Sign In"
+
+  event_pattern = jsonencode({
+    detail-type = [
+      "AWS Console Sign In via CloudTrail"
+    ]
+  })
+}
+
+resource "aws_cloudwatch_event_target" "sns" {
+  rule      = aws_cloudwatch_event_rule.console.name
+  target_id = "SendToSNS"
+  arn       = aws_sns_topic.aws_logins.arn
+}*/

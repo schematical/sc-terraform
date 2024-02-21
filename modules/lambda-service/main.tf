@@ -111,7 +111,8 @@ resource "aws_lambda_function" "service_lambda_web"  {
       s3_bucket,
       s3_key,
       environment,
-      timeout
+      timeout,
+      memory_size
     ]
   }
   tracing_config {

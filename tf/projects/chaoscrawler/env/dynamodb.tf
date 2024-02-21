@@ -137,6 +137,46 @@ resource "aws_dynamodb_table" "dynamodb_table_digeststreamitem" {
     name = "parentUri"
     type = "S"
   }
+/*  attribute {
+    name = "ttl"
+    type = "N"
+  }*/
+  attribute {
+    name = "digestStreamEpisode"
+    type = "S"
+  }
+  ttl {
+    attribute_name = "ttl"
+    enabled        = true
+  }
+  global_secondary_index {
+    name               = "digestStreamEpisode"
+    hash_key           = "digestStreamEpisode"
+    # range_key          = "TopScore"
+    # write_capacity     = 1
+    # read_capacity      = 1
+    projection_type    = "ALL"
+    # non_key_attributes = ["digestStreamEpisode"]
+  }
+
+
+  tags = {
+    Name        = "schematical-com"
+  }
+}
+resource "aws_dynamodb_table" "dynamodb_table_digeststreamepisode" {
+  name           = "${var.env}_ChaosCrawlerDigestStreamEpisode"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "parentUri"
+  range_key      = "_id"
+  attribute {
+    name = "_id"
+    type = "S"
+  }
+  attribute {
+    name = "parentUri"
+    type = "S"
+  }
 
 
 /*

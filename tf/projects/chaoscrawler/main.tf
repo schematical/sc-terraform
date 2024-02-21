@@ -6,6 +6,56 @@ provider "aws" {
   region = "us-east-1"
   # alias  = "east"
 }
+resource "aws_api_gateway_resource" "api_gateway_resource" {
+  rest_api_id = var.api_gateway_id # aws_api_gateway_rest_api.MyDemoAPI.id
+  parent_id   = var.api_gateway_base_path_mapping # aws_api_gateway_rest_api.MyDemoAPI.root_resource_id
+  path_part   = "chaoscrawler"
+}
+resource "aws_api_gateway_method" "api_gateway_method" {
+  rest_api_id   = var.api_gateway_id
+  resource_id   = aws_api_gateway_resource.api_gateway_resource.id
+  http_method   = "ANY"
+  authorization = "NONE"
+
+}
+
+resource "aws_api_gateway_integration" "api_gateway_root_resource_method_integration" {
+  rest_api_id          = var.api_gateway_id
+  resource_id          = aws_api_gateway_resource.api_gateway_resource.id
+  http_method          = aws_api_gateway_method.api_gateway_method.http_method
+
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  // passthrough_behavior    = "WHEN_NO_MATCH"
+  // content_handling        = "CONVERT_TO_BINARY"
+  uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:chaoscrawler-v1-$${stageVariables.ENV}-gql/invocations"
+}
+
+resource "aws_api_gateway_resource" "api_gateway_proxy_resource" {
+  rest_api_id = var.api_gateway_id # aws_api_gateway_rest_api.MyDemoAPI.id
+  parent_id   = aws_api_gateway_resource.api_gateway_resource.id # aws_api_gateway_rest_api.MyDemoAPI.root_resource_id
+  path_part   = "{proxy+}"
+}
+resource "aws_api_gateway_method" "api_gateway_proxy_method" {
+  rest_api_id   = var.api_gateway_id
+  resource_id   = aws_api_gateway_resource.api_gateway_proxy_resource.id
+  http_method   = "ANY"
+  authorization = "NONE"
+
+}
+
+resource "aws_api_gateway_integration" "api_gateway_root_resource_proxy_method_integration" {
+  rest_api_id          = var.api_gateway_id
+  resource_id          = aws_api_gateway_resource.api_gateway_proxy_resource.id
+  http_method          = aws_api_gateway_method.api_gateway_proxy_method.http_method
+
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  // passthrough_behavior    = "WHEN_NO_MATCH"
+  // content_handling        = "CONVERT_TO_BINARY"
+  uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:chaoscrawler-v1-$${stageVariables.ENV}-gql/invocations"
+}
+
 module "dev_env_chaoscrawler" {
 
   source = "./env"
