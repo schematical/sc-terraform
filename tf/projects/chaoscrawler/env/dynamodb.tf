@@ -192,3 +192,60 @@ resource "aws_dynamodb_table" "dynamodb_table_digeststreamepisode" {
     Name        = "schematical-com"
   }
 }
+resource "aws_dynamodb_table" "dynamodb_table_diagram" {
+  name           = "${var.env}_ChaosCrawlerDiagram"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "parentUri"
+  range_key      = "_id"
+  attribute {
+    name = "_id"
+    type = "S"
+  }
+  attribute {
+    name = "parentUri"
+    type = "S"
+  }
+
+
+  tags = {
+    Name        = "schematical-com"
+  }
+}
+resource "aws_dynamodb_table" "dynamodb_table_diagramobject" {
+  name           = "${var.env}_ChaosCrawlerDiagramObject"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "parentUri"
+  range_key      = "_id"
+  attribute {
+    name = "_id"
+    type = "S"
+  }
+  attribute {
+    name = "parentUri"
+    type = "S"
+  }
+
+
+  tags = {
+    Name        = "schematical-com"
+  }
+}
+resource "aws_dynamodb_table" "dynamodb_table_diagramflow" {
+  name           = "${var.env}_ChaosCrawlerDiagramFlow"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "parentUri"
+  range_key      = "_id"
+  attribute {
+    name = "_id"
+    type = "S"
+  }
+  attribute {
+    name = "parentUri"
+    type = "S"
+  }
+
+
+  tags = {
+    Name        = "schematical-com"
+  }
+}

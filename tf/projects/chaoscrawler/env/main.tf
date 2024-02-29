@@ -7,7 +7,7 @@ locals {
   ses_worker_lambda_service_name = "chaoscrawler-v1-${var.env}-ses-worker"
   service_name = "chaoscrawler-v1"
   cloud_front_subdomain = "chaoscrawler-v1-${var.env}"
-  ses_domain = "chaoscrawler.schematical.com"
+  ses_domain = var.env == "prod" ? "chaoscrawler.schematical.com" : "${var.env}-chaoscrawler.schematical.com"
 }
 
 
@@ -430,7 +430,10 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             aws_dynamodb_table.dynamodb_table_signupcode.arn,
             aws_dynamodb_table.dynamodb_table_digeststream.arn,
             aws_dynamodb_table.dynamodb_table_digeststreamitem.arn,
-            aws_dynamodb_table.dynamodb_table_digeststreamepisode.arn
+            aws_dynamodb_table.dynamodb_table_digeststreamepisode.arn,
+            aws_dynamodb_table.dynamodb_table_diagram.arn,
+            aws_dynamodb_table.dynamodb_table_diagramobject.arn,
+            aws_dynamodb_table.dynamodb_table_diagramflow.arn
           ]
         },
       ]
@@ -476,6 +479,8 @@ resource "aws_lambda_event_source_mapping" "example" {
   function_name     = module.kinesis_worker_lambda_service.lambda_function.arn
   starting_position = "LATEST"
   maximum_retry_attempts = 1
+  # https://docs.aws.amazon.com/lambda/latest/dg/invocation-eventfiltering.html
+  # filter_criteria =
 }
 
 resource "aws_iam_role_policy_attachment" "kinesis_worker_lambda_iam_policy_attach" {

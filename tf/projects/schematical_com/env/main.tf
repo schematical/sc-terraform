@@ -156,6 +156,7 @@ module "buildpipeline" {
   env_vars = {
     NODE_ENV: var.env
     REACT_APP_SERVER_URL:  "https://${var.domain_name}.${var.hosted_zone_name}"
+    REACT_APP_STRIPE_PUBLIC_KEY: var.secrets.drawnby_frontend_REACT_APP_STRIPE_PUBLIC_KEY
     AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
     S3_BUCKET: module.cloudfront.s3_bucket.bucket
