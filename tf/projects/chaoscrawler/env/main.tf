@@ -416,6 +416,15 @@ resource "aws_iam_policy" "lambda_iam_policy" {
           ]
         },
         {
+          Effect : "Allow",
+          Action : [
+            "ce:GetCostAndUsage"
+          ],
+          Resource : [
+            "*"
+          ]
+        },
+        {
           "Sid": "DynamoDB",
           "Effect": "Allow",
           "Action": [

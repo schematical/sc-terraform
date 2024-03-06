@@ -18,6 +18,7 @@ module "cloudfront" {
     "localhost",
     "localhost:3000",
     "${var.domain_name}.${var.hosted_zone_name}",
+    "www.${var.hosted_zone_name}",
     var.hosted_zone_name
   ]
 }
