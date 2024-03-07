@@ -266,3 +266,9 @@ module "project_chaoscrawler" {
    hosted_zone_name = local.default_hosted_zone_name*/
   env_info = local.env_info
 }
+module "project_splitgpt" {
+  source = "./projects/splitgpt"
+  ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
+  // api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
+  env_info = local.env_info
+}
