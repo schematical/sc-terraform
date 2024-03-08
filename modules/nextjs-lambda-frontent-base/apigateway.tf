@@ -1,4 +1,5 @@
 
+/*
 resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
   base_path   = ""
   domain_name = aws_api_gateway_domain_name.api_gateway_domain_name.id
@@ -6,6 +7,7 @@ resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
   stage_name  = var.api_gateway_stage_name
 }
 
+*/
 
 resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
   certificate_arn = aws_acm_certificate.aws_acm_certificate.arn

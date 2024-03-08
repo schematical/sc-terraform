@@ -3,7 +3,7 @@ locals {
   cloudfront_subdomain = "assets-${var.env}"
 }
 module "cloudfront" {
-  service_name = "schematical-com-v1"
+  service_name = var.service_name
   source = "../cloudfront"
   region = var.region
   env = var.env

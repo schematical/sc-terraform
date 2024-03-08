@@ -72,3 +72,15 @@ variable "lambda_runtime" {
   type = string
   default = "nodejs16.x"
 }
+variable "package_type" {
+  type = string
+  default = "Zip"
+}
+variable "image_uri" {
+  type = string
+  default = null
+}
+variable "image_config" {
+  type = map(string)
+  default = null
+}

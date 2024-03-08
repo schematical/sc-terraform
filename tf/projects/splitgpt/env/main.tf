@@ -2,8 +2,8 @@
 module "nextjs_lambda" {
   # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
   source = "../../../../modules/nextjs-lambda-frontend-env"
-  env = "dev"
-  service_name = "${var.service_name}-${var.env}-${var.region}"
+  env = var.env
+  service_name = "${var.service_name}"
   vpc_id = var.vpc_id
   hosted_zone_id = var.hosted_zone_id
   hosted_zone_name = var.hosted_zone_name
@@ -14,9 +14,9 @@ module "nextjs_lambda" {
   codepipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket
   # bastion_security_group = var.bastion_security_group
   api_gateway_base_path_mapping = var.api_gateway_base_path_mapping
-  subdomain = "dev"
+  subdomain = var.subdomain
   secrets = var.secrets
   github_owner = "schematical"
   github_project_name = "chaoscrawler"
-  source_buildspec_path = ""
+  source_buildspec_path = "splitGPT/www/buildspec.yml"
 }

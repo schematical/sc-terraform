@@ -79,11 +79,14 @@ data "archive_file" "lambda" {
 resource "aws_lambda_function" "service_lambda_web"  {
   # If the file is not in the current working directory you will need to include a
   # path.module in the filename.
-  filename      = var.use_s3_source ? null : data.archive_file.lambda.output_path
+  package_type = var.package_type
+  image_uri = var.image_uri != null? var.image_uri : null
+  # image_config = var.image_config != null? var.image_config : null
+  filename      = var.image_uri != null ? null : data.archive_file.lambda.output_path
   function_name = var.service_name
   role          = aws_iam_role.service_lambda_iam_role.arn
   handler       = var.handler
-  source_code_hash = var.use_s3_source ? null : data.archive_file.lambda.output_base64sha256
+  source_code_hash = var.image_uri != null  ? null : data.archive_file.lambda.output_base64sha256
   # s3_bucket = var.s3_bucket
   # s3_key = var.s3_key
   layers = var.layers
