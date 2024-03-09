@@ -1,3 +1,4 @@
+
 module "lambda_service" {
   service_name = "${var.service_name}-${var.env}-www"
   source = "../lambda-service"
@@ -11,17 +12,21 @@ module "lambda_service" {
     AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
     S3_BUCKET: module.cloudfront.s3_bucket.bucket
-    PUBLIC_ASSET_URL: "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}"
+    PUBLIC_ASSET_URL: "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}",
+    AWS_LAMBDA_EXEC_WRAPPER: "/opt/bootstrap"
+    PORT: "8000"
   }
+  layers = [
+    "arn:aws:lambda:${var.region}:753240598075:layer:LambdaAdapterLayerX86:20"
+  ]
   /*  api_gateway_id = var.api_gateway_id
     api_gateway_parent_id = var.api_gateway_base_path_mapping
     api_gateway_stage_id = module.dev_env.api_gateway_stage_id
     service_uri = "chaospixel"*/
-  layers = [
-    "arn:aws:lambda:eu-west-1:753240598075:layer:LambdaAdapterLayerX86:7"
-  ]
-  handler = "handler.main"
-
+  lambda_runtime = "nodejs18.x"
+  handler = "www/run.sh"
+  # image_uri =  "${aws_ecr_repository.ecr_repository.repository_url}:${var.env}"
+  # package_type = "Zip" # package_type = "Image"
 }
 
 resource "aws_iam_policy" "lambda_iam_policy" {

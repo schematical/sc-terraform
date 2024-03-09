@@ -20,6 +20,7 @@ module "buildpipeline" {
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
     S3_BUCKET: module.cloudfront.s3_bucket.bucket
     PUBLIC_ASSET_URL: "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}"
+    REPOSITORY_URI: aws_ecr_repository.ecr_repository.repository_url
   }
 
 }
@@ -57,7 +58,26 @@ resource "aws_iam_policy" "codebuild_iam_policy" {
             "${module.cloudfront.s3_bucket.arn}/**",
             "${module.cloudfront.s3_bucket.arn}"
           ]
-        }
+        },
+        {
+          "Sid": "AllowDescribeRepoImage",
+          "Effect": "Allow",
+          "Action": [
+            "ecr:*"
+          ],
+          "Resource": [
+            aws_ecr_repository.ecr_repository.arn,
+            "${aws_ecr_repository.ecr_repository.arn}:*"
+          ]
+        },
+        {
+          "Sid":"GetAuthorizationToken",
+          "Effect":"Allow",
+          "Action":[
+            "ecr:GetAuthorizationToken"
+          ],
+          "Resource":"*"
+        },
       ]
     }
   )

@@ -74,7 +74,7 @@ variable "lambda_runtime" {
 }
 variable "package_type" {
   type = string
-  default = "Zip"
+  default = null # "Zip"
 }
 variable "image_uri" {
   type = string

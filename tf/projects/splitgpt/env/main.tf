@@ -17,6 +17,6 @@ module "nextjs_lambda" {
   subdomain = var.subdomain
   secrets = var.secrets
   github_owner = "schematical"
-  github_project_name = "chaoscrawler"
-  source_buildspec_path = "splitGPT/www/buildspec.yml"
+  github_project_name = "indihustlers-com"
+  source_buildspec_path = "www/buildspec.yml"
 }
