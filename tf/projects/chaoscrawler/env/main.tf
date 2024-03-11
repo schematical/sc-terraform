@@ -214,15 +214,23 @@ resource "aws_s3_bucket_cors_configuration" "chaoscrawler_storage_bucket" {
     allowed_origins = ["*"]
   }
 }
-/*resource "aws_secretsmanager_secret" "lambda_secret" {
-  name = local.lambda_service_name
+
+
+
+locals {
+  zip_file = "${path.module}/index.zip"
 }
-resource "aws_secretsmanager_secret_version" "lambda_secret_version" {
-  secret_id     = aws_secretsmanager_secret.lambda_secret.id
-  secret_string = jsonencode({
-    DB_ENV = "value1"
-  })
-}*/
+data "archive_file" "lambda" {
+  type        = "zip"
+  source_dir = "/mnt/d/WebstormProjects/chaoscrawler/lambda_layer"
+  output_path = local.zip_file
+}
+resource "aws_lambda_layer_version" "lambda_layer" {
+  filename   = data.archive_file.lambda.output_path
+  layer_name = "${local.lambda_service_name}-${var.env}-${var.region}"
+
+  compatible_runtimes = ["nodejs16.x"]
+}
 module "lambda_service" {
   service_name = local.lambda_service_name
   source = "../../../../modules/lambda-service"
@@ -234,6 +242,9 @@ module "lambda_service" {
     api_gateway_parent_id = var.api_gateway_base_path_mapping
     api_gateway_stage_id = var.api_gateway_stage_id
     service_uri = "chaoscrawler"*/
+  layers = [
+    aws_lambda_layer_version.lambda_layer.arn
+  ]
   lambda_memory_size = 1028
   env_vars =  {
     NODE_ENV: var.env,
@@ -470,6 +481,9 @@ module "kinesis_worker_lambda_service" {
   private_subnet_mappings = var.private_subnet_mappings
   handler = "src/functions/kinesis-worker/handler.main"
   lambda_memory_size = 512
+  layers = [
+    aws_lambda_layer_version.lambda_layer.arn
+  ]
   env_vars =  {
     ENV: var.env,
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
@@ -510,6 +524,9 @@ module "ses_worker_lambda_service" {
   private_subnet_mappings = var.private_subnet_mappings
   handler = "src/functions/ses-worker/handler.main"
   lambda_memory_size = 512
+  layers = [
+   aws_lambda_layer_version.lambda_layer.arn
+  ]
   env_vars =  {
     ENV: var.env,
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
