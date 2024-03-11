@@ -1,0 +1,62 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: latest
+  pre_build:
+    commands:
+      # - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
+      # - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      # - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+
+      - cd $CODEBUILD_SRC_DIR/www
+      -
+      - npm i
+  build:
+    commands:
+      - cd $CODEBUILD_SRC_DIR/www
+      - ASSET_HASH=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32)
+
+      - export REACT_APP_GRAPHQL_URI=https://$ENV-v1-us-east-1-api.schematical.com/chaoscrawler
+      - export PUBLIC_URL=https://assets-$ENV.schematical.com/$ASSET_HASH
+
+      - export REACT_APP_ENVIRONMENT $ENV
+      - echo $EXTRA_ENV_VARS
+      - |
+        # Read the environment variable containing JSON
+        extra_env_vars_json="$EXTRA_ENV_VARS"
+        
+        # Parse the JSON and iterate through key-value pairs
+        keys=$(echo "$extra_env_vars_json" | jq -r 'keys[]')
+        for key in $keys; do
+          value=$(echo "$extra_env_vars_json" | jq -r ".$key")
+        
+          # Set environment variable
+          export "$key"="$value"
+        done
+
+      - npm run-script build
+      - ls -la .next
+      - ls -la .next/static
+      - export S3_PATH=s3://$SERVICE_NAME-$ENV-$REGION-cloudfront/$ASSET_HASH/_next/static
+      - echo $S3_PATH
+      - aws s3 cp $CODEBUILD_SRC_DIR/www/.next/static $S3_PATH --recursive  --acl public-read
+      - cp run.sh $CODEBUILD_SRC_DIR/www/.next/standalone
+      - cd $CODEBUILD_SRC_DIR/www/.next/standalone
+      - zip -r function.zip ./
+      - aws lambda update-function-code --zip-file fileb://function.zip --function-name splitgpt-com-$ENV-www
+      # - docker build -t $REPOSITORY_URI:$ENV .
+      # - docker tag $REPOSITORY_URI:$ENV $REPOSITORY_URI:$ENV
+      # - docker push $REPOSITORY_URI:$ENV
+
+  post_build:
+    commands:
+
+      - cd $CODEBUILD_SRC_DIR
+      - echo Writing image definitions file...
+      - printf '[{"name":"%s","imageUri":"%s"}]' $ECS_CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - cat imagedefinitions.json
+artifacts:
+  files:
+    - imagedefinitions.json
