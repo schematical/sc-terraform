@@ -24,7 +24,7 @@ module "lambda_service" {
     api_gateway_stage_id = module.dev_env.api_gateway_stage_id
     service_uri = "chaospixel"*/
   lambda_runtime = "nodejs18.x"
-  handler = "www/run.sh"
+  handler = "run.sh"
   # image_uri =  "${aws_ecr_repository.ecr_repository.repository_url}:${var.env}"
   # package_type = "Zip" # package_type = "Image"
 }

@@ -1,6 +1,6 @@
 data "aws_caller_identity" "current" {}
 locals {
-  service_name = "splitgpt-com"
+  service_name = "indihustlers-com"
   domain_name = "indihustlers.com"
 }
 provider "aws" {
@@ -20,8 +20,8 @@ module "nextjs_lambda_frontend_base" {
 
 
 
-module "dev_env_splitgpt_com" {
-  # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
+module "dev_env_indihustlers_com" {
+  depends_on = [module.nextjs_lambda_frontend_base]
   service_name=local.service_name
   source = "./env"
   env = "dev"
@@ -40,8 +40,8 @@ module "dev_env_splitgpt_com" {
 
 }
 
-module "prod_env_splitgpt_com" {
-  # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
+module "prod_env_indihustlers_com" {
+  depends_on = [module.nextjs_lambda_frontend_base]
   source = "./env"
   env = "prod"
   service_name=local.service_name

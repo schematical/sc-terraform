@@ -6,14 +6,14 @@
     }
   }
 }*/
-provider "aws" {
+/*provider "aws" {
   profile  = "schematical"
   region = "us-east-1"
   default_tags {
     tags = {
     }
   }
-}
+}*/
 data "aws_caller_identity" "current" {}
 /*
 resource "aws_s3_bucket_policy" "code_pipeline_artifact_store_bucket_policy" {
