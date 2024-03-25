@@ -90,7 +90,7 @@ resource "aws_lambda_function" "service_lambda_web"  {
   # s3_bucket = var.s3_bucket
   # s3_key = var.s3_key
   layers = var.layers
-
+  timeout = var.lambda_timeout
 
   runtime = var.lambda_runtime
   memory_size = var.lambda_memory_size

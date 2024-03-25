@@ -1,77 +1,36 @@
-locals {
-  cloudfront_subdomain = "assets-${var.env}"
-}
-module "cloudfront" {
-  service_name = "schematical-com-v1"
-  source = "../../../../modules/cloudfront"
-  region = var.region
+data "aws_caller_identity" "current" {}
+module "nextjs_lambda" {
+  # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
+  source = "../../../../modules/nextjs-lambda-frontend-env"
   env = var.env
-  subdomain = local.cloudfront_subdomain
+  service_name = "${var.service_name}"
   vpc_id = var.vpc_id
-  private_subnet_mappings = var.private_subnet_mappings
   hosted_zone_id = var.hosted_zone_id
   hosted_zone_name = var.hosted_zone_name
-  acm_cert_arn = var.acm_cert_arn
+  ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
   api_gateway_id = var.api_gateway_id
-  codepipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket
-  cors_allowed_hosts = [
-    "localhost",
-    "localhost:3000",
-    "${var.domain_name}.${var.hosted_zone_name}",
-    "www.${var.hosted_zone_name}",
-    var.hosted_zone_name
-  ]
-}
-resource "aws_s3_bucket_cors_configuration" "chaospixel_storage_bucket" {
-  bucket = module.cloudfront.s3_bucket.bucket
-
-  cors_rule {
-    allowed_headers = ["*"]
-    allowed_methods = ["PUT", "POST"]
-    allowed_origins = ["*"] ## https://s3-website-test.hashicorp.com"]
-    expose_headers  = ["ETag"]
-    max_age_seconds = 3000
-  }
-
-  cors_rule {
-    allowed_methods = ["GET"]
-    allowed_origins = ["*"]
-  }
-}
-
-data "aws_caller_identity" "current" {}
-module "lambda_service" {
-  service_name = "schematical-com-v1-${var.env}-www"
-  source = "../../../../modules/lambda-service"
-  region = var.region
-  env = var.env
-  vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
-  env_vars = {
-    NODE_ENV: var.env
-    REACT_APP_SERVER_URL:  "https://${var.domain_name}.${var.hosted_zone_name}"
-    AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
-    S3_BUCKET: module.cloudfront.s3_bucket.bucket
-    PUBLIC_ASSET_URL: "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}"
-  }
-/*  api_gateway_id = var.api_gateway_id
-  api_gateway_parent_id = var.api_gateway_base_path_mapping
-  api_gateway_stage_id = module.dev_env.api_gateway_stage_id
-  service_uri = "chaospixel"*/
-  layers = [
-    // aws_lambda_layer_version.asset_lambda_layer.arn,
-    // aws_lambda_layer_version.dependency_lambda_layer.arn,
-    // aws_lambda_layer_version.code_lambda_layer.arn,
-  ]
-/*
-  use_s3_source = true
-  s3_bucket = var.codepipeline_artifact_store_bucket.bucket
-  s3_key = "schematical-com-v1-${var.env}/code.zip"
-*/
-  handler = "handler.main"
-
+  acm_cert_arn = var.acm_cert_arn
+  codepipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket
+  # bastion_security_group = var.bastion_security_group
+  api_gateway_base_path_mapping = var.api_gateway_base_path_mapping
+  subdomain = var.subdomain
+  secrets = var.secrets
+  github_owner = "schematical"
+  github_project_name = "schematical-com"
+  source_buildspec_path = "www/buildspec.yml"
 }
+resource "aws_api_gateway_method_settings" "all" {
+  rest_api_id = var.api_gateway_id
+  stage_name  = var.env # module.nextjs_lambda.api_gateway_stage_id
+  method_path = "*/*"
+
+  settings {
+    caching_enabled = true
+    cache_ttl_in_seconds = 60
+  }
+}
+
 
 resource "aws_iam_policy" "lambda_iam_policy" {
   name = "schematical-com-v1-${var.env}-lambda"
@@ -90,17 +49,6 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             "dynamodb:Query"
           ],
           "Resource": var.dynamodb_table_arns
-        },
-        {
-          "Sid": "s3",
-          "Effect": "Allow",
-          "Action": [
-            "s3:PutObject",
-            "s3:PutObjectAcl"
-          ],
-          "Resource": [
-            "${module.cloudfront.s3_bucket.arn}/**"
-          ]
         }
 
       ]
@@ -108,139 +56,7 @@ resource "aws_iam_policy" "lambda_iam_policy" {
   )
 }
 resource "aws_iam_role_policy_attachment" "lambda_iam_policy_attach" {
-  role = module.lambda_service.iam_role.name
+  role = module.nextjs_lambda.iam_role_name
   policy_arn = aws_iam_policy.lambda_iam_policy.arn
-}
-resource "aws_lambda_permission" "apigw_lambda" {
-  statement_id  = "AllowExecutionFromAPIGateway"
-  action        = "lambda:InvokeFunction"
-  function_name = module.lambda_service.lambda_function.function_name
-  principal     = "apigateway.amazonaws.com"
-
-  # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
-  source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${var.api_gateway_id}/*/*/*"
-}
-
-/*resource "aws_lambda_layer_version" "asset_lambda_layer" {
-  s3_bucket = var.codepipeline_artifact_store_bucket.bucket
-  s3_key = "schematical-com-v1-${var.env}/assetsLayer.zip"
-  layer_name = "asset_lambda_layer"
-
-  compatible_runtimes = ["nodejs16.x"]
-}
-resource "aws_lambda_layer_version" "code_lambda_layer" {
-  s3_bucket = var.codepipeline_artifact_store_bucket.bucket
-  s3_key = "schematical-com-v1-${var.env}/code.zip"
-  layer_name = "code_lambda_layer"
-
-  compatible_runtimes = ["nodejs16.x"]
-}
-resource "aws_lambda_layer_version" "dependency_lambda_layer" {
-  s3_bucket = var.codepipeline_artifact_store_bucket.bucket
-  s3_key = "schematical-com-v1-${var.env}/dependenciesLayer.zip"
-  layer_name = "dependency_lambda_layer"
-
-  compatible_runtimes = ["nodejs16.x"]
-}*/
-module "buildpipeline" {
-  source = "../../../../modules/buildpipeline"# "github.com/schematical/sc-terraform/modules/buildpipeline"
-  service_name = "schematical-com-v1"
-  region = var.region
-  env = var.env
-  github_owner = "schematical"
-  github_project_name = "schematical-com"
-  github_source_branch = var.env
-  code_pipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket.bucket
-  vpc_id = var.vpc_id
-  private_subnet_mappings = var.private_subnet_mappings
-  source_buildspec_path = "buildspec.yml"
-  env_vars = {
-    NODE_ENV: var.env
-    REACT_APP_SERVER_URL:  "https://${var.domain_name}.${var.hosted_zone_name}"
-    REACT_APP_STRIPE_PUBLIC_KEY: var.secrets.drawnby_frontend_REACT_APP_STRIPE_PUBLIC_KEY
-    AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
-    S3_BUCKET: module.cloudfront.s3_bucket.bucket
-    PUBLIC_ASSET_URL: "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}"
-  }
-
-}
-resource "aws_s3_bucket_policy" "cloudfront_bucket_policy" {
-  bucket = module.cloudfront.s3_bucket.bucket
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "S3"
-        Effect    = "Allow"
-        Principal = "*" // aws_iam_policy.codebuild_iam_policy.arn
-        Action    = "s3:*"
-        Resource  = module.cloudfront.s3_bucket.arn
-
-        Condition = {
-          StringNotEquals = {
-            "s3:x-amz-server-side-encryption" = "aws:kms"
-          }
-        }
-      }
-    ]
-  })
-}
-resource "aws_iam_policy" "codebuild_iam_policy" {
-  name = "schematical-com-v1-${var.env}-codebuild"
-
-  policy = jsonencode(
-    {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Sid": "LambdaDeploy",
-          "Effect": "Allow",
-          "Action": [
-            "lambda:UpdateFunctionCode",
-            "lambda:GetFunction",
-            "lambda:UpdateFunctionConfiguration"
-          ],
-          "Resource": [
-            module.lambda_service.lambda_function.arn
-          ]
-        },
-        {
-          Effect = "Allow"
-          Action = [
-            "s3:PutObject",
-            "s3:GetObject",
-            "s3:GetObjectVersion",
-            "s3:GetBucketAcl",
-            "s3:GetBucketLocation",
-            "s3:PutObjectAcl",
-            "s3:*"
-          ]
-          Resource = [
-            "${module.cloudfront.s3_bucket.arn}/**",
-            "${module.cloudfront.s3_bucket.arn}"
-          ]
-        }
-      ]
-    }
-  )
-}
-resource "aws_iam_role_policy_attachment" "codebuild_iam_policy_attach" {
-  role = module.buildpipeline.code_build_iam_role.name
-  policy_arn = aws_iam_policy.codebuild_iam_policy.arn
-}
-module "apigateway_env" {
-
-  source = "../../../../modules/apigateway-env"
-  env = var.env
-  // vpc_id = var.vpc_id
-  // ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
-  api_gateway_id = var.api_gateway_id
-  hosted_zone_id = var.hosted_zone_id
-  hosted_zone_name = var.hosted_zone_name
-  acm_cert_arn = var.acm_cert_arn
-  domain_name = var.domain_name
-  // private_subnet_mappings = var.private_subnet_mappings
 }
 

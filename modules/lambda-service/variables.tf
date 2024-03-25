@@ -70,7 +70,7 @@ variable "lambda_memory_size" {
 }
 variable "lambda_runtime" {
   type = string
-  default = "nodejs16.x"
+  default = "nodejs18.x"
 }
 variable "package_type" {
   type = string
@@ -83,4 +83,8 @@ variable "image_uri" {
 variable "image_config" {
   type = map(string)
   default = null
+}
+variable "lambda_timeout" {
+  type = number
+  default = 3
 }

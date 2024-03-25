@@ -1,23 +1,23 @@
-variable "project_name" {
-  default = "schematical-com-v1"
+variable "service_name" {
+  type = string
 }
 variable "region" {
   default = "us-east-1"
+  type = string
 }
-
 variable "env" {}
-
-
 variable "api_gateway_id" {}
-variable "api_gateway_base_path_mapping" {}
+variable "api_gateway_base_path_mapping" {
+  type = string
+}
 variable "hosted_zone_name" {
+  type = string
 }
 variable "hosted_zone_id" {
-
+  type = string
 }
-
-
 variable "acm_cert_arn" {
+  type = string
 }
 
 variable "ecs_task_execution_iam_role" {}
@@ -30,9 +30,10 @@ variable "private_subnet_mappings" {
 variable "codepipeline_artifact_store_bucket" {
 
 }
-variable "domain_name" {
-  default = ""
+variable "subdomain" {
+  type = string
 }
+
 variable "secrets" {
   type = map(string)
 }

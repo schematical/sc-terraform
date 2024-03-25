@@ -8,7 +8,7 @@ module "lambda_service" {
   private_subnet_mappings = var.private_subnet_mappings
   env_vars = {
     NODE_ENV: var.env
-    REACT_APP_SERVER_URL:  "https://${var.subdomain}.${var.hosted_zone_name}"
+    NEXT_PUBLIC_SERVER_URL:  "https://${var.subdomain}.${var.hosted_zone_name}"
     AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
     AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
     S3_BUCKET: module.cloudfront.s3_bucket.bucket
@@ -25,6 +25,7 @@ module "lambda_service" {
     service_uri = "chaospixel"*/
   lambda_runtime = "nodejs18.x"
   handler = "run.sh"
+  lambda_timeout = 10
   # image_uri =  "${aws_ecr_repository.ecr_repository.repository_url}:${var.env}"
   # package_type = "Zip" # package_type = "Image"
 }

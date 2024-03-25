@@ -242,7 +242,7 @@ resource "aws_codebuild_project" "codebuild_project" {
       value = "${data.aws_caller_identity.current.account_id}"
     }
     environment_variable {
-      name = "IMAGE_TAG"
+      name = "NODE_ENV"
       type = "PLAINTEXT"
       value = var.env
     }

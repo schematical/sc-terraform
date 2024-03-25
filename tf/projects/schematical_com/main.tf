@@ -1,10 +1,14 @@
 data "aws_caller_identity" "current" {}
 locals {
-  www_lambda_arn = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:schematical-com-v1-$${stageVariables.ENV}-www/invocations"
+  www_lambda_arn = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:schematical-com-$${stageVariables.ENV}-www/invocations"
 }
 provider "aws" {
   region = "us-east-1"
   # alias  = "east"
+}
+locals {
+  service_name = "schematical-com"
+  domain_name = "schematical.com"
 }
 resource "aws_acm_certificate" "schematical_com_cert" {
   domain_name       = aws_route53_zone.schematical_com.name
@@ -55,12 +59,12 @@ resource "aws_route53_record" "schematical-com-ck2" {
     "dkim.dm-rm8vgvoy.sg7.convertkit.com."
   ]
 }
-resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
+/*resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
   base_path   = ""
   domain_name = aws_api_gateway_domain_name.api_gateway_domain_name.id
   api_id = aws_api_gateway_rest_api.api_gateway.id
   stage_name  = module.prod_env_schematical_com.apigateway_env.api_gateway_stage_name
-}
+}*/
 
 
 resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
@@ -371,6 +375,68 @@ resource "aws_dynamodb_table" "dynamodb_table_diagram_object" {
     Name        = "schematical-com"
   }
 }
+
+/*
+resource "aws_elasticache_serverless_cache" "elasticache_serverless_cache" {
+  engine = "redis"
+  name   = "${local.service_name}-${var.region}"
+  cache_usage_limits {
+    data_storage {
+      maximum = 1
+      unit    = "GB"
+    }
+    ecpu_per_second {
+      maximum = 500
+    }
+  }
+  #daily_snapshot_time      = "09:00"
+  description              = "${local.service_name}-${var.region}"
+  # kms_key_id               = aws_kms_key.test.arn
+  major_engine_version     = "7"
+  snapshot_retention_limit = 1
+  security_group_ids       = [aws_security_group.redis_security_group.id]
+  subnet_ids               = [for o in var.env_info.prod.private_subnet_mappings : o.id] # values(var.private_subnet_mappings)
+}
+resource "aws_security_group" "redis_security_group" {
+  name        =  "${local.service_name}-prod-${var.region}"
+  description = "${local.service_name}-prod-${var.region}"
+  vpc_id      = var.env_info.prod.vpc_id
+
+  ingress {
+    description      = "TLS from VPC"
+    from_port        = 6379
+    to_port          = 6379
+    protocol         = "tcp"
+    security_groups = [
+      module.dev_env_schematical_com.lambda_security_group_id,
+      module.prod_env_schematical_com.lambda_security_group_id
+    ]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  tags = {
+    Name = "allow_tls"
+  }
+}*/
+
+
+module "nextjs_lambda_frontend_base" {
+  # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
+  source = "../../../modules/nextjs-lambda-frontent-base"
+
+
+  base_domain_name = local.domain_name
+  service_name     = local.service_name
+  api_gateway_stage_name = "dev"
+}
+
 module "dev_env_schematical_com" {
   # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
   source = "./env"
@@ -386,8 +452,6 @@ module "dev_env_schematical_com" {
   # bastion_security_group = var.bastion_security_group
 
   api_gateway_base_path_mapping = aws_api_gateway_rest_api.api_gateway.root_resource_id
-  domain_name = "dev"
-
   secrets = var.env_info.dev.secrets
   dynamodb_table_arns = [
     aws_dynamodb_table.dynamodb_table_post.arn,
@@ -396,6 +460,8 @@ module "dev_env_schematical_com" {
     aws_dynamodb_table.dynamodb_table_diagram_object.arn,
     aws_dynamodb_table.dynamodb_table_map_flow.arn
   ]
+  service_name = local.service_name
+  subdomain = "dev"
 }
 
 module "prod_env_schematical_com" {
@@ -413,8 +479,8 @@ module "prod_env_schematical_com" {
   # bastion_security_group = var.bastion_security_group
 
   api_gateway_base_path_mapping = aws_api_gateway_rest_api.api_gateway.root_resource_id
-  domain_name = "www"
-
+  service_name = local.service_name
+  subdomain = "www"
   secrets = var.env_info.prod.secrets
   dynamodb_table_arns = [
     aws_dynamodb_table.dynamodb_table_post.arn,
