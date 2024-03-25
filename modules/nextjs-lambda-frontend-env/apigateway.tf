@@ -9,5 +9,7 @@ module "apigateway_env" {
   hosted_zone_name = var.hosted_zone_name
   acm_cert_arn = var.acm_cert_arn
   domain_name = var.subdomain
+  cache_cluster_enabled = var.cache_cluster_enabled
+  cache_cluster_size = var.cache_cluster_size
   // private_subnet_mappings = var.private_subnet_mappings
 }

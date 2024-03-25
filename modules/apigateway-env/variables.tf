@@ -22,7 +22,14 @@ variable "xray_tracing_enabled" {
   default = false
   type=bool
 }
-
+variable "cache_cluster_enabled" {
+  default = null
+  type=bool
+}
+variable "cache_cluster_size" {
+  default = null
+  type=number
+}
 /*
 variable "ecs_task_execution_iam_role" {}
 variable "vpc_id" {}

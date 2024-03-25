@@ -1,11 +1,11 @@
-terraform {
+/*terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "4.61.0"
     }
   }
-}
+}*/
 resource "aws_iam_role" "service_lambda_iam_role" {
   name = join("-", [var.service_prefix, var.service_name, var.env, "lambda"])
   assume_role_policy = jsonencode(
@@ -110,7 +110,7 @@ resource "aws_lambda_function" "service_lambda_web"  {
       source_code_hash,
       s3_bucket,
       s3_key,
-      environment,
+      # environment,
       timeout,
       memory_size
     ]

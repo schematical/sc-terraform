@@ -1,4 +1,4 @@
-terraform {
+/*terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -12,7 +12,7 @@ terraform {
 provider "aws" {
   alias  = "us-east-1"
   region = "us-east-1"
-}
+}*/
 resource "aws_batch_compute_environment" "batch_gpu_compute_environment" {
   compute_environment_name = join("-", [var.service_name, var.env, var.region])
 

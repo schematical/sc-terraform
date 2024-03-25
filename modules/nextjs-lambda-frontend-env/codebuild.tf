@@ -11,17 +11,20 @@ module "buildpipeline" {
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
   source_buildspec_path = var.source_buildspec_path
-  env_vars = {
-    ENV: var.env
-    SERVICE_NAME: var.service_name
-    NEXT_PUBLIC_SERVER_URL:  "https://${var.subdomain}.${var.hosted_zone_name}"
-    // NEXT_PUBLIC_STRIPE_PUBLIC_KEY: var.secrets.drawnby_frontend_REACT_APP_STRIPE_PUBLIC_KEY
-    AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
-    S3_BUCKET: module.cloudfront.s3_bucket.bucket
-    PUBLIC_ASSET_URL: "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}"
-    # REPOSITORY_URI: aws_ecr_repository.ecr_repository.repository_url
-  }
+  env_vars = merge(
+    {
+      ENV: var.env
+      SERVICE_NAME: var.service_name
+      NEXT_PUBLIC_SERVER_URL:  "https://${var.subdomain}.${var.hosted_zone_name}"
+      // NEXT_PUBLIC_STRIPE_PUBLIC_KEY: var.secrets.drawnby_frontend_REACT_APP_STRIPE_PUBLIC_KEY
+      AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+      AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+      S3_BUCKET: module.cloudfront.s3_bucket.bucket
+      PUBLIC_ASSET_URL: "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}"
+      # REPOSITORY_URI: aws_ecr_repository.ecr_repository.repository_url
+    },
+    var.secrets
+  )
 
 }
 resource "aws_iam_policy" "codebuild_iam_policy" {

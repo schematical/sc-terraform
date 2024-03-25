@@ -376,7 +376,6 @@ resource "aws_dynamodb_table" "dynamodb_table_diagram_object" {
   }
 }
 
-/*
 resource "aws_elasticache_serverless_cache" "elasticache_serverless_cache" {
   engine = "redis"
   name   = "${local.service_name}-${var.region}"
@@ -386,7 +385,7 @@ resource "aws_elasticache_serverless_cache" "elasticache_serverless_cache" {
       unit    = "GB"
     }
     ecpu_per_second {
-      maximum = 500
+      maximum = 1000
     }
   }
   #daily_snapshot_time      = "09:00"
@@ -424,7 +423,7 @@ resource "aws_security_group" "redis_security_group" {
   tags = {
     Name = "allow_tls"
   }
-}*/
+}
 
 
 module "nextjs_lambda_frontend_base" {
@@ -450,9 +449,13 @@ module "dev_env_schematical_com" {
   acm_cert_arn = aws_acm_certificate.schematical_com_cert.arn
   codepipeline_artifact_store_bucket = var.env_info.dev.codepipeline_artifact_store_bucket
   # bastion_security_group = var.bastion_security_group
-
   api_gateway_base_path_mapping = aws_api_gateway_rest_api.api_gateway.root_resource_id
-  secrets = var.env_info.dev.secrets
+  secrets = merge(
+    var.env_info.dev.secrets,
+    {
+      REDIS_HOST =   join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
+    }
+  )
   dynamodb_table_arns = [
     aws_dynamodb_table.dynamodb_table_post.arn,
     aws_dynamodb_table.dynamodb_table_user.arn,
@@ -481,7 +484,12 @@ module "prod_env_schematical_com" {
   api_gateway_base_path_mapping = aws_api_gateway_rest_api.api_gateway.root_resource_id
   service_name = local.service_name
   subdomain = "www"
-  secrets = var.env_info.prod.secrets
+  secrets = merge(
+    var.env_info.prod.secrets,
+    {
+      REDIS_HOST =  join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
+    }
+  )
   dynamodb_table_arns = [
     aws_dynamodb_table.dynamodb_table_post.arn,
     aws_dynamodb_table.dynamodb_table_user.arn,

@@ -19,6 +19,8 @@ module "nextjs_lambda" {
   github_owner = "schematical"
   github_project_name = "schematical-com"
   source_buildspec_path = "www/buildspec.yml"
+  cache_cluster_enabled = true
+  cache_cluster_size = "0.5"
 }
 resource "aws_api_gateway_method_settings" "all" {
   rest_api_id = var.api_gateway_id

@@ -1,4 +1,4 @@
-terraform {
+/*terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -11,7 +11,7 @@ terraform {
 
 provider "aws" {
   region = "us-east-1"
-}
+}*/
 
 
 resource "aws_ecr_repository" "sagemaker_ecr_repo" {

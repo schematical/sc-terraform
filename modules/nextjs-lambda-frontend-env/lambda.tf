@@ -6,16 +6,19 @@ module "lambda_service" {
   env = var.env
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
-  env_vars = {
-    NODE_ENV: var.env
-    NEXT_PUBLIC_SERVER_URL:  "https://${var.subdomain}.${var.hosted_zone_name}"
-    AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
-    S3_BUCKET: module.cloudfront.s3_bucket.bucket
-    PUBLIC_ASSET_URL: "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}",
-    AWS_LAMBDA_EXEC_WRAPPER: "/opt/bootstrap"
-    PORT: "8000"
-  }
+  env_vars = merge(
+    {
+      NODE_ENV: var.env
+      NEXT_PUBLIC_SERVER_URL:  "https://${var.subdomain}.${var.hosted_zone_name}"
+      AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+      AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+      S3_BUCKET: module.cloudfront.s3_bucket.bucket
+      PUBLIC_ASSET_URL: "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}",
+      AWS_LAMBDA_EXEC_WRAPPER: "/opt/bootstrap"
+      PORT: "8000"
+    },
+    var.secrets
+  )
   layers = [
     "arn:aws:lambda:${var.region}:753240598075:layer:LambdaAdapterLayerX86:20"
   ]

@@ -46,3 +46,11 @@ variable "source_buildspec_path" {
   type = string
   default = "buildspec.yml"
 }
+variable "cache_cluster_enabled" {
+  default = null
+  type = bool
+}
+variable "cache_cluster_size" {
+  default = null
+  type = number
+}
