@@ -53,6 +53,7 @@ resource "aws_route53_record" "route53_record" {
 
 data "aws_route53_zone" "hosted_zone" {
   name = var.hosted_zone_name
+  private_zone = false
 }
 
 

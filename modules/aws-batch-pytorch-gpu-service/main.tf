@@ -1,18 +1,4 @@
-/*terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.61.0"
-    }
-  }
 
-  required_version = ">= 1.2.0"
-}
-
-provider "aws" {
-  alias  = "us-east-1"
-  region = "us-east-1"
-}*/
 resource "aws_batch_compute_environment" "batch_gpu_compute_environment" {
   compute_environment_name = join("-", [var.service_name, var.env, var.region])
 
@@ -43,10 +29,10 @@ resource "aws_batch_compute_environment" "batch_gpu_compute_environment" {
     }
   }
 
-  /*update_policy {
+  update_policy {
     job_execution_timeout_minutes = 30
     terminate_jobs_on_update      = false
-  }*/
+  }
 
   service_role = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/batch.amazonaws.com/AWSServiceRoleForBatch"
   state        = "ENABLED"
@@ -345,9 +331,10 @@ resource "aws_batch_job_queue" "batch_job_queue" {
   priority    = 1
   state       = "ENABLED"
 
-  compute_environments = [
-    aws_batch_compute_environment.batch_gpu_compute_environment.arn
-  ]
+  compute_environment_order {
+    order               = 1
+    compute_environment =   aws_batch_compute_environment.batch_gpu_compute_environment.arn
+  }
 
   tags = {
     Service = "${var.service_name}"

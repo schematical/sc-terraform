@@ -9,6 +9,7 @@ resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
 
 */
 
+/*
 resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
   certificate_arn = aws_acm_certificate.aws_acm_certificate.arn
   domain_name     = var.base_domain_name
@@ -16,6 +17,7 @@ resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
     types = ["EDGE"]
   }
 }
+*/
 
 
 

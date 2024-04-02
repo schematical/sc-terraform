@@ -7,6 +7,9 @@ variable "base_domain_name" {
 variable "api_gateway_stage_name" {
   type = string
 }
+variable "aws_route53_zone_id" {
+  type = string
+}
 variable "region" {
   type = string
   default = "us-east-1"

@@ -23,7 +23,7 @@ module "buildpipeline" {
       PUBLIC_ASSET_URL: "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}"
       # REPOSITORY_URI: aws_ecr_repository.ecr_repository.repository_url
     },
-    var.secrets
+    var.extra_env_vars
   )
 
 }

@@ -26,7 +26,7 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_eip" "nat_gateway_eip" {
-  vpc = true
+  # vpc = true
 }
 
 resource "aws_nat_gateway" "nat_gateway" {

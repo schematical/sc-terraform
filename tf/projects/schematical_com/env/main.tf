@@ -21,17 +21,33 @@ module "nextjs_lambda" {
   source_buildspec_path = "www/buildspec.yml"
   cache_cluster_enabled = true
   cache_cluster_size = "0.5"
+  extra_env_vars = {
+    REDIS_HOST: var.redis_host
+    DEBUG: "ioredis:*"
+  }
 }
-resource "aws_api_gateway_method_settings" "all" {
+/*
+resource "aws_api_gateway_method_settings" "root" {
   rest_api_id = var.api_gateway_id
   stage_name  = var.env # module.nextjs_lambda.api_gateway_stage_id
-  method_path = "*/*"
+  method_path = "GET"
 
   settings {
     caching_enabled = true
     cache_ttl_in_seconds = 60
   }
 }
+resource "aws_api_gateway_method_settings" "posts" {
+  rest_api_id = var.api_gateway_id
+  stage_name  = var.env # module.nextjs_lambda.api_gateway_stage_id
+  method_path = "/posts"
+
+  settings {
+    caching_enabled = true
+    cache_ttl_in_seconds = 60
+  }
+}
+*/
 
 
 resource "aws_iam_policy" "lambda_iam_policy" {

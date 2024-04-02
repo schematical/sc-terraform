@@ -17,7 +17,7 @@ module "lambda_service" {
       AWS_LAMBDA_EXEC_WRAPPER: "/opt/bootstrap"
       PORT: "8000"
     },
-    var.secrets
+    var.extra_env_vars
   )
   layers = [
     "arn:aws:lambda:${var.region}:753240598075:layer:LambdaAdapterLayerX86:20"

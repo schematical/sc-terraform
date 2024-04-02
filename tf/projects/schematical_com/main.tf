@@ -22,7 +22,7 @@ resource "aws_acm_certificate" "schematical_com_cert" {
 }
 
 resource "aws_route53_zone" "schematical_com" {
-  name = "schematical.com"
+  name = local.domain_name
 }
 /*resource "aws_route53_record" "schematical-com-ns" {
   zone_id = aws_route53_zone.schematical_com.zone_id
@@ -33,7 +33,7 @@ resource "aws_route53_zone" "schematical_com" {
 }*/
 resource "aws_route53_record" "schematical-com-a" {
   zone_id = aws_route53_zone.schematical_com.zone_id
-  name    = "schematical.com"
+  name    =  local.domain_name
   type    = "A"
   alias {
     name                   = aws_api_gateway_domain_name.api_gateway_domain_name.cloudfront_domain_name
@@ -59,12 +59,7 @@ resource "aws_route53_record" "schematical-com-ck2" {
     "dkim.dm-rm8vgvoy.sg7.convertkit.com."
   ]
 }
-/*resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
-  base_path   = ""
-  domain_name = aws_api_gateway_domain_name.api_gateway_domain_name.id
-  api_id = aws_api_gateway_rest_api.api_gateway.id
-  stage_name  = module.prod_env_schematical_com.apigateway_env.api_gateway_stage_name
-}*/
+
 
 
 resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
@@ -74,7 +69,12 @@ resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
     types = ["EDGE"]
   }
 }
-
+resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
+  base_path   = ""
+  domain_name = aws_api_gateway_domain_name.api_gateway_domain_name.id
+  api_id = aws_api_gateway_rest_api.api_gateway.id
+  stage_name  = "prod"
+}
 resource "aws_route53_record" "schematical-com-mx" {
   zone_id = aws_route53_zone.schematical_com.zone_id
   name    = "schematical.com"
@@ -130,6 +130,7 @@ resource "aws_api_gateway_integration" "api_gateway_root_resource_method_integra
   passthrough_behavior    = "WHEN_NO_MATCH"
   content_handling        = "CONVERT_TO_BINARY"
   uri = local.www_lambda_arn
+
 }
 
 resource "aws_api_gateway_resource" "api_gateway_proxy_resource" {
@@ -142,7 +143,9 @@ resource "aws_api_gateway_method" "api_gateway_proxy_method" {
   resource_id   = aws_api_gateway_resource.api_gateway_proxy_resource.id
   http_method   = "ANY"
   authorization = "NONE"
-
+  request_parameters = {
+    "method.request.path.proxy" = true
+  }
 }
 
 resource "aws_api_gateway_integration" "api_gateway_proxy_resource_method_integration" {
@@ -155,6 +158,11 @@ resource "aws_api_gateway_integration" "api_gateway_proxy_resource_method_integr
   passthrough_behavior    = "WHEN_NO_MATCH"
   content_handling        = "CONVERT_TO_BINARY"
   uri = local.www_lambda_arn
+
+  request_parameters = {
+    "integration.request.path.proxy": "method.request.path.proxy"
+  }
+  cache_key_parameters = ["method.request.path.proxy"]
 }
 
 resource "aws_dynamodb_table" "dynamodb_table_post" {
@@ -397,14 +405,14 @@ resource "aws_elasticache_serverless_cache" "elasticache_serverless_cache" {
   subnet_ids               = [for o in var.env_info.prod.private_subnet_mappings : o.id] # values(var.private_subnet_mappings)
 }
 resource "aws_security_group" "redis_security_group" {
-  name        =  "${local.service_name}-prod-${var.region}"
-  description = "${local.service_name}-prod-${var.region}"
+  name        =  "${local.service_name}-redis-prod-${var.region}"
+  description = "${local.service_name}-redis-prod-${var.region}"
   vpc_id      = var.env_info.prod.vpc_id
 
   ingress {
     description      = "TLS from VPC"
     from_port        = 6379
-    to_port          = 6379
+    to_port          = 6380
     protocol         = "tcp"
     security_groups = [
       module.dev_env_schematical_com.lambda_security_group_id,
@@ -434,6 +442,7 @@ module "nextjs_lambda_frontend_base" {
   base_domain_name = local.domain_name
   service_name     = local.service_name
   api_gateway_stage_name = "dev"
+  aws_route53_zone_id = aws_route53_zone.schematical_com.zone_id
 }
 
 module "dev_env_schematical_com" {
@@ -450,12 +459,7 @@ module "dev_env_schematical_com" {
   codepipeline_artifact_store_bucket = var.env_info.dev.codepipeline_artifact_store_bucket
   # bastion_security_group = var.bastion_security_group
   api_gateway_base_path_mapping = aws_api_gateway_rest_api.api_gateway.root_resource_id
-  secrets = merge(
-    var.env_info.dev.secrets,
-    {
-      REDIS_HOST =   join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
-    }
-  )
+  secrets = var.env_info.dev.secrets
   dynamodb_table_arns = [
     aws_dynamodb_table.dynamodb_table_post.arn,
     aws_dynamodb_table.dynamodb_table_user.arn,
@@ -465,6 +469,7 @@ module "dev_env_schematical_com" {
   ]
   service_name = local.service_name
   subdomain = "dev"
+  redis_host =   join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
 }
 
 module "prod_env_schematical_com" {
@@ -484,12 +489,8 @@ module "prod_env_schematical_com" {
   api_gateway_base_path_mapping = aws_api_gateway_rest_api.api_gateway.root_resource_id
   service_name = local.service_name
   subdomain = "www"
-  secrets = merge(
-    var.env_info.prod.secrets,
-    {
-      REDIS_HOST =  join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
-    }
-  )
+  secrets = var.env_info.prod.secrets
+
   dynamodb_table_arns = [
     aws_dynamodb_table.dynamodb_table_post.arn,
     aws_dynamodb_table.dynamodb_table_user.arn,
@@ -497,4 +498,5 @@ module "prod_env_schematical_com" {
     aws_dynamodb_table.dynamodb_table_diagram_object.arn,
     aws_dynamodb_table.dynamodb_table_map_flow.arn
   ]
+  redis_host =   join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
 }

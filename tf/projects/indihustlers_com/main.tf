@@ -7,6 +7,9 @@ provider "aws" {
   region = "us-east-1"
   # alias  = "east"
 }
+resource "aws_route53_zone" "domain_name_com" {
+  name = local.domain_name
+}
 
 module "nextjs_lambda_frontend_base" {
   # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
@@ -16,6 +19,7 @@ module "nextjs_lambda_frontend_base" {
   base_domain_name = local.domain_name
   service_name     = local.service_name
   api_gateway_stage_name = "dev"
+  aws_route53_zone_id = aws_route53_zone.domain_name_com.zone_id
 }
 
 
@@ -26,8 +30,8 @@ module "dev_env_indihustlers_com" {
   source = "./env"
   env = "dev"
   vpc_id = var.env_info.dev.vpc_id
-  hosted_zone_id = module.nextjs_lambda_frontend_base.aws_route53_zone_id
-  hosted_zone_name = module.nextjs_lambda_frontend_base.aws_route53_zone_name
+  hosted_zone_id = aws_route53_zone.domain_name_com.zone_id
+  hosted_zone_name = aws_route53_zone.domain_name_com.name
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
   api_gateway_id = module.nextjs_lambda_frontend_base.aws_apigateway_rest_api_id
   private_subnet_mappings = var.env_info.dev.private_subnet_mappings
@@ -46,8 +50,8 @@ module "prod_env_indihustlers_com" {
   env = "prod"
   service_name=local.service_name
   vpc_id = var.env_info.prod.vpc_id
-  hosted_zone_id = module.nextjs_lambda_frontend_base.aws_route53_zone_id
-  hosted_zone_name = module.nextjs_lambda_frontend_base.aws_route53_zone_name
+  hosted_zone_id = aws_route53_zone.domain_name_com.zone_id
+  hosted_zone_name = aws_route53_zone.domain_name_com.name
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
   api_gateway_id = module.nextjs_lambda_frontend_base.aws_apigateway_rest_api_id
   private_subnet_mappings = var.env_info.prod.private_subnet_mappings

@@ -41,3 +41,6 @@ variable "secrets" {
 variable "dynamodb_table_arns" {
   type = list(string)
 }
+variable "redis_host" {
+  type=string
+}

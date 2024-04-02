@@ -54,3 +54,7 @@ variable "cache_cluster_size" {
   default = null
   type = number
 }
+variable "extra_env_vars" {
+  type = map(string)
+  default = {}
+}
