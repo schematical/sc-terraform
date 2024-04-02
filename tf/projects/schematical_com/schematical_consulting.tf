@@ -45,3 +45,13 @@ resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping_sc" 
   api_id = aws_api_gateway_rest_api.api_gateway.id
   stage_name  = "prod"
 }
+resource "aws_route53_record" "schematicalconsulting-com-google-search" {
+  zone_id = aws_route53_zone.schematical_consulting_com.zone_id
+  name    = local.sc_domain_name
+  type    = "TXT"
+  ttl     = 300
+  records = [
+    "google-site-verification=mU6mNSzEo_UHEvJ3W2OeAfGLe_GB3ZHHy_hkmQbfM4Q"
+  ]
+}
+

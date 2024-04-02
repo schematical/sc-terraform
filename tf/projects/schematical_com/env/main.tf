@@ -64,7 +64,8 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             "dynamodb:Scan",
             "dynamodb:GetItem",
             "dynamodb:PutItem",
-            "dynamodb:Query"
+            "dynamodb:Query",
+            "dynamodb:BatchGetItem"
           ],
           "Resource": var.dynamodb_table_arns
         }
