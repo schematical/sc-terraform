@@ -249,3 +249,33 @@ resource "aws_dynamodb_table" "dynamodb_table_diagramflow" {
     Name        = "schematical-com"
   }
 }
+resource "aws_dynamodb_table" "dynamodb_table_site" {
+  name           = "${var.env}_ChaosCrawlerSplitGPTSite"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "parentUri"
+  range_key      = "_id"
+  attribute {
+    name = "_id"
+    type = "S"
+  }
+  attribute {
+    name = "parentUri"
+    type = "S"
+  }
+
+}
+resource "aws_dynamodb_table" "dynamodb_table_site_element" {
+  name           = "${var.env}_ChaosCrawlerSplitGPTSiteElement"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "parentUri"
+  range_key      = "_id"
+  attribute {
+    name = "_id"
+    type = "S"
+  }
+  attribute {
+    name = "parentUri"
+    type = "S"
+  }
+
+}

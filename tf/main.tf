@@ -272,3 +272,9 @@ module "project_indihustlers" {
   // api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
   env_info = local.env_info
 }
+module "project_splittestgpt" {
+  source = "./projects/splittestgpt_com"
+  ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
+  // api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
+  env_info = local.env_info
+}

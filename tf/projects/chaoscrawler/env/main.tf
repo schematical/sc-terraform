@@ -453,7 +453,9 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             aws_dynamodb_table.dynamodb_table_digeststreamepisode.arn,
             aws_dynamodb_table.dynamodb_table_diagram.arn,
             aws_dynamodb_table.dynamodb_table_diagramobject.arn,
-            aws_dynamodb_table.dynamodb_table_diagramflow.arn
+            aws_dynamodb_table.dynamodb_table_diagramflow.arn,
+            aws_dynamodb_table.dynamodb_table_site.arn,
+            aws_dynamodb_table.dynamodb_table_site_element.arn
           ]
         },
       ]
