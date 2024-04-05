@@ -23,6 +23,29 @@ module "nextjs_lambda_frontend_base" {
 }
 
 
+resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
+  certificate_arn =module.nextjs_lambda_frontend_base.aws_acm_certificate_arn
+  domain_name     =  local.domain_name
+  endpoint_configuration {
+    types = ["EDGE"]
+  }
+}
+resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
+  base_path   = ""
+  domain_name = aws_api_gateway_domain_name.api_gateway_domain_name.id
+  api_id = module.nextjs_lambda_frontend_base.aws_apigateway_rest_api_id
+  stage_name  = "prod"
+}
+resource "aws_route53_record" "schematical-com-a" {
+  zone_id = aws_route53_zone.domain_name_com.zone_id
+  name    =  local.domain_name
+  type    = "A"
+  alias {
+    name                   = aws_api_gateway_domain_name.api_gateway_domain_name.cloudfront_domain_name
+    zone_id                = aws_api_gateway_domain_name.api_gateway_domain_name.cloudfront_zone_id
+    evaluate_target_health = false
+  }
+}
 
 module "dev_env_splittestgpt_com" {
   depends_on = [module.nextjs_lambda_frontend_base]
