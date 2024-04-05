@@ -24,7 +24,7 @@ module "nextjs_lambda_frontend_base" {
 
 
 
-module "dev_env_indihustlers_com" {
+module "dev_env_splittestgpt_com" {
   depends_on = [module.nextjs_lambda_frontend_base]
   service_name=local.service_name
   source = "./env"
@@ -44,7 +44,7 @@ module "dev_env_indihustlers_com" {
 
 }
 
-module "prod_env_indihustlers_com" {
+module "prod_env_splittestgpt_com" {
   depends_on = [module.nextjs_lambda_frontend_base]
   source = "./env"
   env = "prod"

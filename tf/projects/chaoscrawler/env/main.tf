@@ -243,7 +243,8 @@ module "lambda_service" {
     api_gateway_stage_id = var.api_gateway_stage_id
     service_uri = "chaoscrawler"*/
   layers = [
-    aws_lambda_layer_version.lambda_layer.arn
+    "arn:aws:lambda:${var.region}:764866452798:layer:chrome-aws-lambda:45",
+    aws_lambda_layer_version.lambda_layer.arn,
   ]
   lambda_memory_size = 1028
   env_vars =  {
