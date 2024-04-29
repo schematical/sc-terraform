@@ -1,6 +1,6 @@
 data "aws_caller_identity" "current" {}
 locals {
-  cloudfront_subdomain = "assets-${var.env}"
+  cloudfront_subdomain = var.cloudfront_subdomain != null ? var.cloudfront_subdomain : "assets-${var.env}"
 }
 module "cloudfront" {
   service_name = var.service_name

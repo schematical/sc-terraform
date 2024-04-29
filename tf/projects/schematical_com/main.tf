@@ -384,7 +384,7 @@ resource "aws_dynamodb_table" "dynamodb_table_diagram_object" {
   }
 }
 
-resource "aws_elasticache_serverless_cache" "elasticache_serverless_cache" {
+/*resource "aws_elasticache_serverless_cache" "elasticache_serverless_cache" {
   engine = "redis"
   name   = "${local.service_name}-${var.region}"
   cache_usage_limits {
@@ -403,6 +403,21 @@ resource "aws_elasticache_serverless_cache" "elasticache_serverless_cache" {
   snapshot_retention_limit = 1
   security_group_ids       = [aws_security_group.redis_security_group.id]
   subnet_ids               = [for o in var.env_info.prod.private_subnet_mappings : o.id] # values(var.private_subnet_mappings)
+}*/
+resource "aws_elasticache_cluster" "elasticache_cluster" {
+  cluster_id           = "${local.service_name}"
+  engine               = "redis"
+  node_type            = "cache.t4g.micro"
+  num_cache_nodes      = 1
+  parameter_group_name = "default.redis7"
+  engine_version       = "7.1"
+  port                 = 6379
+  subnet_group_name = aws_elasticache_subnet_group.elasticache_subnet_group.name
+  security_group_ids = [aws_security_group.redis_security_group.id]
+}
+resource "aws_elasticache_subnet_group" "elasticache_subnet_group" {
+  name       = "${local.service_name}"
+  subnet_ids = [for o in var.env_info.prod.private_subnet_mappings : o.id] # values(var.private_subnet_mappings)
 }
 resource "aws_security_group" "redis_security_group" {
   name        =  "${local.service_name}-redis-prod-${var.region}"
@@ -469,7 +484,7 @@ module "dev_env_schematical_com" {
   ]
   service_name = local.service_name
   subdomain = "dev"
-  redis_host =   join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
+  redis_host =  join(",", [for o in aws_elasticache_cluster.elasticache_cluster.cache_nodes : o.address]) # join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
 }
 
 module "prod_env_schematical_com" {
@@ -498,5 +513,5 @@ module "prod_env_schematical_com" {
     aws_dynamodb_table.dynamodb_table_diagram_object.arn,
     aws_dynamodb_table.dynamodb_table_map_flow.arn
   ]
-  redis_host =   join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
+  redis_host =  join(",", [for o in aws_elasticache_cluster.elasticache_cluster.cache_nodes : o.address]) # join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
 }

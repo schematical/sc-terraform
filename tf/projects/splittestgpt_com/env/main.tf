@@ -19,4 +19,7 @@ module "nextjs_lambda" {
   github_owner = "schematical"
   github_project_name = "splitgpt"
   source_buildspec_path = "www/buildspec.yml"
+  extra_env_vars = {
+    NEXT_PUBLIC_GRAPHQL_URI: "https://${var.env}-v1-${var.region}-api.schematical.com/chaoscrawler"
+  }
 }

@@ -1,13 +1,16 @@
 data "aws_caller_identity" "current" {}
 locals {
-  service_name = "splitgpt-com"
-  domain_name = "splittestgpt.com"
+  service_name = "sc-diagrams"
+  domain_name = "schematical.com"
 }
 provider "aws" {
   region = "us-east-1"
   # alias  = "east"
 }
-resource "aws_route53_zone" "domain_name_com" {
+/*resource "aws_route53_zone" "domain_name_com" {
+  name = local.domain_name
+}*/
+data "aws_route53_zone" "domain_name_com"{
   name = local.domain_name
 }
 
@@ -16,16 +19,16 @@ module "nextjs_lambda_frontend_base" {
   source = "../../../modules/nextjs-lambda-frontent-base"
 
 
-  base_domain_name = local.domain_name
+  base_domain_name = "diagrams.${local.domain_name}"
   service_name     = local.service_name
   api_gateway_stage_name = "dev"
-  aws_route53_zone_id = aws_route53_zone.domain_name_com.zone_id
+  aws_route53_zone_id = data.aws_route53_zone.domain_name_com.zone_id
 }
 
 
 resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
   certificate_arn =module.nextjs_lambda_frontend_base.aws_acm_certificate_arn
-  domain_name     =  local.domain_name
+  domain_name     = "diagrams.${local.domain_name}"
   endpoint_configuration {
     types = ["EDGE"]
   }
@@ -37,8 +40,8 @@ resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
   stage_name  = "prod"
 }
 resource "aws_route53_record" "schematical-com-a" {
-  zone_id = aws_route53_zone.domain_name_com.zone_id
-  name    =  local.domain_name
+  zone_id = data.aws_route53_zone.domain_name_com.zone_id
+  name    =  "diagrams.${local.domain_name}"
   type    = "A"
   alias {
     name                   = aws_api_gateway_domain_name.api_gateway_domain_name.cloudfront_domain_name
@@ -47,40 +50,40 @@ resource "aws_route53_record" "schematical-com-a" {
   }
 }
 
-module "dev_env_splittestgpt_com" {
+module "dev_env_diagrams_com" {
   depends_on = [module.nextjs_lambda_frontend_base]
   service_name=local.service_name
   source = "./env"
   env = "dev"
   vpc_id = var.env_info.dev.vpc_id
-  hosted_zone_id = aws_route53_zone.domain_name_com.zone_id
-  hosted_zone_name = aws_route53_zone.domain_name_com.name
+  hosted_zone_id = data.aws_route53_zone.domain_name_com.zone_id
+  hosted_zone_name = data.aws_route53_zone.domain_name_com.name
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
   api_gateway_id = module.nextjs_lambda_frontend_base.aws_apigateway_rest_api_id
   private_subnet_mappings = var.env_info.dev.private_subnet_mappings
   acm_cert_arn = module.nextjs_lambda_frontend_base.aws_acm_certificate_arn
   codepipeline_artifact_store_bucket = var.env_info.dev.codepipeline_artifact_store_bucket
   api_gateway_base_path_mapping = module.nextjs_lambda_frontend_base.aws_api_gateway_rest_api_root_resource_id
-  subdomain = "dev"
+  subdomain = "dev.diagrams"
 
   secrets = var.env_info.dev.secrets
 
 }
 
-module "prod_env_splittestgpt_com" {
+module "prod_env_diagrams_com" {
   depends_on = [module.nextjs_lambda_frontend_base]
   source = "./env"
   env = "prod"
   service_name=local.service_name
   vpc_id = var.env_info.prod.vpc_id
-  hosted_zone_id = aws_route53_zone.domain_name_com.zone_id
-  hosted_zone_name = aws_route53_zone.domain_name_com.name
+  hosted_zone_id = data.aws_route53_zone.domain_name_com.zone_id
+  hosted_zone_name = data.aws_route53_zone.domain_name_com.name
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
   api_gateway_id = module.nextjs_lambda_frontend_base.aws_apigateway_rest_api_id
   private_subnet_mappings = var.env_info.prod.private_subnet_mappings
   acm_cert_arn = module.nextjs_lambda_frontend_base.aws_acm_certificate_arn
   codepipeline_artifact_store_bucket = var.env_info.prod.codepipeline_artifact_store_bucket
   api_gateway_base_path_mapping = module.nextjs_lambda_frontend_base.aws_api_gateway_rest_api_root_resource_id
-  subdomain = "www"
+  subdomain = "www.diagrams"
   secrets = var.env_info.prod.secrets
 }

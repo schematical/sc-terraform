@@ -3,21 +3,21 @@ variable "service_name" {
 }
 variable "region" {
   default = "us-east-1"
+  type = string
 }
-
 variable "env" {}
-
-
 variable "api_gateway_id" {}
-variable "api_gateway_base_path_mapping" {}
+variable "api_gateway_base_path_mapping" {
+  type = string
+}
 variable "hosted_zone_name" {
+  type = string
 }
 variable "hosted_zone_id" {
-
+  type = string
 }
-
-
 variable "acm_cert_arn" {
+  type = string
 }
 
 variable "ecs_task_execution_iam_role" {}
@@ -33,32 +33,6 @@ variable "codepipeline_artifact_store_bucket" {
 variable "subdomain" {
   type = string
 }
-variable "github_owner" {
-  type = string
-}
-variable "github_project_name" {
-  type = string
-}
 variable "secrets" {
   type = map(string)
-}
-variable "source_buildspec_path" {
-  type = string
-  default = "buildspec.yml"
-}
-variable "cache_cluster_enabled" {
-  default = null
-  type = bool
-}
-variable "cache_cluster_size" {
-  default = null
-  type = number
-}
-variable "extra_env_vars" {
-  type = map(string)
-  default = {}
-}
-variable "cloudfront_subdomain" {
-  type = string
-  default = null
 }
