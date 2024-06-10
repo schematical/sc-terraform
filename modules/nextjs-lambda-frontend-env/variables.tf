@@ -62,3 +62,7 @@ variable "cloudfront_subdomain" {
   type = string
   default = null
 }
+variable "xray_tracing_enabled" {
+  type = bool
+  default = false
+}

@@ -25,6 +25,8 @@ module "nextjs_lambda" {
     REDIS_HOST: var.redis_host
     DEBUG: "ioredis:*"
   }
+  xray_tracing_enabled = true
+
 }
 /*
 resource "aws_api_gateway_method_settings" "root" {

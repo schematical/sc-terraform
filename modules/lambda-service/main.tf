@@ -42,6 +42,10 @@ resource "aws_iam_role_policy_attachment" "AWSLambdaVPCAccessExecutionRole" {
   role       = aws_iam_role.service_lambda_iam_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
+resource "aws_iam_role_policy_attachment" "AWSXRayDaemonWriteAccess" {
+  role       = aws_iam_role.service_lambda_iam_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
+}
 resource "aws_security_group" "service_lambda_sg" {
   name        = join("-", [var.service_prefix, var.service_name, var.env, "lambda"])
   description =  join("-", [var.service_prefix, var.service_name, var.env, "lambda"])

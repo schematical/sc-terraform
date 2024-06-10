@@ -11,5 +11,6 @@ module "apigateway_env" {
   domain_name = var.subdomain
   cache_cluster_enabled = var.cache_cluster_enabled
   cache_cluster_size = var.cache_cluster_size
+  xray_tracing_enabled = var.xray_tracing_enabled
   // private_subnet_mappings = var.private_subnet_mappings
 }
