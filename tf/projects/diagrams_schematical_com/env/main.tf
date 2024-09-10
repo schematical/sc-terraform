@@ -25,7 +25,7 @@ module "nextjs_lambda" {
   extra_env_vars = {
     NEXT_PUBLIC_GRAPHQL_URI: "https://${var.env}-v1-${var.region}-api.schematical.com/chaoscrawler",
     S3_BUCKET: aws_s3_bucket.diagrams_s3_bucket.bucket,
-    PUBLIC_UPLOAD_BUCKET_URL: "https://${aws_route53_record.drawnby-ai-cloudfront-domain.name}"
+    PUBLIC_UPLOAD_BUCKET_URL: "https://${aws_route53_record.drawnby-ai-cloudfront-domain.name}",
   }
 }
 

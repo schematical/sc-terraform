@@ -8,8 +8,25 @@ locals {
   service_name = "chaoscrawler-v1"
   cloud_front_subdomain = "chaoscrawler-v1-${var.env}"
   ses_domain = var.env == "prod" ? "chaoscrawler.schematical.com" : "${var.env}-chaoscrawler.schematical.com"
+  env_variables = {
+    ENV: var.env,
+    NODE_ENV: var.env,
+    AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+    OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
+    AWS_KINESIS_STREAM_ARN = var.kinesis_stream_arn
+    CLOUD_FRONT_DOMAIN: "${local.cloud_front_subdomain}.${var.hosted_zone_name}"  #  aws_cloudfront_distribution.s3_distribution.domain_name
+    CLOUD_FRONT_PEM: tls_private_key.keypair.private_key_pem
+    CLOUD_FRONT_PUBLIC_KEY_ID: aws_cloudfront_public_key.cloudfront_public_key.id
+    STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
+    DISCORD_APP_ID: var.secrets.chaospixel_lambda_service_DISCORD_APP_ID,
+    DISCORD_PUBLIC_KEY: var.secrets.chaospixel_lambda_service_DISCORD_PUBLIC_KEY,
+    DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN,
+    ELEVEN_LABS_API_KEY: var.secrets.chaoscrawler_lambda_service_ELEVEN_LABS_API_KEY
+    AWS_S3_BUCKET: aws_s3_bucket.chaoscrawler_storage_bucket.bucket
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+  }
 }
-
 
 resource "aws_s3_bucket" "chaoscrawler_storage_bucket" {
   bucket = "chaoscrawler-worker-v1-${var.env}-${var.region}"
@@ -247,24 +264,7 @@ module "lambda_service" {
     aws_lambda_layer_version.lambda_layer.arn,
   ]
   lambda_memory_size = 1028
-  env_vars =  {
-    NODE_ENV: var.env,
-    ENV: var.env,
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
-    OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
-    AWS_KINESIS_STREAM_ARN: var.kinesis_stream_arn
-    CLOUD_FRONT_DOMAIN: "${local.cloud_front_subdomain}.${var.hosted_zone_name}" #  aws_cloudfront_distribution.s3_distribution.domain_name
-    CLOUD_FRONT_PEM: tls_private_key.keypair.private_key_pem
-    CLOUD_FRONT_PUBLIC_KEY_ID: aws_cloudfront_public_key.cloudfront_public_key.id
-    STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
-    DISCORD_APP_ID: var.secrets.chaospixel_lambda_service_DISCORD_APP_ID,
-    DISCORD_PUBLIC_KEY: var.secrets.chaospixel_lambda_service_DISCORD_PUBLIC_KEY,
-    DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN,
-    ELEVEN_LABS_API_KEY: var.secrets.chaoscrawler_lambda_service_ELEVEN_LABS_API_KEY
-    AWS_S3_BUCKET: aws_s3_bucket.chaoscrawler_storage_bucket.bucket
-
-  }
+  env_vars = local.env_variables
 }
 
 module "buildpipeline" {
@@ -279,23 +279,7 @@ module "buildpipeline" {
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
   source_buildspec_path = "lambda/buildspec.yml"
-  env_vars =  {
-    // ENV: var.env,
-    NODE_ENV: var.env,
-    AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
-    OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
-    AWS_KINESIS_STREAM_ARN = var.kinesis_stream_arn
-    CLOUD_FRONT_DOMAIN: "${local.cloud_front_subdomain}.${var.hosted_zone_name}"  #  aws_cloudfront_distribution.s3_distribution.domain_name
-    CLOUD_FRONT_PEM: tls_private_key.keypair.private_key_pem
-    CLOUD_FRONT_PUBLIC_KEY_ID: aws_cloudfront_public_key.cloudfront_public_key.id
-    STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
-    DISCORD_APP_ID: var.secrets.chaospixel_lambda_service_DISCORD_APP_ID,
-    DISCORD_PUBLIC_KEY: var.secrets.chaospixel_lambda_service_DISCORD_PUBLIC_KEY,
-    DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN,
-    ELEVEN_LABS_API_KEY: var.secrets.chaoscrawler_lambda_service_ELEVEN_LABS_API_KEY
-    AWS_S3_BUCKET: aws_s3_bucket.chaoscrawler_storage_bucket.bucket
-  }
+  env_vars = local.env_variables
 }
 
 resource "aws_iam_policy" "codebuild_iam_policy" {
@@ -487,17 +471,7 @@ module "kinesis_worker_lambda_service" {
   layers = [
     aws_lambda_layer_version.lambda_layer.arn
   ]
-  env_vars =  {
-    ENV: var.env,
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
-    OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
-    AWS_KINESIS_STREAM_ARN = var.kinesis_stream_arn
-    CLOUD_FRONT_DOMAIN: aws_cloudfront_distribution.s3_distribution.domain_name
-    SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
-    STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
-    AWS_S3_BUCKET: aws_s3_bucket.chaoscrawler_storage_bucket.bucket
-  }
+  env_vars = local.env_variables
 }
 
 resource "aws_lambda_event_source_mapping" "example" {
@@ -530,17 +504,7 @@ module "ses_worker_lambda_service" {
   layers = [
    aws_lambda_layer_version.lambda_layer.arn
   ]
-  env_vars =  {
-    ENV: var.env,
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
-    OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
-    AWS_KINESIS_STREAM_ARN = var.kinesis_stream_arn
-    CLOUD_FRONT_DOMAIN: aws_cloudfront_distribution.s3_distribution.domain_name
-    SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
-    STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
-    AWS_S3_BUCKET: aws_s3_bucket.chaoscrawler_storage_bucket.bucket
-  }
+  env_vars = local.env_variables
 }
 
 

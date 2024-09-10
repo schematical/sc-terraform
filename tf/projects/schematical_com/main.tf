@@ -59,6 +59,15 @@ resource "aws_route53_record" "schematical-com-ck2" {
     "dkim.dm-rm8vgvoy.sg7.convertkit.com."
   ]
 }
+resource "aws_route53_record" "schematical-com-ck3" {
+  zone_id = aws_route53_zone.schematical_com.zone_id
+  name    = "_dmarc.schematical.com"
+  type    = "TXT"
+  ttl     = 300
+  records = [
+    "v=DMARC1; p=none;"
+  ]
+}
 
 
 

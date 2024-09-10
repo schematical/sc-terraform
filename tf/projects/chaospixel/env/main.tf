@@ -4,6 +4,32 @@ locals {
   kinesis_worker_lambda_service_name = "sc-chaospixel-v1-${var.env}-kinesis-worker"
   service_name = "chaospixel-v1"
   cloud_front_subdomain = "chaospixel-v1-${var.env}"
+  env_variables = {
+    ENV: var.env,
+    NODE_ENV: var.env,
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+    DB_URL: var.secrets.chaospixel_lambda_service_DB_URL
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+    AWS_S3_BUCKET: var.secrets.chaospixel_lambda_service_AWS_S3_BUCKET
+    OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
+    SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
+    AWS_BATCH_JOB_DEFINITION: module.chaospixel_batch_worker.batch_job_definition.arn
+    AWS_BATCH_JOB_QUEUE: module.chaospixel_batch_worker.batch_job_queue.arn
+    AWS_KINESIS_STREAM_ARN = var.kinesis_stream_arn
+    CLOUD_FRONT_DOMAIN: "${local.cloud_front_subdomain}.${var.hosted_zone_name}"  #  aws_cloudfront_distribution.s3_distribution.domain_name
+    CLOUD_FRONT_PEM: tls_private_key.keypair.private_key_pem
+    CLOUD_FRONT_PUBLIC_KEY_ID: aws_cloudfront_public_key.cloudfront_public_key.id
+    SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
+    STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
+    STRIPE_PRODUCT_PRICE_ID: var.secrets.chaospixel_lambda_service_STRIPE_PRODUCT_PRICE_ID,
+    DISCORD_APP_ID: var.secrets.chaospixel_lambda_service_DISCORD_APP_ID,
+    DISCORD_PUBLIC_KEY: var.secrets.chaospixel_lambda_service_DISCORD_PUBLIC_KEY,
+    DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN,
+    FIRST_PROMOTER_API_KEY: var.secrets.chaospixel_lambda_service_FIRST_PROMOTER_API_KEY
+  }
 }
 
 resource "aws_s3_bucket" "chaospixel_storage_bucket" {
@@ -235,27 +261,7 @@ module "lambda_service" {
   api_gateway_stage_id = var.api_gateway_stage_id
   service_uri = "chaospixel"*/
   lambda_memory_size = 512
-  env_vars =  {
-    NODE_ENV: var.env,
-    ENV: var.env,
-    DB_URL: var.secrets.chaospixel_lambda_service_DB_URL
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
-    AWS_S3_BUCKET: var.secrets.chaospixel_lambda_service_AWS_S3_BUCKET
-    OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
-    AWS_KINESIS_STREAM_ARN: var.kinesis_stream_arn
-    AWS_BATCH_JOB_QUEUE: module.chaospixel_batch_worker.batch_job_queue.arn
-    CLOUD_FRONT_DOMAIN: "${local.cloud_front_subdomain}.${var.hosted_zone_name}" #  aws_cloudfront_distribution.s3_distribution.domain_name
-    CLOUD_FRONT_PEM: tls_private_key.keypair.private_key_pem
-    CLOUD_FRONT_PUBLIC_KEY_ID: aws_cloudfront_public_key.cloudfront_public_key.id
-    SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
-    STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
-    STRIPE_PRODUCT_PRICE_ID: var.secrets.chaospixel_lambda_service_STRIPE_PRODUCT_PRICE_ID,
-    DISCORD_APP_ID: var.secrets.chaospixel_lambda_service_DISCORD_APP_ID,
-    DISCORD_PUBLIC_KEY: var.secrets.chaospixel_lambda_service_DISCORD_PUBLIC_KEY,
-    DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN,
-    FIRST_PROMOTER_API_KEY: var.secrets.chaospixel_lambda_service_FIRST_PROMOTER_API_KEY
-  }
+  env_vars = local.env_variables
 }
 
 module "buildpipeline" {
@@ -270,7 +276,8 @@ module "buildpipeline" {
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
   source_buildspec_path = "lambda/buildspec.yml"
-  env_vars =  {
+  env_vars = local.env_variables
+ /* env_vars =  {
     // ENV: var.env,
     NODE_ENV: var.env,
     AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
@@ -294,7 +301,7 @@ module "buildpipeline" {
     DISCORD_PUBLIC_KEY: var.secrets.chaospixel_lambda_service_DISCORD_PUBLIC_KEY,
     DISCORD_TOKEN: var.secrets.chaospixel_lambda_service_DISCORD_TOKEN,
     FIRST_PROMOTER_API_KEY: var.secrets.chaospixel_lambda_service_FIRST_PROMOTER_API_KEY
-  }
+  }*/
 }
 
 resource "aws_iam_policy" "codebuild_iam_policy" {
@@ -450,22 +457,7 @@ module "kinesis_worker_lambda_service" {
   private_subnet_mappings = var.private_subnet_mappings
   handler = "src/functions/kinesis-worker/handler.main"
   lambda_memory_size = 512
-  env_vars =  {
-    ENV: var.env,
-    DB_URL: var.secrets.chaospixel_lambda_service_DB_URL
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
-    AWS_S3_BUCKET: var.secrets.chaospixel_lambda_service_AWS_S3_BUCKET
-    OPENAI_API_KEY: var.secrets.chaospixel_lambda_service_OPENAI_API_KEY
-    AWS_KINESIS_STREAM_ARN = var.kinesis_stream_arn
-    AWS_BATCH_JOB_DEFINITION = module.chaospixel_batch_worker.batch_job_definition.arn
-    AWS_BATCH_JOB_QUEUE = module.chaospixel_batch_worker.batch_job_queue.arn
-    CLOUD_FRONT_DOMAIN: aws_cloudfront_distribution.s3_distribution.domain_name
-    SENDGRID_API_KEY: var.secrets.chaospixel_lambda_service_SENDGRID_API_KEY
-    STRIPE_API_KEY: var.secrets.chaospixel_lambda_service_STRIPE_API_KEY
-    STRIPE_PRODUCT_PRICE_ID: var.secrets.chaospixel_lambda_service_STRIPE_PRODUCT_PRICE_ID
-    FIRST_PROMOTER_API_KEY: var.secrets.chaospixel_lambda_service_FIRST_PROMOTER_API_KEY
-  }
+  env_vars = local.env_variables
 }
 
 resource "aws_lambda_event_source_mapping" "example" {

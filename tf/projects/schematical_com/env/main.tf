@@ -23,7 +23,12 @@ module "nextjs_lambda" {
   cache_cluster_size = "0.5"
   extra_env_vars = {
     REDIS_HOST: var.redis_host
-    DEBUG: "ioredis:*"
+    # DEBUG: "ioredis:*"
+    TEMPLATE_API_KEY: var.secrets.schematical_lambda_service_TEMPLATE_API_KEY
+    CALENDLY_API_KEY: var.secrets.schematical_lambda_service_CALENDLY_API_KEY
+    CONVERTKIT_API_SECRET: var.secrets.schematical_lambda_service_CONVERTKIT_API_SECRET
+    POSTHOG_API_KEY: var.secrets.schematical_lambda_service_POSTHOG_API_KEY
+
   }
   xray_tracing_enabled = true
 

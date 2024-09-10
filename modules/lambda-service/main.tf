@@ -114,7 +114,7 @@ resource "aws_lambda_function" "service_lambda_web"  {
       source_code_hash,
       s3_bucket,
       s3_key,
-      environment,
+      // environment,
       timeout,
       memory_size
     ]
