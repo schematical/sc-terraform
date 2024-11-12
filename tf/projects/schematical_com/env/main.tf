@@ -24,6 +24,7 @@ module "nextjs_lambda" {
   extra_env_vars = {
     REDIS_HOST: var.redis_host
     # DEBUG: "ioredis:*"
+    ENV: var.env
     TEMPLATE_API_KEY: var.secrets.schematical_lambda_service_TEMPLATE_API_KEY
     CALENDLY_API_KEY: var.secrets.schematical_lambda_service_CALENDLY_API_KEY
     CONVERTKIT_API_SECRET: var.secrets.schematical_lambda_service_CONVERTKIT_API_SECRET

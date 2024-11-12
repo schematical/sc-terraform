@@ -68,6 +68,34 @@ variable "public_subnets" {
     }
   ]
 }
+variable "bastion_ingress_ip_ranges" {
+  description = "This is a list of the ip address ranges you want to be able to access the bastion"
+  type = list(object({
+    ipv6_cidr_blocks           = optional(list(string))
+    cidr_blocks           = optional(list(string))
+    description                = string
+    from_port                  = number
+    protocol                   = string
+    to_port                    = number
+  }))
+  default = [
+    {
+      cidr_blocks                = ["0.0.0.0/0"]
+      description                = "AllIPv4"
+      from_port                  = 22
+      protocol                   = "tcp"
+      to_port                    = 22
+    },
+    {
+      ipv6_cidr_blocks           = ["::/0"]
+      description                = "AllIPv6"
+      from_port                  = 22
+      protocol                   = "tcp"
+      to_port                    = 22
+    }
+  ]
+}
+
 
 variable "vpc_tags" {
   description = "Tags to apply to resources created by VPC module"

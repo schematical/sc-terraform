@@ -175,10 +175,10 @@ resource "aws_api_gateway_integration" "api_gateway_proxy_resource_method_integr
 }
 
 resource "aws_dynamodb_table" "dynamodb_table_post" {
-  name           = "SchematicalComPost"
+  name           = " "
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "PostId"
-  range_key      = "PublicDate"
+  // range_key      = "PublicDate"
 
   attribute {
     name = "PostId"
@@ -194,10 +194,10 @@ resource "aws_dynamodb_table" "dynamodb_table_post" {
     name = "Body"
     type = "S"
   }*/
-  attribute {
+/*  attribute {
     name = "PublicDate"
     type = "S"
-  }
+  }*/
 /*
   ttl {
     attribute_name = "TimeToExist"
@@ -219,179 +219,6 @@ resource "aws_dynamodb_table" "dynamodb_table_post" {
   }
 }
 
-
-resource "aws_dynamodb_table" "dynamodb_table_user" {
-  name           = "SchematicalComUser"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "Username"
-
-  attribute {
-    name = "Username"
-    type = "S"
-  }
-
-  /*  attribute {
-      name = "Title"
-      type = "S"
-    }
-
-    attribute {
-      name = "Body"
-      type = "S"
-    }*/
-
-  /*
-    ttl {
-      attribute_name = "TimeToExist"
-      enabled        = false
-    }*/
-
-  /* global_secondary_index {
-     name               = "GameTitleIndex"
-     hash_key           = "GameTitle"
-     range_key          = "TopScore"
-     write_capacity     = 10
-     read_capacity      = 10
-     projection_type    = "INCLUDE"
-     non_key_attributes = ["UserId"]
-   }*/
-
-  tags = {
-    Name        = "schematical-com"
-  }
-}
-resource "aws_dynamodb_table" "dynamodb_table_diagram" {
-  name           = "SchematicalComDiagram"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "Username"
-  range_key      = "DiagramId"
-
-  attribute {
-    name = "DiagramId"
-    type = "S"
-  }
-
-/*  attribute {
-    name = "Title"
-    type = "S"
-  }
-
-  attribute {
-    name = "Body"
-    type = "S"
-  }*/
-  attribute {
-    name = "Username"
-    type = "S"
-  }
-/*
-  ttl {
-    attribute_name = "TimeToExist"
-    enabled        = false
-  }*/
-
- /* global_secondary_index {
-    name               = "GameTitleIndex"
-    hash_key           = "GameTitle"
-    range_key          = "TopScore"
-    write_capacity     = 10
-    read_capacity      = 10
-    projection_type    = "INCLUDE"
-    non_key_attributes = ["UserId"]
-  }*/
-
-  tags = {
-    Name        = "schematical-com"
-  }
-}
-resource "aws_dynamodb_table" "dynamodb_table_map_flow" {
-  name           = "SchematicalComMapFlow"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "ParentUri"
-  range_key      = "FlowId"
-
-  attribute {
-    name = "FlowId"
-    type = "S"
-  }
-
-/*  attribute {
-    name = "Title"
-    type = "S"
-  }
-
-  attribute {
-    name = "Body"
-    type = "S"
-  }*/
-  attribute {
-    name = "ParentUri"
-    type = "S"
-  }
-/*
-  ttl {
-    attribute_name = "TimeToExist"
-    enabled        = false
-  }*/
-
- /* global_secondary_index {
-    name               = "GameTitleIndex"
-    hash_key           = "GameTitle"
-    range_key          = "TopScore"
-    write_capacity     = 10
-    read_capacity      = 10
-    projection_type    = "INCLUDE"
-    non_key_attributes = ["UserId"]
-  }*/
-
-  tags = {
-    Name        = "schematical-com"
-  }
-}
-resource "aws_dynamodb_table" "dynamodb_table_diagram_object" {
-  name           = "SchematicalComDiagramObject"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "Username"
-  range_key      = "ObjectId"
-
-  attribute {
-    name = "ObjectId"
-    type = "S"
-  }
-
-  /*  attribute {
-      name = "Title"
-      type = "S"
-    }
-
-    attribute {
-      name = "Body"
-      type = "S"
-    }*/
-  attribute {
-    name = "Username"
-    type = "S"
-  }
-  /*
-    ttl {
-      attribute_name = "TimeToExist"
-      enabled        = false
-    }*/
-
-  /* global_secondary_index {
-     name               = "GameTitleIndex"
-     hash_key           = "GameTitle"
-     range_key          = "TopScore"
-     write_capacity     = 10
-     read_capacity      = 10
-     projection_type    = "INCLUDE"
-     non_key_attributes = ["UserId"]
-   }*/
-
-  tags = {
-    Name        = "schematical-com"
-  }
-}
 
 /*resource "aws_elasticache_serverless_cache" "elasticache_serverless_cache" {
   engine = "redis"
@@ -486,10 +313,7 @@ module "dev_env_schematical_com" {
   secrets = var.env_info.dev.secrets
   dynamodb_table_arns = [
     aws_dynamodb_table.dynamodb_table_post.arn,
-    aws_dynamodb_table.dynamodb_table_user.arn,
-    aws_dynamodb_table.dynamodb_table_diagram.arn,
-    aws_dynamodb_table.dynamodb_table_diagram_object.arn,
-    aws_dynamodb_table.dynamodb_table_map_flow.arn
+
   ]
   service_name = local.service_name
   subdomain = "dev"
@@ -517,10 +341,7 @@ module "prod_env_schematical_com" {
 
   dynamodb_table_arns = [
     aws_dynamodb_table.dynamodb_table_post.arn,
-    aws_dynamodb_table.dynamodb_table_user.arn,
-    aws_dynamodb_table.dynamodb_table_diagram.arn,
-    aws_dynamodb_table.dynamodb_table_diagram_object.arn,
-    aws_dynamodb_table.dynamodb_table_map_flow.arn
+
   ]
   redis_host =  join(",", [for o in aws_elasticache_cluster.elasticache_cluster.cache_nodes : o.address]) # join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
 }
