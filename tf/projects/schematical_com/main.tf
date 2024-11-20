@@ -1,14 +1,12 @@
 data "aws_caller_identity" "current" {}
 locals {
   www_lambda_arn = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:schematical-com-$${stageVariables.ENV}-www/invocations"
+  service_name = "schematical-com"
+  domain_name = "schematical.com"
 }
 provider "aws" {
   region = "us-east-1"
   # alias  = "east"
-}
-locals {
-  service_name = "schematical-com"
-  domain_name = "schematical.com"
 }
 resource "aws_acm_certificate" "schematical_com_cert" {
   domain_name       = aws_route53_zone.schematical_com.name
@@ -175,7 +173,7 @@ resource "aws_api_gateway_integration" "api_gateway_proxy_resource_method_integr
 }
 
 resource "aws_dynamodb_table" "dynamodb_table_post" {
-  name           = " "
+  name           = "SchematicalComPost"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "PostId"
   // range_key      = "PublicDate"

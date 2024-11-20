@@ -108,14 +108,12 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
   task_role_arn = var.task_role_arn
   cpu    = var.task_cpu
   memory = var.task_memory
-
   container_definitions = jsonencode([{
     name  = try(var.container_name, var.service_name)
     image = var.ecr_image_uri
 
     cpu    = var.task_cpu
     memory = var.task_memory
-
     essential = true
     environment = var.task_definition_environment_vars
     command = var.task_definition_command

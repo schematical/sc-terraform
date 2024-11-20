@@ -142,6 +142,7 @@ resource "aws_vpc_endpoint_route_table_association" "s3_vpc_endpoint_route_table
   route_table_id  = aws_route_table.private_route_table.id
   vpc_endpoint_id = aws_vpc_endpoint.s3_vpc_endpoint.id
 }
+
 resource "aws_instance" "bastion" {
   count                                = var.bastion_keypair_name != "" ? 1 : 0
   depends_on                           = [tls_private_key.bastion_private_key]
