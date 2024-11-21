@@ -37,26 +37,44 @@ resource "aws_iam_user" "iam_user_joe" {
     tag-key = "test"
   }
 }
-
 resource "aws_iam_access_key" "iam_user_access_key_joe" {
   user = aws_iam_user.iam_user_joe.name
 }
+resource "local_file" "private_key" {
+  content  = "${aws_iam_access_key.iam_user_access_key_joe.id}\n${aws_iam_access_key.iam_user_access_key_joe.secret}"
+  filename = "creds.txt"
+}
 
-/*data "aws_iam_policy_document" "iam_policy_document_joe" {
+
+data "aws_iam_policy_document" "iam_policy_document_joe" {
   statement {
     effect    = "Allow"
     actions   = ["s3:*"]
     resources = [
       aws_s3_bucket.s3_bucket.arn,
-      "${aws_s3_bucket.s3_bucket.arn}*//*"
+      "${aws_s3_bucket.s3_bucket.arn}/*"
     ]
   }
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:ListBucket"]
+    resources = [
+      "*"
+    ]
+  }
+  /*statement {
+    effect    = "Allow"
+    actions   = ["kms:Decrypt"]
+    resources = [
+      aws_kms_key.example.arn
+    ]
+  }*/
 }
 resource "aws_iam_user_policy" "iam_policy_document_joe" {
   name   = "joe_user_policy"
   user   = aws_iam_user.iam_user_joe.name
   policy = data.aws_iam_policy_document.iam_policy_document_joe.json
-}*/
+}
 
 
 
@@ -64,60 +82,7 @@ resource "aws_kms_key" "example" {
   description             = "An example symmetric encryption KMS key"
   enable_key_rotation     = true
   deletion_window_in_days = 20
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Id      = "key-default-1"
-    Statement = [
-      {
-        Sid    = "Enable IAM User Permissions"
-        Effect = "Allow"
-        Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
-        },
-        Action   = "kms:*"
-        Resource = "*"
-      },
-      {
-        Sid    = "Allow administration of the key"
-        Effect = "Allow"
-        Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/Alice"
-        },
-        Action = [
-          "kms:ReplicateKey",
-          "kms:Create*",
-          "kms:Describe*",
-          "kms:Enable*",
-          "kms:List*",
-          "kms:Put*",
-          "kms:Update*",
-          "kms:Revoke*",
-          "kms:Disable*",
-          "kms:Get*",
-          "kms:Delete*",
-          "kms:ScheduleKeyDeletion",
-          "kms:CancelKeyDeletion"
-        ],
-        Resource = "*"
-      },
-      {
-        Sid    = "Allow use of the key"
-        Effect = "Allow"
-        Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/Bob"
-        },
-        Action = [
-          "kms:DescribeKey",
-          "kms:Encrypt",
-          "kms:Decrypt",
-          "kms:ReEncrypt*",
-          "kms:GenerateDataKey",
-          "kms:GenerateDataKeyWithoutPlaintext"
-        ],
-        Resource = "*"
-      }
-    ]
-  })
+
 }
 
 
@@ -130,4 +95,15 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "example" {
       sse_algorithm     = "aws:kms"
     }
   }
+}
+
+resource "aws_s3_object" "object" {
+  bucket = aws_s3_bucket.s3_bucket.bucket
+  key    = "test.jpeg"
+  source = "/mnt/c/Users/mlea/Pictures/BJJSlam.jpeg"
+
+  # The filemd5() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
+  # etag = "${md5(file("path/to/file"))}"
+  etag = filemd5("/mnt/c/Users/mlea/Pictures/BJJSlam.jpeg")
 }

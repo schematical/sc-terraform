@@ -24,7 +24,12 @@ resource "aws_route53_record" "route53_record_a1" {
   ]
 }
 
-/*
+
+
+
+
+
+
 
 resource "aws_acm_certificate" "ctothinktank_com_cert" {
   domain_name       = aws_route53_zone.ctothinktank_com.name
@@ -57,4 +62,3 @@ resource "aws_acm_certificate_validation" "example" {
   certificate_arn         = aws_acm_certificate.ctothinktank_com_cert.arn
   validation_record_fqdns = [for record in aws_route53_record.example : record.fqdn]
 }
-*/
