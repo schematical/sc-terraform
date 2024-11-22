@@ -62,13 +62,13 @@ data "aws_iam_policy_document" "iam_policy_document_joe" {
       "*"
     ]
   }
-  /*statement {
+  statement {
     effect    = "Allow"
     actions   = ["kms:Decrypt"]
     resources = [
       aws_kms_key.example.arn
     ]
-  }*/
+  }
 }
 resource "aws_iam_user_policy" "iam_policy_document_joe" {
   name   = "joe_user_policy"
@@ -84,8 +84,6 @@ resource "aws_kms_key" "example" {
   deletion_window_in_days = 20
 
 }
-
-
 resource "aws_s3_bucket_server_side_encryption_configuration" "example" {
   bucket = aws_s3_bucket.s3_bucket.id
 
