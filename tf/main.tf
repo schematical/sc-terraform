@@ -154,12 +154,18 @@ module "dev_env" {
   hosted_zone_id = local.default_hosted_zone_id
   hosted_zone_name = local.default_hosted_zone_name
   xray_tracing_enabled=true
+  // waf_web_acl_arn = module.shared_env.waf_web_acl_arn
   //vpc_id = module.vpc.vpc_id
   //private_subnet_mappings = module.vpc.private_subnet_mappings
   //bastion_security_group = module.vpc.bastion_security_group
   //ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
 
 }
+resource "aws_wafv2_web_acl_association" "dev_wafv2_web_acl_association" {
+  resource_arn = module.dev_env.api_gateway_stage_arn
+  web_acl_arn  = module.shared_env.waf_web_acl_arn
+}
+
 //TODO: Move this to the `projects/shared/env` module
 module "prod_env" {
   source = "../modules/apigateway-env"
@@ -169,6 +175,7 @@ module "prod_env" {
   hosted_zone_id = local.default_hosted_zone_id
   hosted_zone_name = local.default_hosted_zone_name
   xray_tracing_enabled=true
+  // waf_web_acl_arn = module.shared_env.waf_web_acl_arn
   //vpc_id = module.vpc.vpc_id
   //private_subnet_mappings = module.vpc.private_subnet_mappings
   //bastion_security_group = module.vpc.bastion_security_group
@@ -176,7 +183,10 @@ module "prod_env" {
 
 }
 
-
+resource "aws_wafv2_web_acl_association" "prod_wafv2_web_acl_association" {
+  resource_arn = module.prod_env.api_gateway_stage_arn
+  web_acl_arn  = module.shared_env.waf_web_acl_arn
+}
 module "shared_env" {
   source = "./projects/shared"
   private_subnet_mappings = module.vpc.private_subnet_mappings
@@ -201,7 +211,7 @@ locals {
       hosted_zone_name = local.default_hosted_zone_name
       acm_cert_arn = local.acm_cert_arn
       kinesis_stream_arn: module.shared_env.prod_shared_env.kinesis_stream_arn
-
+      waf_web_acl_arn: module.shared_env.waf_web_acl_arn
     },
     prod: {
       name = "prod"
@@ -221,7 +231,7 @@ locals {
       kinesis_stream_arn: module.shared_env.prod_shared_env.kinesis_stream_arn
       ecs_cluster = module.shared_env.prod_shared_env.ecs_cluster
       shared_acm_cert_arn = module.shared_env.shared_acm_cert.arn
-
+      waf_web_acl_arn: module.shared_env.waf_web_acl_arn
     }
   }
 }

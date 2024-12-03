@@ -316,6 +316,7 @@ module "dev_env_schematical_com" {
   service_name = local.service_name
   subdomain = "dev"
   redis_host =  join(",", [for o in aws_elasticache_cluster.elasticache_cluster.cache_nodes : o.address]) # join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
+  waf_web_acl_arn = var.env_info.prod.waf_web_acl_arn
 }
 
 module "prod_env_schematical_com" {
@@ -342,4 +343,5 @@ module "prod_env_schematical_com" {
 
   ]
   redis_host =  join(",", [for o in aws_elasticache_cluster.elasticache_cluster.cache_nodes : o.address]) # join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
+  waf_web_acl_arn = var.env_info.prod.waf_web_acl_arn
 }

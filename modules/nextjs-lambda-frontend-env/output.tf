@@ -13,3 +13,6 @@ output "lambda_security_group_id" {
 output "api_gateway_stage_id" {
   value = module.apigateway_env.api_gateway_stage_id
 }
+output "api_gateway_stage_arn" {
+  value = module.apigateway_env.api_gateway_stage_arn
+}

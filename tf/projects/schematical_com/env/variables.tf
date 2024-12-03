@@ -44,3 +44,6 @@ variable "dynamodb_table_arns" {
 variable "redis_host" {
   type=string
 }
+variable "waf_web_acl_arn" {
+  type = string
+}

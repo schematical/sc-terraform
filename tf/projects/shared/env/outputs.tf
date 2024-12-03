@@ -4,6 +4,9 @@ output "ecs_cluster" {
 output "kinesis_stream_arn" {
   value = aws_kinesis_stream.kinesis_stream.arn
 }
+output "waf_web_acl_arn" {
+  value = aws_wafv2_web_acl.schematical_shared_waf_acl.arn
+}
 /*
 output "shared_alb" {
   value = module.shared_alb

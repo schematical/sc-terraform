@@ -86,4 +86,7 @@ resource "aws_iam_role_policy_attachment" "lambda_iam_policy_attach" {
   role = module.nextjs_lambda.iam_role_name
   policy_arn = aws_iam_policy.lambda_iam_policy.arn
 }
-
+resource "aws_wafv2_web_acl_association" "wafv2_web_acl_association" {
+  resource_arn = module.nextjs_lambda.api_gateway_stage_arn
+  web_acl_arn  = var.waf_web_acl_arn
+}

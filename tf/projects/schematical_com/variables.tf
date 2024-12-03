@@ -25,6 +25,7 @@ variable env_info {
     api_gateway_stage_id = string
     bastion_security_group = string
     secrets  = map(string)
+    waf_web_acl_arn = string
   }))
 }
 

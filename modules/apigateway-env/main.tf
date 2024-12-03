@@ -22,7 +22,6 @@ resource "aws_api_gateway_stage" "api_gateway_stage" {
   cache_cluster_enabled = var.cache_cluster_enabled
   cache_cluster_size = var.cache_cluster_size
 }
-
 resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
   base_path   = ""
   domain_name = aws_api_gateway_domain_name.api_gateway_domain_name.id

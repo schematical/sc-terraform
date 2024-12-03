@@ -2,6 +2,9 @@
 output "api_gateway_stage_id" {
   value = aws_api_gateway_stage.api_gateway_stage.id
 }
+output "api_gateway_stage_arn" {
+  value = aws_api_gateway_stage.api_gateway_stage.arn
+}
 output "api_gateway_stage_name" {
   value = aws_api_gateway_stage.api_gateway_stage.stage_name
 }
