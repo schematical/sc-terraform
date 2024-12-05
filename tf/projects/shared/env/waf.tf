@@ -5,7 +5,7 @@ resource "aws_wafv2_regex_pattern_set" "example" {
   }
 
   regular_expression {
-    regex_string = "two"
+    regex_string = "/\\.htaccess"
   }
   scope       = "REGIONAL"
 }
@@ -93,7 +93,6 @@ resource "aws_wafv2_web_acl" "schematical_shared_waf_acl" {
   }
 
 
-/*
   rule {
     name     = "AWSManagedRulesBotControlRuleSet"
     priority = 3
@@ -119,7 +118,7 @@ resource "aws_wafv2_web_acl" "schematical_shared_waf_acl" {
       metric_name                = "friendly-rule-metric-name"
       sampled_requests_enabled   = false
     }
-  }*/
+  }
 
 
 
