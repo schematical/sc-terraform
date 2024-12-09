@@ -1,3 +1,29 @@
+
+
+resource "aws_iam_policy" "policy_one" {
+  name = "policy-618033"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams",
+          "logs:PutLogEvents",
+          "logs:GetLogEvents",
+          "logs:FilterLogEvents"
+        ]
+        Effect = "Allow"
+        Resource = "*"
+      },
+    ]
+  })
+}
+
+
 resource "aws_cognito_user_pool" "oc_demo" {
   # ... other configuration ...
   auto_verified_attributes   = [
@@ -27,8 +53,11 @@ resource "aws_cognito_user_pool_domain" "main" {
 }
 resource "aws_cognito_user" "example" {
   user_pool_id = aws_cognito_user_pool.oc_demo.id
-  username     = "example"
+  username     = "mlea+ocdemo@schematical.com"
   password = "oneTwo34$"
+  attributes = {
+    email          = "mlea+ocdemo@schematical.com"
+  }
 }
 
 resource "aws_cognito_user_pool_client" "client" {
@@ -61,7 +90,9 @@ resource "aws_api_gateway_method" "example_method" {
   rest_api_id   = aws_api_gateway_rest_api.example.id
   resource_id   = aws_api_gateway_resource.example_resource.id
   http_method   = "GET"
-  authorization = "NONE"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.demo.id
+  authorization_scopes = ["aws.cognito.signin.user.admin"]
 }
 
 resource "aws_api_gateway_integration" "mock_integration" {
@@ -82,6 +113,7 @@ resource "aws_api_gateway_integration" "mock_integration" {
       }
     )
   }
+
 
 
 }
@@ -139,28 +171,16 @@ resource "aws_iam_role" "test_role" {
   managed_policy_arns = [aws_iam_policy.policy_one.arn]
 }
 
-resource "aws_iam_policy" "policy_one" {
-  name = "policy-618033"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:DescribeLogGroups",
-          "logs:DescribeLogStreams",
-          "logs:PutLogEvents",
-          "logs:GetLogEvents",
-          "logs:FilterLogEvents"
-        ]
-        Effect = "Allow"
-        Resource = "*"
-      },
-    ]
-  })
+resource "aws_api_gateway_authorizer" "demo" {
+  name                   = "demo"
+  rest_api_id            = aws_api_gateway_rest_api.example.id
+  # authorizer_uri         = aws_lambda_function.authorizer.invoke_arn
+  # authorizer_credentials = aws_iam_role.invocation_role.arn
+  type = "COGNITO_USER_POOLS"
+  provider_arns = [aws_cognito_user_pool.oc_demo.arn]
 }
+
+
 
 
 output "api_endpoint" {
@@ -169,4 +189,9 @@ output "api_endpoint" {
 output "cw_role_arn" {
   value = "${aws_iam_role.test_role.arn}"
 }
-
+output "aws_cognito_user_pool_id" {
+  value = aws_cognito_user_pool.oc_demo.id
+}
+output "aws_cognito_user_pool_client_id" {
+  value = aws_cognito_user_pool_client.client.id
+}
