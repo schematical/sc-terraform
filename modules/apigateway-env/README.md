@@ -1,4 +1,4 @@
-# AWS Build Pipeline Module
+# AWS APIGateway
 This module allows you to quickly boot up aws api gateway
 
 

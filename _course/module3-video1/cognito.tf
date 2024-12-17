@@ -1,4 +1,6 @@
-
+provider "aws" {
+  region = "us-east-1" # Change this to your preferred AWS region
+}
 
 resource "aws_iam_policy" "policy_one" {
   name = "policy-618033"
@@ -72,9 +74,7 @@ resource "aws_cognito_user_pool_client" "client" {
 }
 
 
-provider "aws" {
-  region = "us-east-1" # Change this to your preferred AWS region
-}
+
 
 resource "aws_api_gateway_rest_api" "example" {
   name = "SchematicalMockApi"
@@ -101,11 +101,12 @@ resource "aws_api_gateway_integration" "mock_integration" {
   http_method = aws_api_gateway_method.example_method.http_method
   type                 = "MOCK"
 
-/*  timeout_milliseconds = 29000
+  timeout_milliseconds = 29000
 
   request_parameters = {
     "integration.request.header.X-Authorization" = "'static'"
-  }*/
+  }
+
   request_templates = {
     "application/xml" = jsonencode(
       {
