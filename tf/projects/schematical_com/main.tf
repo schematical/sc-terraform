@@ -317,6 +317,13 @@ module "dev_env_schematical_com" {
   subdomain = "dev"
   redis_host =  join(",", [for o in aws_elasticache_cluster.elasticache_cluster.cache_nodes : o.address]) # join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
   waf_web_acl_arn = var.env_info.prod.waf_web_acl_arn
+  alb_arn = var.env_info.dev.shared_alb.alb_arn
+  alb_dns_name = var.env_info.dev.shared_alb.alb_dns_name
+  alb_hosted_zone_id = var.env_info.dev.shared_alb.alb_hosted_zone_id
+  ecs_cluster_id = var.env_info.dev.shared_alb.ecs_cluster_id
+  lb_http_listener_arn = var.env_info.dev.shared_alb.shared_alb_http_listener_arn
+  lb_https_listener_arn = var.env_info.dev.shared_alb.shared_alb_https_listener_arn
+  shared_alb_sg_id = var.env_info.dev.shared_alb.alb_sg_id
 }
 
 module "prod_env_schematical_com" {
@@ -344,4 +351,12 @@ module "prod_env_schematical_com" {
   ]
   redis_host =  join(",", [for o in aws_elasticache_cluster.elasticache_cluster.cache_nodes : o.address]) # join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
   waf_web_acl_arn = var.env_info.prod.waf_web_acl_arn
+
+  alb_arn = var.env_info.prod.shared_alb.alb_arn
+  alb_dns_name = var.env_info.prod.shared_alb.alb_dns_name
+  alb_hosted_zone_id = var.env_info.prod.shared_alb.alb_hosted_zone_id
+  ecs_cluster_id = var.env_info.prod.shared_alb.ecs_cluster_id
+  lb_http_listener_arn = var.env_info.prod.shared_alb.shared_alb_http_listener_arn
+  lb_https_listener_arn = var.env_info.prod.shared_alb.shared_alb_https_listener_arn
+  shared_alb_sg_id = var.env_info.prod.shared_alb.alb_sg_id
 }

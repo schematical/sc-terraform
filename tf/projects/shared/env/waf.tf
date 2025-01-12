@@ -93,7 +93,7 @@ resource "aws_wafv2_web_acl" "schematical_shared_waf_acl" {
   }
 
 
-  rule {
+  /*rule {
     name     = "AWSManagedRulesBotControlRuleSet"
     priority = 3
     statement {
@@ -118,7 +118,7 @@ resource "aws_wafv2_web_acl" "schematical_shared_waf_acl" {
       metric_name                = "friendly-rule-metric-name"
       sampled_requests_enabled   = false
     }
-  }
+  }*/
 
 
 

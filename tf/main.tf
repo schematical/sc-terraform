@@ -212,6 +212,9 @@ locals {
       acm_cert_arn = local.acm_cert_arn
       kinesis_stream_arn: module.shared_env.prod_shared_env.kinesis_stream_arn
       waf_web_acl_arn: module.shared_env.waf_web_acl_arn
+      shared_alb = module.shared_env.prod_shared_env.shared_alb
+      shared_alb_http_listener_arn = module.shared_env.prod_shared_env.shared_alb_http_listener_arn
+      shared_alb_https_listener_arn = module.shared_env.prod_shared_env.shared_alb_https_listener_arn
     },
     prod: {
       name = "prod"
@@ -225,9 +228,9 @@ locals {
       hosted_zone_id = local.default_hosted_zone_id
       hosted_zone_name = local.default_hosted_zone_name
       acm_cert_arn = local.acm_cert_arn
-     /* shared_alb = module.shared_env.prod_shared_env.shared_alb
+      shared_alb = module.shared_env.prod_shared_env.shared_alb
       shared_alb_http_listener_arn = module.shared_env.prod_shared_env.shared_alb_http_listener_arn
-      shared_alb_https_listener_arn = module.shared_env.prod_shared_env.shared_alb_https_listener_arn*/
+      shared_alb_https_listener_arn = module.shared_env.prod_shared_env.shared_alb_https_listener_arn
       kinesis_stream_arn: module.shared_env.prod_shared_env.kinesis_stream_arn
       ecs_cluster = module.shared_env.prod_shared_env.ecs_cluster
       shared_acm_cert_arn = module.shared_env.shared_acm_cert.arn
