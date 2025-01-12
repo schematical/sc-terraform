@@ -93,7 +93,7 @@ resource "aws_wafv2_web_acl_association" "wafv2_web_acl_association" {
 
 
 
-resource "aws_ecr_repository" "prod_ecr_repo" {
+resource "aws_ecr_repository" "ecr_repo" {
   name                 = "schematical-com-${var.env}-${var.region}"
   image_tag_mutability = "MUTABLE"
 
@@ -104,7 +104,7 @@ resource "aws_ecr_repository" "prod_ecr_repo" {
 
 module "env_schematical_com_tg" {
   source = "../../../../modules/alb-ecs-service-association"
-  env = "prod"
+  env = var.env
   service_name = "schematical-com"
   vpc_id = var.vpc_id
   hosted_zone_id = var.hosted_zone_id
@@ -120,27 +120,50 @@ module "env_schematical_com_tg" {
 }
 module "env_schematical_com_ecs_service" {
   source = "../../../../modules/ecs-service"
-  env = "prod"
+  env = var.env
   vpc_id = var.vpc_id
   service_name = "schematical-com-v1"
   ecs_desired_task_count = 1
   private_subnet_mappings = var.private_subnet_mappings
-  // aws_lb_target_group_arns = [module.prod_env_schematical_com_tg.aws_lb_target_group_arn]
+  // aws_lb_target_group_arns = [module.env_schematical_com_tg.aws_lb_target_group_arn]
   ecs_cluster_id = var.ecs_cluster_id
   ingress_security_groups = [
     var.shared_alb_sg_id
   ]
-  ecr_image_uri = "${aws_ecr_repository.prod_ecr_repo.repository_url}:${var.env}"
+  ecr_image_uri = "${aws_ecr_repository.ecr_repo.repository_url}:${var.env}"
   container_port = 80
   create_secrets = false
   task_definition_environment_vars = [
     {
       name: "NODE_ENV ",
       value: var.env
+    },
+    {
+      name: "REDIS_HOST",
+      value: var.redis_host
+    },
+    {
+      name: "ENV",
+      value: var.env
+    },
+    {
+      name: "TEMPLATE_API_KEY",
+      value: var.secrets.schematical_lambda_service_TEMPLATE_API_KEY
+    },
+    {
+      name: "CALENDLY_API_KEY",
+      value: var.secrets.schematical_lambda_service_CALENDLY_API_KEY
+    },
+    {
+      name: "CONVERTKIT_API_SECRET",
+      value: var.secrets.schematical_lambda_service_CONVERTKIT_API_SECRET
+    },
+    {
+      name: "POSTHOG_API_KEY",
+      value: var.secrets.schematical_lambda_service_POSTHOG_API_KEY
     }
   ]
 }
-
 /*
 module "buildpipeline" {
   source = "../../../../modules/buildpipeline"# "github.com/schematical/sc-terraform/modules/buildpipeline"

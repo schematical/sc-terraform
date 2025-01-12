@@ -1,7 +1,7 @@
 
 resource "aws_acm_certificate" "shared_acm_cert" {
   domain_name       = "schematical.com"
-  subject_alternative_names = ["*.shiporgetoffthepot.com", "*.chaosnet.ai"]
+  subject_alternative_names = ["*.schematical.com"]
   validation_method = "DNS"
 
 
@@ -9,6 +9,7 @@ resource "aws_acm_certificate" "shared_acm_cert" {
     create_before_destroy = true
   }
 }
+
 module "prod_shared_env" {
   source = "./env"
   env = "prod"

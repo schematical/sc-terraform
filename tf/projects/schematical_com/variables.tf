@@ -41,6 +41,6 @@ variable env_info {
     rds_instance = optional(object({
       address: string
     }))
-
+    waf_web_acl_arn: string
   }))
 }

@@ -213,6 +213,7 @@ locals {
       kinesis_stream_arn: module.shared_env.prod_shared_env.kinesis_stream_arn
       waf_web_acl_arn: module.shared_env.waf_web_acl_arn
       shared_alb = module.shared_env.prod_shared_env.shared_alb
+      ecs_cluster = module.shared_env.prod_shared_env.ecs_cluster
       shared_alb_http_listener_arn = module.shared_env.prod_shared_env.shared_alb_http_listener_arn
       shared_alb_https_listener_arn = module.shared_env.prod_shared_env.shared_alb_https_listener_arn
     },

@@ -68,3 +68,8 @@ variable "health_timeout" {
   type    = number
   default = 5
 }
+/*
+variable "acm_cert_arn" {
+  type    = string
+}
+*/
