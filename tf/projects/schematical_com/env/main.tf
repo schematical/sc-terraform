@@ -1,5 +1,5 @@
 data "aws_caller_identity" "current" {}
-module "nextjs_lambda" {
+/*module "nextjs_lambda" {
   # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
   source = "../../../../modules/nextjs-lambda-frontend-env"
   env = var.env
@@ -33,7 +33,7 @@ module "nextjs_lambda" {
   }
   xray_tracing_enabled = true
 
-}
+}*/
 /*
 resource "aws_api_gateway_method_settings" "root" {
   rest_api_id = var.api_gateway_id
@@ -83,13 +83,13 @@ resource "aws_iam_policy" "lambda_iam_policy" {
   )
 }
 resource "aws_iam_role_policy_attachment" "lambda_iam_policy_attach" {
-  role = module.nextjs_lambda.iam_role_name
+  role = module.env_schematical_com_ecs_service.ecs_task_execution_iam_role_name
   policy_arn = aws_iam_policy.lambda_iam_policy.arn
 }
-resource "aws_wafv2_web_acl_association" "wafv2_web_acl_association" {
-  resource_arn = module.nextjs_lambda.api_gateway_stage_arn
+/*resource "aws_wafv2_web_acl_association" "wafv2_web_acl_association" {
+  resource_arn = module.env_schematical_com_ecs_service.api_gateway_stage_arn
   web_acl_arn  = var.waf_web_acl_arn
-}
+}*/
 
 
 
@@ -117,6 +117,7 @@ module "env_schematical_com_tg" {
   alb_target_group_health_check_path = "/"
   lb_http_listener_arn =  var.lb_http_listener_arn
   lb_https_listener_arn = var.lb_https_listener_arn
+  lb_listener_rule_http_rule_priority = var.env == "prod" ? 1 : 2
 }
 module "env_schematical_com_ecs_service" {
   source = "../../../../modules/ecs-service"
@@ -164,7 +165,6 @@ module "env_schematical_com_ecs_service" {
     }
   ]
 }
-/*
 module "buildpipeline" {
   source = "../../../../modules/buildpipeline"# "github.com/schematical/sc-terraform/modules/buildpipeline"
   service_name = "schematical-com-v1"
@@ -176,9 +176,17 @@ module "buildpipeline" {
   code_pipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket.bucket
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
-  source_buildspec_path = "buildspec.yml"
+  source_buildspec_path = "www/buildspec.yml"
+  ecs_deploy_cluster = var.ecs_cluster_id
+  ecs_deploy_service_name = var.service_name
   env_vars = {
-    # DB_URL: var.env_info.rds_instance.address
+    REDIS_HOST: var.redis_host
+    # DEBUG: "ioredis:*"
+    ENV: var.env
+    TEMPLATE_API_KEY: var.secrets.schematical_lambda_service_TEMPLATE_API_KEY
+    CALENDLY_API_KEY: var.secrets.schematical_lambda_service_CALENDLY_API_KEY
+    CONVERTKIT_API_SECRET: var.secrets.schematical_lambda_service_CONVERTKIT_API_SECRET
+    POSTHOG_API_KEY: var.secrets.schematical_lambda_service_POSTHOG_API_KEY
   }
 
-}*/
+}

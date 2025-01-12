@@ -81,3 +81,11 @@ variable "env_vars" {
   type = map(string)
   default = {}
 }
+variable "ecs_deploy_cluster" {
+  type = string
+  default = ""
+}
+variable "ecs_deploy_service_name" {
+  type = string
+  default = ""
+}

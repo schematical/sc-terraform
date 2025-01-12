@@ -264,8 +264,8 @@ resource "aws_security_group" "redis_security_group" {
     to_port          = 6380
     protocol         = "tcp"
     security_groups = [
-      module.dev_env_schematical_com.lambda_security_group_id,
-      module.prod_env_schematical_com.lambda_security_group_id
+      module.dev_env_schematical_com.task_security_group_id,
+      module.prod_env_schematical_com.task_security_group_id
     ]
   }
 

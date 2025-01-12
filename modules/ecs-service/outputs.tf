@@ -10,4 +10,7 @@ output "ecs_task_definition_arn" {
 output "ecs_service_name" {
   value    = aws_ecs_service.ecs_service.name
 }
+output "task_security_group_id" {
+  value    = aws_security_group.task_security_group.id
+}
 

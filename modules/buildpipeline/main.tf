@@ -30,6 +30,7 @@ resource "aws_s3_bucket" "code_pipeline_artifact_store_bucket" {
 */
 
 
+
 resource "aws_codepipeline" "app_pipeline" {
   name     = "${join("-", [var.service_name, var.env, var.region])}"
   role_arn = aws_iam_role.code_pipeline_service_role.arn
@@ -75,6 +76,27 @@ resource "aws_codepipeline" "app_pipeline" {
         ProjectName = aws_codebuild_project.codebuild_project.name
       }
       run_order = 1
+    }
+  }
+  dynamic stage {
+
+    for_each = var.ecs_deploy_cluster == "" ? [] : [{}]
+    content {
+      name = "Deploy"
+      action {
+        name            = "Deploy"
+        category        = "Deploy"
+        owner           = "AWS"
+        provider        = "ECS"
+        input_artifacts = ["BuildArtifact"]
+        version         = "1"
+        configuration = {
+          ClusterName = var.ecs_deploy_cluster
+          ServiceName = var.ecs_deploy_service_name
+        }
+      }
+
+
     }
   }
 }
