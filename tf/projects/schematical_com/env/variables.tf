@@ -65,6 +65,9 @@ variable "lb_https_listener_arn" {
 variable "ecs_cluster_id" {
   type = string
 }
+variable "ecs_cluster_name" {
+  type = string
+}
 variable "shared_alb_sg_id" {
   type = string
 }

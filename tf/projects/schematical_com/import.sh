@@ -1,1 +1,4 @@
-terraform import module.project_schematical_com.module.nextjs_lambda_frontend_base.aws_api_gateway_domain_name.api_gateway_domain_name schematical.com
+# terraform import module.project_schematical_com.module.nextjs_lambda_frontend_base.aws_api_gateway_domain_name.api_gateway_domain_name schematical.com
+
+
+ terraform import module.project_schematical_com.module.prod_env_schematical_com.module.cloudfront.aws_s3_bucket.bucket schematical-com-prod-us-east-1-cloudfront

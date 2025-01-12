@@ -80,7 +80,7 @@ resource "aws_codepipeline" "app_pipeline" {
   }
   dynamic stage {
 
-    for_each = var.ecs_deploy_cluster == "" ? [] : [{}]
+    for_each = var.ecs_deploy_cluster_name == "" ? [] : [{}]
     content {
       name = "Deploy"
       action {
@@ -91,7 +91,7 @@ resource "aws_codepipeline" "app_pipeline" {
         input_artifacts = ["BuildArtifact"]
         version         = "1"
         configuration = {
-          ClusterName = var.ecs_deploy_cluster
+          ClusterName = var.ecs_deploy_cluster_name
           ServiceName = var.ecs_deploy_service_name
         }
       }

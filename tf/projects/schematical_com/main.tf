@@ -321,6 +321,7 @@ module "dev_env_schematical_com" {
   alb_dns_name = var.env_info.dev.shared_alb.alb_dns_name
   alb_hosted_zone_id = var.env_info.dev.shared_alb.alb_hosted_zone_id
   ecs_cluster_id = var.env_info.dev.ecs_cluster.id
+  ecs_cluster_name = var.env_info.dev.ecs_cluster.name
   lb_http_listener_arn = var.env_info.dev.shared_alb_http_listener_arn
   lb_https_listener_arn = var.env_info.dev.shared_alb_https_listener_arn
   shared_alb_sg_id = var.env_info.dev.shared_alb.alb_sg_id
@@ -356,6 +357,7 @@ module "prod_env_schematical_com" {
   alb_dns_name = var.env_info.prod.shared_alb.alb_dns_name
   alb_hosted_zone_id = var.env_info.prod.shared_alb.alb_hosted_zone_id
   ecs_cluster_id = var.env_info.prod.ecs_cluster.id
+  ecs_cluster_name = var.env_info.dev.ecs_cluster.name
   lb_http_listener_arn = var.env_info.prod.shared_alb_http_listener_arn
   lb_https_listener_arn = var.env_info.prod.shared_alb_https_listener_arn
   shared_alb_sg_id = var.env_info.prod.shared_alb.alb_sg_id
