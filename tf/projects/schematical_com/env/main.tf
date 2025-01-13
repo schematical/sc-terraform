@@ -1,6 +1,8 @@
 data "aws_caller_identity" "current" {}
 locals{
   container_port = 3000
+  NEXT_PUBLIC_SERVER_URL = "https://${var.subdomain}.${var.hosted_zone_name}"
+  PUBLIC_ASSET_URL = "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}"
 }
 /*module "nextjs_lambda" {
   # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
@@ -86,9 +88,31 @@ resource "aws_iam_policy" "lambda_iam_policy" {
   )
 }
 
+resource "aws_iam_role" "task_role" {
+  name = "ecs-task-role"
 
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+      },
+    ]
+  })
+
+  tags = {
+    tag-key = "tag-value"
+  }
+}
 resource "aws_iam_role_policy_attachment" "lambda_iam_policy_attach" {
-  role       = module.env_schematical_com_ecs_service.ecs_task_execution_iam_role_name
+  role       = aws_iam_role.task_role.name
   policy_arn = aws_iam_policy.lambda_iam_policy.arn
 }
 
@@ -134,6 +158,7 @@ module "env_schematical_com_ecs_service" {
   ecr_image_uri                    = "${aws_ecr_repository.ecr_repo.repository_url}:${var.env}"
   container_port                   = local.container_port
   create_secrets                   = false
+  task_role_arn                    = aws_iam_role.task_role.arn
   task_definition_environment_vars = [
     {
       name : "NODE_ENV ",
@@ -162,7 +187,27 @@ module "env_schematical_com_ecs_service" {
     {
       name : "POSTHOG_API_KEY",
       value : var.secrets.schematical_lambda_service_POSTHOG_API_KEY
-    }
+    },
+    {
+      name : "NEXT_PUBLIC_SERVER_URL",
+      value : local.NEXT_PUBLIC_SERVER_URL
+    },
+    {
+      name : "AUTH_CLIENT_ID",
+      value : var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+    },
+    {
+      name : "AUTH_USER_POOL_ID",
+      value : var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+    },
+    {
+      name : "S3_BUCKET",
+      value : module.cloudfront.s3_bucket.bucket
+    },
+    {
+      name : "PUBLIC_ASSET_URL",
+      value : local.PUBLIC_ASSET_URL
+    },
   ]
   container_name = var.service_name
 }
@@ -190,12 +235,12 @@ module "buildpipeline" {
     CONVERTKIT_API_SECRET : var.secrets.schematical_lambda_service_CONVERTKIT_API_SECRET
     POSTHOG_API_KEY : var.secrets.schematical_lambda_service_POSTHOG_API_KEY
     SERVICE_NAME : var.service_name
-    NEXT_PUBLIC_SERVER_URL : "https://${var.subdomain}.${var.hosted_zone_name}"
+    NEXT_PUBLIC_SERVER_URL : local.NEXT_PUBLIC_SERVER_URL
     // NEXT_PUBLIC_STRIPE_PUBLIC_KEY: var.secrets.drawnby_frontend_REACT_APP_STRIPE_PUBLIC_KEY
     AUTH_CLIENT_ID : var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
     AUTH_USER_POOL_ID : var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
     S3_BUCKET : module.cloudfront.s3_bucket.bucket
-    PUBLIC_ASSET_URL : "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}"
+    PUBLIC_ASSET_URL : local.PUBLIC_ASSET_URL
   }
 
 }
