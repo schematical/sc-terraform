@@ -125,7 +125,7 @@ variable "deployment_minimum_healthy_percent" {
 }
 variable "deployment_maximum_percent" {
   type   = number
-  default = 100
+  default = 200
 }
 variable "capacity_provider_strategies" {
   type   = list(object({

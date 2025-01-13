@@ -1,6 +1,6 @@
 data "aws_caller_identity" "current" {}
 locals{
-  container_port: 3000
+  container_port = 3000
 }
 /*module "nextjs_lambda" {
   # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
@@ -126,7 +126,7 @@ module "env_schematical_com_ecs_service" {
   service_name            = "schematical-com"
   ecs_desired_task_count  = 1
   private_subnet_mappings = var.private_subnet_mappings
-  // aws_lb_target_group_arns = [module.env_schematical_com_tg.aws_lb_target_group_arn]
+  aws_lb_target_group_arns = [module.env_schematical_com_tg.aws_lb_target_group_arn]
   ecs_cluster_id          = var.ecs_cluster_id
   ingress_security_groups = [
     var.shared_alb_sg_id
