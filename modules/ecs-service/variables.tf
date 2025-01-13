@@ -114,7 +114,6 @@ variable "enable_execute_command" {
 }
 variable "container_name" {
   type   = string
-  default = false
 }
 variable "force_deployment" {
   type   = bool
