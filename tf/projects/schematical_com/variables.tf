@@ -26,12 +26,21 @@ variable env_info {
     bastion_security_group = string
     secrets  = map(string)
     shared_acm_cert_arn = optional(string)
-    shared_alb = optional(object({
-      alb_sg_id: string
-      alb_arn: string
-      alb_hosted_zone_id: string
-      alb_dns_name: string
-    }))
+    shared_alb = optional(
+      object({
+        alb_sg_id = optional(string, ""),
+        alb_arn = optional(string, ""),
+        alb_hosted_zone_id = optional(string, ""),
+        alb_dns_name = optional(string, ""),
+      }),
+      null
+     /* {
+        alb_sg_id : "",
+        alb_arn : "",
+        alb_hosted_zone_id  : "",
+        alb_dns_name : "",
+      }*/
+    )
     shared_alb_http_listener_arn = optional(string)
     shared_alb_https_listener_arn = optional(string)
     ecs_cluster = optional(object({
