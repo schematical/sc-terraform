@@ -1,4 +1,11 @@
+resource "aws_ecs_cluster" "ecs_cluster" {
+  name = "${var.env}-v1"
 
+  /*setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }*/
+}
 resource "aws_iam_role" "task_role" {
   name = "ecs-task-role"
 
@@ -22,9 +29,33 @@ resource "aws_iam_role" "task_role" {
     tag-key = "tag-value"
   }
 }
+resource "aws_iam_policy" "task_iam_policy" {
+  name = "explode-com-v1-${var.env}-lambda"
+
+  policy = jsonencode(
+    {
+      "Version" : "2012-10-17",
+      "Statement" : [
+        /*{
+          "Sid" : "DynamoDB",
+          "Effect" : "Allow",
+          "Action" : [
+            "dynamodb:Scan",
+            "dynamodb:GetItem",
+            "dynamodb:PutItem",
+            "dynamodb:Query",
+            "dynamodb:BatchGetItem"
+          ],
+          "Resource" : var.dynamodb_table_arns
+        }*/
+
+      ]
+    }
+  )
+}
 resource "aws_iam_role_policy_attachment" "lambda_iam_policy_attach" {
   role       = aws_iam_role.task_role.name
-  policy_arn = aws_iam_policy.lambda_iam_policy.arn
+  policy_arn = aws_iam_policy.task_iam_policy.arn
 }
 
 
@@ -41,30 +72,30 @@ module "env_explode_com_tg" {
   source                              = "../../../modules/alb-ecs-service-association"
   env                                 = var.env
   service_name                        = "explode-com"
-  vpc_id                              = var.vpc_id
+  vpc_id                              = module.vpc.vpc_id
   hosted_zone_id                      = var.hosted_zone_id
   hosted_zone_name                    = var.hosted_zone_name
   subdomain                           = var.subdomain
-  alb_arn                             = var.alb_arn
-  alb_dns_name                        = var.alb_dns_name
-  alb_hosted_zone_id                  = var.alb_hosted_zone_id
+  alb_arn                             = module.shared_alb.alb_arn
+  alb_dns_name                        = module.shared_alb.alb_dns_name
+  alb_hosted_zone_id                  = module.shared_alb.alb_hosted_zone_id
   container_port                      = local.container_port
   alb_target_group_health_check_path  = "/"
-  lb_http_listener_arn                = var.lb_http_listener_arn
-  lb_https_listener_arn               = var.lb_https_listener_arn
+  lb_http_listener_arn                = module.shared_alb.lb_http_listener_arn
+  lb_https_listener_arn               = module.shared_alb.lb_https_listener_arn
   lb_listener_rule_http_rule_priority = var.env == "prod" ? 1 : 2
 }
 module "env_explode_com_ecs_service" {
   source                  = "../../../modules/ecs-service"
   env                     = var.env
-  vpc_id                  = var.vpc_id
+  vpc_id                  = module.vpc.vpc_id
   service_name            = "explode-com"
   ecs_desired_task_count  = 1
-  private_subnet_mappings = var.private_subnet_mappings
+  private_subnet_mappings = module.vpc.private_subnet_mappings
   aws_lb_target_group_arns = [module.env_explode_com_tg.aws_lb_target_group_arn]
-  ecs_cluster_id          = var.ecs_cluster_id
+  ecs_cluster_id          = aws_ecs_cluster.ecs_cluster.id
   ingress_security_groups = [
-    var.shared_alb_sg_id
+    module.shared_alb.alb_sg_id
   ]
   ecr_image_uri                    = "${aws_ecr_repository.ecr_repo.repository_url}:${var.env}"
   container_port                   = local.container_port
@@ -76,41 +107,21 @@ module "env_explode_com_ecs_service" {
       value : var.env
     },
     {
-      name : "REDIS_HOST",
-      value : var.redis_host
-    },
-    {
       name : "ENV",
       value : var.env
-    },
-    {
-      name : "TEMPLATE_API_KEY",
-      value : var.secrets.explode_lambda_service_TEMPLATE_API_KEY
-    },
-    {
-      name : "CALENDLY_API_KEY",
-      value : var.secrets.explode_lambda_service_CALENDLY_API_KEY
-    },
-    {
-      name : "CONVERTKIT_API_SECRET",
-      value : var.secrets.explode_lambda_service_CONVERTKIT_API_SECRET
-    },
-    {
-      name : "POSTHOG_API_KEY",
-      value : var.secrets.explode_lambda_service_POSTHOG_API_KEY
     },
     {
       name : "NEXT_PUBLIC_SERVER_URL",
       value : local.NEXT_PUBLIC_SERVER_URL
     },
-    {
+    /*{
       name : "AUTH_CLIENT_ID",
       value : var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
     },
     {
       name : "AUTH_USER_POOL_ID",
       value : var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
-    },
+    },*/
     {
       name : "S3_BUCKET",
       value : module.cloudfront.s3_bucket.bucket
@@ -132,24 +143,18 @@ module "buildpipeline" {
   github_project_name                 = "explode-com"
   github_source_branch                = var.env
   code_pipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket.bucket
-  vpc_id                              = var.vpc_id
-  private_subnet_mappings             = var.private_subnet_mappings
+  vpc_id                              = module.vpc.vpc_id
+  private_subnet_mappings             = module.vpc.private_subnet_mappings
   source_buildspec_path               = "www/buildspec.yml"
-  ecs_deploy_cluster_name             = var.ecs_cluster_name
+  ecs_deploy_cluster_name             = aws_ecs_cluster.ecs_cluster.id
   ecs_deploy_service_name             = module.env_explode_com_ecs_service.ecs_service_name
   env_vars                            = {
-    REDIS_HOST : var.redis_host
-    # DEBUG: "ioredis:*"
+
     ENV : var.env
-    TEMPLATE_API_KEY : var.secrets.explode_lambda_service_TEMPLATE_API_KEY
-    CALENDLY_API_KEY : var.secrets.explode_lambda_service_CALENDLY_API_KEY
-    CONVERTKIT_API_SECRET : var.secrets.explode_lambda_service_CONVERTKIT_API_SECRET
-    POSTHOG_API_KEY : var.secrets.explode_lambda_service_POSTHOG_API_KEY
     SERVICE_NAME : var.service_name
     NEXT_PUBLIC_SERVER_URL : local.NEXT_PUBLIC_SERVER_URL
-    // NEXT_PUBLIC_STRIPE_PUBLIC_KEY: var.secrets.drawnby_frontend_REACT_APP_STRIPE_PUBLIC_KEY
-    AUTH_CLIENT_ID : var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
-    AUTH_USER_POOL_ID : var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+    /*AUTH_CLIENT_ID : var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+    AUTH_USER_POOL_ID : var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID*/
     S3_BUCKET : module.cloudfront.s3_bucket.bucket
     PUBLIC_ASSET_URL : local.PUBLIC_ASSET_URL
   }
