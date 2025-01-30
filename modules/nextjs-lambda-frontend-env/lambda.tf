@@ -29,6 +29,7 @@ module "lambda_service" {
   lambda_runtime = "nodejs18.x"
   handler = "run.sh"
   lambda_timeout = 10
+  lambda_memory_size = 1024
 
   # image_uri =  "${aws_ecr_repository.ecr_repository.repository_url}:${var.env}"
   # package_type = "Zip" # package_type = "Image"

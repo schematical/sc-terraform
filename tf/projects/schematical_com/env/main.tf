@@ -39,14 +39,13 @@ module "nextjs_lambda" {
   xray_tracing_enabled = true
 
 }
+/*
 resource "aws_api_gateway_method_settings" "root" {
   rest_api_id = var.api_gateway_id
   stage_name  = var.env # module.nextjs_lambda.api_gateway_stage_id
   method_path = "GET"
-
   settings {
-    caching_enabled = true
-    cache_ttl_in_seconds = 60
+    caching_enabled = false
   }
 }
 resource "aws_api_gateway_method_settings" "posts" {
@@ -55,10 +54,10 @@ resource "aws_api_gateway_method_settings" "posts" {
   method_path = "/posts"
 
   settings {
-    caching_enabled = true
-    cache_ttl_in_seconds = 60
+    caching_enabled = false
   }
 }
+*/
 
 
 resource "aws_iam_policy" "lambda_iam_policy" {
