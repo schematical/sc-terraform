@@ -29,6 +29,7 @@ resource "aws_iam_role" "task_role" {
     tag-key = "tag-value"
   }
 }
+/*
 resource "aws_iam_policy" "task_iam_policy" {
   name = "explode-com-v1-${var.env}-lambda"
 
@@ -36,7 +37,8 @@ resource "aws_iam_policy" "task_iam_policy" {
     {
       "Version" : "2012-10-17",
       "Statement" : [
-        /*{
+        */
+/*{
           "Sid" : "DynamoDB",
           "Effect" : "Allow",
           "Action" : [
@@ -47,7 +49,8 @@ resource "aws_iam_policy" "task_iam_policy" {
             "dynamodb:BatchGetItem"
           ],
           "Resource" : var.dynamodb_table_arns
-        }*/
+        }*//*
+
 
       ]
     }
@@ -57,6 +60,7 @@ resource "aws_iam_role_policy_attachment" "lambda_iam_policy_attach" {
   role       = aws_iam_role.task_role.name
   policy_arn = aws_iam_policy.task_iam_policy.arn
 }
+*/
 
 
 resource "aws_ecr_repository" "ecr_repo" {
