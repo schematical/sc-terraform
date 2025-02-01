@@ -1,5 +1,5 @@
 locals {
-  domain_name = "splitgpt.com"
+  domain_name = "splittestgpt.com"
 }
 resource "aws_s3_bucket" "code_pipeline_artifact_store_bucket" {
   # Add your bucket configuration here
@@ -26,7 +26,7 @@ resource "aws_iam_role" "ecs_task_execution_iam_role" {
 }
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_iam_role_policy_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-  role       = aws_iam_role.ecs_task_execution_iam_role.arn
+  role       = aws_iam_role.ecs_task_execution_iam_role.name
 }
 resource "aws_iam_role" "anywhere_iam_role" {
   name = "ECSAnywhereIAMRole"
@@ -53,15 +53,15 @@ resource "aws_iam_role" "anywhere_iam_role" {
 }
 resource "aws_iam_role_policy_attachment" "anywhere_iam_role_policy_attachment_1" {
   policy_arn =  "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  role       = aws_iam_role.ecs_task_execution_iam_role.arn
+  role       = aws_iam_role.ecs_task_execution_iam_role.name
 }
 resource "aws_iam_role_policy_attachment" "anywhere_iam_role_policy_attachment_2" {
   policy_arn =  "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
-  role       = aws_iam_role.ecs_task_execution_iam_role.arn
+  role       = aws_iam_role.ecs_task_execution_iam_role.name
 }
 
 resource "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
-  bucket = "explode-com-codebuild-v1"
+  bucket = "explodeme-com-codebuild-v1"
 }
 
 
@@ -75,5 +75,5 @@ module "prod_env" {
   hosted_zone_id                     = aws_route53_zone.explodeme_com.id
   hosted_zone_name                   = aws_route53_zone.explodeme_com.name
   service_name                       = "explodeme-com"
-  subdomain                          = ""
+  subdomain                          = "www"
 }
