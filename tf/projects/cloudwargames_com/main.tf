@@ -24,6 +24,15 @@ resource "aws_route53_record" "route53_record_a1" {
   ]
 }
 
+resource "aws_route53_record" "route53_record_links_cname" {
+  zone_id = aws_route53_zone.cloudwargames_com.zone_id
+  name    = "links.${local.domain_name}"
+  type    = "CNAME"
+  ttl     = 300
+  records = [
+    "cname.plutolinks.com"
+  ]
+}
 
 
 

@@ -10,7 +10,6 @@ module "cloudfront" {
   hosted_zone_id = var.hosted_zone_id
   hosted_zone_name = var.hosted_zone_name
   acm_cert_arn = var.acm_cert_arn
-  api_gateway_id = var.api_gateway_id
   codepipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket
   cors_allowed_hosts = [
     "${var.domain_name}.${var.hosted_zone_name}",
