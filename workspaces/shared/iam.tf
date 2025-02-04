@@ -7,6 +7,11 @@ resource "aws_iam_user" "iam_user" {
   # path = "/system/"
 }
 
+resource "aws_iam_user_policy_attachment" "test-attach" {
+  for_each = aws_iam_user.iam_user
+  user       = each.value.name
+  policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
+}
 resource "aws_iam_access_key" "iam_user_access_key" {
   for_each = aws_iam_user.iam_user
   user =  each.value.name
