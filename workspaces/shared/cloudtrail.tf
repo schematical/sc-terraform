@@ -1,5 +1,11 @@
-resource "aws_cloudtrail" "example" {
-  depends_on = [aws_s3_bucket_policy.example]
+data "aws_caller_identity" "current" {}
+
+data "aws_partition" "current" {}
+
+data "aws_region" "current" {}
+
+resource "aws_cloudtrail" "cloudtrail" {
+  depends_on = [aws_s3_bucket_policy.cloudtrail_s3_bucket_policy]
 
   name                          = "schematical-2"
   s3_bucket_name                = aws_s3_bucket.cloudtrail_s3_bucket.id
@@ -12,7 +18,7 @@ resource "aws_s3_bucket" "cloudtrail_s3_bucket" {
   force_destroy = true
 }
 
-data "aws_iam_policy_document" "example" {
+data "aws_iam_policy_document" "cloudtrail_iam_policy_document" {
   statement {
     sid    = "AWSCloudTrailAclCheck"
     effect = "Allow"
@@ -27,7 +33,7 @@ data "aws_iam_policy_document" "example" {
     condition {
       test     = "StringEquals"
       variable = "aws:SourceArn"
-      values   = ["arn:${data.aws_partition.current.partition}:cloudtrail:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:trail/example"]
+      values   = ["arn:${data.aws_partition.current.partition}:cloudtrail:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:trail/schematical-2"]
     }
   }
 
@@ -41,9 +47,9 @@ data "aws_iam_policy_document" "example" {
     }
 
     actions   = ["s3:PutObject"]
-    resources = ["${aws_s3_bucket.cloudtrail_s3_bucket.arn}/prefix/AWSLogs/${data.aws_caller_identity.current.account_id}/*"]
+    resources = ["${aws_s3_bucket.cloudtrail_s3_bucket.arn}/cloudtrail/AWSLogs/${data.aws_caller_identity.current.account_id}/*"]
 
-    condition {
+   condition {
       test     = "StringEquals"
       variable = "s3:x-amz-acl"
       values   = ["bucket-owner-full-control"]
@@ -51,18 +57,13 @@ data "aws_iam_policy_document" "example" {
     condition {
       test     = "StringEquals"
       variable = "aws:SourceArn"
-      values   = ["arn:${data.aws_partition.current.partition}:cloudtrail:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:trail/example"]
+      values   = ["arn:${data.aws_partition.current.partition}:cloudtrail:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:trail/schematical-2"]
     }
   }
 }
 
-resource "aws_s3_bucket_policy" "example" {
+resource "aws_s3_bucket_policy" "cloudtrail_s3_bucket_policy" {
   bucket = aws_s3_bucket.cloudtrail_s3_bucket.id
-  policy = data.aws_iam_policy_document.example.json
+  policy = data.aws_iam_policy_document.cloudtrail_iam_policy_document.json
 }
 
-data "aws_caller_identity" "current" {}
-
-data "aws_partition" "current" {}
-
-data "aws_region" "current" {}
