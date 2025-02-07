@@ -37,6 +37,7 @@ module "nextjs_lambda" {
     CALENDLY_API_KEY: var.secrets.schematical_lambda_service_CALENDLY_API_KEY
     CONVERTKIT_API_SECRET: var.secrets.schematical_lambda_service_CONVERTKIT_API_SECRET
     POSTHOG_API_KEY: var.secrets.schematical_lambda_service_POSTHOG_API_KEY
+    MAKE_COM_WEBHOOK: var.secrets.schematical_lambda_service_MAKE_COM_WEBHOOK
 
   }
   xray_tracing_enabled = true
