@@ -210,14 +210,14 @@ resource "aws_api_gateway_integration" "api_gateway_proxy_resource_method_integr
   cache_key_parameters = ["method.request.path.proxy"]
 }
 
-resource "aws_dynamodb_table" "dynamodb_table_post" {
-  name           = "cloudwargamesComPost"
+resource "aws_dynamodb_table" "dynamodb_table_user" {
+  name           = "CloudWarGamesUser"
   billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "PostId"
+  hash_key       = "Username"
   // range_key      = "PublicDate"
 
   attribute {
-    name = "PostId"
+    name = "Username"
     type = "S"
   }
 
@@ -348,7 +348,7 @@ module "dev_env_cloudwargames_com" {
   api_gateway_base_path_mapping = aws_api_gateway_rest_api.api_gateway.root_resource_id
   secrets = var.env_info.dev.secrets
   dynamodb_table_arns = [
-    aws_dynamodb_table.dynamodb_table_post.arn,
+    aws_dynamodb_table.dynamodb_table_user.arn,
 
   ]
   service_name = local.service_name
