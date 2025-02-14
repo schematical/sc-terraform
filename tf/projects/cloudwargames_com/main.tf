@@ -14,7 +14,7 @@ locals {
 resource "aws_route53_zone" "cloudwargames_com" {
   name = local.domain_name
 }
-resource "aws_route53_record" "route53_record_a1" {
+/*resource "aws_route53_record" "route53_record_a1" {
   zone_id = aws_route53_zone.cloudwargames_com.zone_id
   name    = local.domain_name
   type    = "A"
@@ -24,7 +24,7 @@ resource "aws_route53_record" "route53_record_a1" {
     "3.13.246.91",
     "3.130.60.26"
   ]
-}
+}*/
 
 resource "aws_route53_record" "route53_record_links_cname" {
   zone_id = aws_route53_zone.cloudwargames_com.zone_id
@@ -70,7 +70,7 @@ resource "aws_route53_record" "aws_acm_certificate_route53_record" {
   type            = each.value.type
   zone_id         = aws_route53_zone.cloudwargames_com.zone_id
 }
-/*resource "aws_route53_record" "cloudwargames-com-a" {
+resource "aws_route53_record" "cloudwargames-com-a" {
   zone_id = aws_route53_zone.cloudwargames_com.zone_id
   name    =  local.domain_name
   type    = "A"
@@ -79,7 +79,7 @@ resource "aws_route53_record" "aws_acm_certificate_route53_record" {
     zone_id                = aws_api_gateway_domain_name.api_gateway_domain_name.cloudfront_zone_id
     evaluate_target_health = false
   }
-}*/
+}
 resource "aws_route53_record" "cloudwargames-com-ck1" {
   zone_id = aws_route53_zone.cloudwargames_com.zone_id
   name    = "ckespa.cloudwargames.com"
@@ -107,6 +107,15 @@ resource "aws_route53_record" "cloudwargames-com-ck3" {
     "v=DMARC1; p=none;"
   ]
 }
+resource "aws_route53_record" "cloudwargames-com-txt" {
+  zone_id = aws_route53_zone.cloudwargames_com.zone_id
+  name    = "cloudwargames.com"
+  type    = "TXT"
+  ttl     = 300
+  records = [
+    "google-site-verification=3db48GbMZF8GgzjrCvf-QtD-6Cle4L58ImhqhMSYGxc"
+  ]
+}
 
 
 
@@ -117,12 +126,12 @@ resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
     types = ["EDGE"]
   }
 }
-/*resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
+resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
   base_path   = ""
   domain_name = aws_api_gateway_domain_name.api_gateway_domain_name.id
   api_id = aws_api_gateway_rest_api.api_gateway.id
   stage_name  = "prod"
-}*/
+}
 resource "aws_route53_record" "cloudwargames-com-mx" {
   zone_id = aws_route53_zone.cloudwargames_com.zone_id
   name    = local.domain_name
@@ -364,7 +373,6 @@ module "dev_env_cloudwargames_com" {
   lb_https_listener_arn = var.env_info.dev.shared_alb_https_listener_arn
   shared_alb_sg_id = var.env_info.dev.shared_alb.alb_sg_id
 }
-/*
 
 module "prod_env_cloudwargames_com" {
   # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
@@ -386,10 +394,10 @@ module "prod_env_cloudwargames_com" {
   secrets = var.env_info.prod.secrets
 
   dynamodb_table_arns = [
-    aws_dynamodb_table.dynamodb_table_post.arn,
+    aws_dynamodb_table.dynamodb_table_user.arn,
 
   ]
-  redis_host =  join(",", [for o in aws_elasticache_cluster.elasticache_cluster.cache_nodes : o.address]) # join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
+  redis_host = "" # join(",", [for o in aws_elasticache_cluster.elasticache_cluster.cache_nodes : o.address]) # join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
   waf_web_acl_arn = var.env_info.prod.waf_web_acl_arn
 
   alb_arn = var.env_info.prod.shared_alb.alb_arn
@@ -400,4 +408,4 @@ module "prod_env_cloudwargames_com" {
   lb_http_listener_arn = var.env_info.prod.shared_alb_http_listener_arn
   lb_https_listener_arn = var.env_info.prod.shared_alb_https_listener_arn
   shared_alb_sg_id = var.env_info.prod.shared_alb.alb_sg_id
-}*/
+}

@@ -25,7 +25,7 @@ module "nextjs_lambda_frontend_base" {
   aws_route53_zone_id = data.aws_route53_zone.domain_name_com.zone_id
 }
 
-
+/*
 resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
   certificate_arn =module.nextjs_lambda_frontend_base.aws_acm_certificate_arn
   domain_name     = "diagrams.${local.domain_name}"
@@ -48,7 +48,7 @@ resource "aws_route53_record" "schematical-com-a" {
     zone_id                = aws_api_gateway_domain_name.api_gateway_domain_name.cloudfront_zone_id
     evaluate_target_health = false
   }
-}
+}*/
 
 module "dev_env_diagrams_com" {
   depends_on = [module.nextjs_lambda_frontend_base]
@@ -84,6 +84,6 @@ module "prod_env_diagrams_com" {
   acm_cert_arn = module.nextjs_lambda_frontend_base.aws_acm_certificate_arn
   codepipeline_artifact_store_bucket = var.env_info.prod.codepipeline_artifact_store_bucket
   api_gateway_base_path_mapping = module.nextjs_lambda_frontend_base.aws_api_gateway_rest_api_root_resource_id
-  subdomain = "www.diagrams"
+  subdomain = "diagrams"
   secrets = var.env_info.prod.secrets
 }
