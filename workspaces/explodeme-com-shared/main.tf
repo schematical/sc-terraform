@@ -1,10 +1,6 @@
 locals {
   domain_name = "splittestgpt.com"
 }
-resource "aws_s3_bucket" "code_pipeline_artifact_store_bucket" {
-  # Add your bucket configuration here
-}
-
 resource "aws_iam_role" "ecs_task_execution_iam_role" {
   name = "ECSTaskExecutionIAMRole"
   path = "/"
@@ -64,17 +60,3 @@ resource "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
   bucket = "explodeme-com-codebuild-v1"
 }
 
-
-/*
-module "prod_env" {
-  source = "./env"
-
-  acm_cert_arn                       = aws_acm_certificate.shared_acm_cert.arn
-  codepipeline_artifact_store_bucket = aws_s3_bucket.codepipeline_artifact_store_bucket
-  ecs_task_execution_iam_role        = aws_iam_role.ecs_task_execution_iam_role
-  env                                = "prod"
-  hosted_zone_id                     = aws_route53_zone.explodeme_com.id
-  hosted_zone_name                   = aws_route53_zone.explodeme_com.name
-  service_name                       = "explodeme-com"
-  subdomain                          = "www"
-}*/
