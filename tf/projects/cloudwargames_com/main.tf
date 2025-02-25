@@ -138,11 +138,12 @@ resource "aws_route53_record" "cloudwargames-com-mx" {
   type    = "MX"
   ttl     = "30"
   records = [
-    "10 ASPMX.L.GOOGLE.COM.",
+    "1 SMTP.GOOGLE.COM.",
+/*    "10 ASPMX.L.GOOGLE.COM.",
     "20 ALT1.ASPMX.L.GOOGLE.COM.",
     "30 ALT2.ASPMX.L.GOOGLE.COM.",
     "40 ASPMX2.GOOGLEMAIL.COM.",
-    "50 ASPMX3.GOOGLEMAIL.COM."
+    "50 ASPMX3.GOOGLEMAIL.COM."*/
   ]
 }
 

@@ -238,49 +238,7 @@ resource "aws_dynamodb_table" "dynamodb_table_post" {
   security_group_ids       = [aws_security_group.redis_security_group.id]
   subnet_ids               = [for o in var.env_info.prod.private_subnet_mappings : o.id] # values(var.private_subnet_mappings)
 }*/
-resource "aws_elasticache_cluster" "elasticache_cluster" {
-  cluster_id           = "${local.service_name}"
-  engine               = "redis"
-  node_type            = "cache.t4g.micro"
-  num_cache_nodes      = 1
-  parameter_group_name = "default.redis7"
-  engine_version       = "7.1"
-  port                 = 6379
-  subnet_group_name = aws_elasticache_subnet_group.elasticache_subnet_group.name
-  security_group_ids = [aws_security_group.redis_security_group.id]
-}
-resource "aws_elasticache_subnet_group" "elasticache_subnet_group" {
-  name       = "${local.service_name}"
-  subnet_ids = [for o in var.env_info.prod.private_subnet_mappings : o.id] # values(var.private_subnet_mappings)
-}
-resource "aws_security_group" "redis_security_group" {
-  name        =  "${local.service_name}-redis-prod-${var.region}"
-  description = "${local.service_name}-redis-prod-${var.region}"
-  vpc_id      = var.env_info.prod.vpc_id
 
-  ingress {
-    description      = "TLS from VPC"
-    from_port        = 6379
-    to_port          = 6380
-    protocol         = "tcp"
-    security_groups = [
-      module.dev_env_schematical_com.task_security_group_id,
-      module.prod_env_schematical_com.task_security_group_id
-    ]
-  }
-
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-
-  tags = {
-    Name = "allow_tls"
-  }
-}
 
 
 module "nextjs_lambda_frontend_base" {

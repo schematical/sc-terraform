@@ -79,7 +79,8 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             "dynamodb:GetItem",
             "dynamodb:PutItem",
             "dynamodb:Query",
-            "dynamodb:BatchGetItem"
+            "dynamodb:BatchGetItem",
+            "dynamodb:DeleteItem"
           ],
           "Resource" : var.dynamodb_table_arns
         }
