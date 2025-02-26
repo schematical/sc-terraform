@@ -1,5 +1,6 @@
 locals {
-  domain_name = "splittestgpt.com"
+  domain_name = "explodeme.com"
+  service_name = "explodeme-com"
 }
 resource "aws_iam_role" "ecs_task_execution_iam_role" {
   name = "ECSTaskExecutionIAMRole"
@@ -60,3 +61,14 @@ resource "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
   bucket = "explodeme-com-codebuild-v1"
 }
 
+
+module "nextjs_lambda_frontend_base" {
+  # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
+  source = "../../modules/nextjs-lambda-frontent-base"
+
+
+  base_domain_name = local.domain_name
+  service_name     = local.service_name
+  api_gateway_stage_name = "prod"
+  aws_route53_zone_id = aws_route53_zone.explodeme_com.zone_id
+}
