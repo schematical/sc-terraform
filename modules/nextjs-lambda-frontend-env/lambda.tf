@@ -10,8 +10,8 @@ module "lambda_service" {
     {
       NODE_ENV: var.env
       NEXT_PUBLIC_SERVER_URL:  "https://${var.subdomain}.${var.hosted_zone_name}"
-      AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
-      AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+      # AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+      # AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
       S3_BUCKET: module.cloudfront.s3_bucket.bucket
       PUBLIC_ASSET_URL: "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}",
       AWS_LAMBDA_EXEC_WRAPPER: "/opt/bootstrap"

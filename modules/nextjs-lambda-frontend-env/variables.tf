@@ -15,6 +15,9 @@ variable "hosted_zone_name" {
 variable "hosted_zone_id" {
 
 }
+variable "codestar_connection_arn" {
+
+}
 
 
 variable "acm_cert_arn" {

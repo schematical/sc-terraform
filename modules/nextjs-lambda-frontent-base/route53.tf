@@ -11,6 +11,7 @@
     evaluate_target_health = false
   }
 }*/
+/*
 resource "aws_acm_certificate" "aws_acm_certificate" {
   domain_name       = var.base_domain_name
   subject_alternative_names = ["*.${var.base_domain_name}"]
@@ -21,3 +22,4 @@ resource "aws_acm_certificate" "aws_acm_certificate" {
     create_before_destroy = true
   }
 }
+*/
