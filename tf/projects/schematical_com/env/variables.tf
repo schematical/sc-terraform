@@ -71,3 +71,6 @@ variable "ecs_cluster_name" {
 variable "shared_alb_sg_id" {
   type = string
 }
+variable "codestar_connection_arn" {
+  type = string
+}

@@ -29,6 +29,10 @@ locals {
   default_hosted_zone_id = "ZC4VPG65C2OOQ"
   acm_cert_arn = "arn:aws:acm:us-east-1:368590945923:certificate/2df7c33d-9569-41ab-94ed-0d2638369c21"
 }
+resource "aws_codestarconnections_connection" "codestarconnections_connection" {
+  name          = "github-connection"
+  provider_type = "GitHub"
+}
 resource "aws_api_gateway_rest_api" "api_gateway" {
   body = jsonencode({
     openapi = "3.0.1"
@@ -216,6 +220,7 @@ locals {
       ecs_cluster = module.shared_env.prod_shared_env.ecs_cluster
       shared_alb_http_listener_arn = module.shared_env.prod_shared_env.shared_alb_http_listener_arn
       shared_alb_https_listener_arn = module.shared_env.prod_shared_env.shared_alb_https_listener_arn
+      codestar_connection_arn = aws_codestarconnections_connection.codestarconnections_connection.arn
     },
     prod: {
       name = "prod"
@@ -236,6 +241,7 @@ locals {
       ecs_cluster = module.shared_env.prod_shared_env.ecs_cluster
       shared_acm_cert_arn = module.shared_env.shared_acm_cert.arn
       waf_web_acl_arn: module.shared_env.waf_web_acl_arn
+      codestar_connection_arn = aws_codestarconnections_connection.codestarconnections_connection.arn
     }
   }
 }

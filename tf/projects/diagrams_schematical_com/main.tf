@@ -49,6 +49,13 @@ resource "aws_route53_record" "schematical-com-a" {
     evaluate_target_health = false
   }
 }*/
+data "aws_acm_certificate" "explodeme_com_acm_certificate" {
+  domain   = local.domain_name
+  statuses = ["ISSUED"]
+  tags = {
+    Primary = true
+  }
+}
 
 module "dev_env_diagrams_com" {
   depends_on = [module.nextjs_lambda_frontend_base]
@@ -61,12 +68,13 @@ module "dev_env_diagrams_com" {
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
   api_gateway_id = module.nextjs_lambda_frontend_base.aws_apigateway_rest_api_id
   private_subnet_mappings = var.env_info.dev.private_subnet_mappings
-  acm_cert_arn = module.nextjs_lambda_frontend_base.aws_acm_certificate_arn
+  acm_cert_arn = data.aws_acm_certificate.explodeme_com_acm_certificate.arn
   codepipeline_artifact_store_bucket = var.env_info.dev.codepipeline_artifact_store_bucket
   api_gateway_base_path_mapping = module.nextjs_lambda_frontend_base.aws_api_gateway_rest_api_root_resource_id
   subdomain = "dev.diagrams"
 
   secrets = var.env_info.dev.secrets
+  codestar_connection_arn = var.env_info.dev.codestar_connection_arn
 
 }
 
@@ -81,9 +89,10 @@ module "prod_env_diagrams_com" {
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
   api_gateway_id = module.nextjs_lambda_frontend_base.aws_apigateway_rest_api_id
   private_subnet_mappings = var.env_info.prod.private_subnet_mappings
-  acm_cert_arn = module.nextjs_lambda_frontend_base.aws_acm_certificate_arn
+  acm_cert_arn = data.aws_acm_certificate.explodeme_com_acm_certificate.arn
   codepipeline_artifact_store_bucket = var.env_info.prod.codepipeline_artifact_store_bucket
   api_gateway_base_path_mapping = module.nextjs_lambda_frontend_base.aws_api_gateway_rest_api_root_resource_id
   subdomain = "diagrams"
   secrets = var.env_info.prod.secrets
+  codestar_connection_arn = var.env_info.prod.codestar_connection_arn
 }

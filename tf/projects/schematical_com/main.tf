@@ -12,7 +12,9 @@ resource "aws_acm_certificate" "schematical_com_cert" {
   domain_name       = aws_route53_zone.schematical_com.name
   subject_alternative_names = ["*.${aws_route53_zone.schematical_com.name}"]
   validation_method = "DNS"
-
+  tags = {
+    Primary = true
+  }
 
   lifecycle {
     create_before_destroy = true
@@ -283,6 +285,7 @@ module "dev_env_schematical_com" {
   lb_http_listener_arn = var.env_info.dev.shared_alb_http_listener_arn
   lb_https_listener_arn = var.env_info.dev.shared_alb_https_listener_arn
   shared_alb_sg_id = var.env_info.dev.shared_alb.alb_sg_id
+  codestar_connection_arn = var.env_info.dev.codestar_connection_arn
 }
 
 module "prod_env_schematical_com" {
@@ -319,4 +322,5 @@ module "prod_env_schematical_com" {
   lb_http_listener_arn = var.env_info.prod.shared_alb_http_listener_arn
   lb_https_listener_arn = var.env_info.prod.shared_alb_https_listener_arn
   shared_alb_sg_id = var.env_info.prod.shared_alb.alb_sg_id
+  codestar_connection_arn = var.env_info.prod.codestar_connection_arn
 }

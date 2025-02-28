@@ -27,6 +27,7 @@ module "nextjs_lambda" {
     S3_BUCKET: aws_s3_bucket.diagrams_s3_bucket.bucket,
     PUBLIC_UPLOAD_BUCKET_URL: "https://${aws_route53_record.drawnby-ai-cloudfront-domain.name}",
   }
+  codestar_connection_arn = var.codestar_connection_arn
 }
 
 

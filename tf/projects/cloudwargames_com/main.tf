@@ -373,6 +373,7 @@ module "dev_env_cloudwargames_com" {
   lb_http_listener_arn = var.env_info.dev.shared_alb_http_listener_arn
   lb_https_listener_arn = var.env_info.dev.shared_alb_https_listener_arn
   shared_alb_sg_id = var.env_info.dev.shared_alb.alb_sg_id
+  codestar_connection_arn = var.env_info.dev.codestar_connection_arn
 }
 
 module "prod_env_cloudwargames_com" {
@@ -409,4 +410,5 @@ module "prod_env_cloudwargames_com" {
   lb_http_listener_arn = var.env_info.prod.shared_alb_http_listener_arn
   lb_https_listener_arn = var.env_info.prod.shared_alb_https_listener_arn
   shared_alb_sg_id = var.env_info.prod.shared_alb.alb_sg_id
+  codestar_connection_arn = var.env_info.prod.codestar_connection_arn
 }

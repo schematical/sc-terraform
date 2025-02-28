@@ -41,7 +41,7 @@ module "nextjs_lambda" {
 
   }
   xray_tracing_enabled = true
-
+  codestar_connection_arn = var.codestar_connection_arn
 }
 /*
 resource "aws_api_gateway_method_settings" "root" {

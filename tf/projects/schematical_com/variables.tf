@@ -51,5 +51,6 @@ variable env_info {
       address: string
     }))
     waf_web_acl_arn: string
+    codestar_connection_arn: string
   }))
 }
