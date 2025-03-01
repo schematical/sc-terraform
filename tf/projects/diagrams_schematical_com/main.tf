@@ -52,6 +52,7 @@ resource "aws_route53_record" "schematical-com-a" {
 data "aws_acm_certificate" "explodeme_com_acm_certificate" {
   domain   = local.domain_name
   statuses = ["ISSUED"]
+  most_recent = true
   tags = {
     Primary = true
   }

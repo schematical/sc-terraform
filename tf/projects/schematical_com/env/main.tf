@@ -35,7 +35,8 @@ module "nextjs_lambda" {
     CONVERTKIT_API_SECRET: var.secrets.schematical_lambda_service_CONVERTKIT_API_SECRET
     POSTHOG_API_KEY: var.secrets.schematical_lambda_service_POSTHOG_API_KEY
     MAKE_COM_WEBHOOK: var.secrets.schematical_lambda_service_MAKE_COM_WEBHOOK
-
+    AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+    AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
   }
   xray_tracing_enabled = true
   codestar_connection_arn = var.codestar_connection_arn
