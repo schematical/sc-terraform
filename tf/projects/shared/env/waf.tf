@@ -91,7 +91,33 @@ resource "aws_wafv2_web_acl" "schematical_shared_waf_acl" {
       sampled_requests_enabled   = true
     }
   }
+  /*rule {
+    name     = "ChallengeAllRequests"
+    priority = 3
 
+    action {
+      challenge {} # Challenges every request
+    }
+
+    statement {
+      regex_pattern_set_reference_statement {
+        arn = aws_wafv2_regex_pattern_set.challenge_all.arn
+        field_to_match {
+          uri_path {}
+        }
+        text_transformation {
+          priority = 1
+          type     = "NONE"
+        }
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "ChallengeAllRequests"
+      sampled_requests_enabled   = true
+    }
+  }*/
 
   /*rule {
     name     = "AWSManagedRulesBotControlRuleSet"
@@ -144,15 +170,15 @@ resource "aws_wafv2_web_acl" "schematical_shared_waf_acl" {
 resource "aws_wafv2_regex_pattern_set" "challenge_all" {
   name        = "challenge-all"
   description = "Regex pattern set to match all requests"
-  scope       = "CLOUDFRONT" # Use "REGIONAL" for ALB, API Gateway, etc.
+  scope       = "REGIONAL"
 
   regular_expression {
     regex_string = "^.*$" # Matches everything
   }
 }
-resource "aws_wafv2_web_acl" "challenge_wafv2_web_acl" {
+/*resource "aws_wafv2_web_acl" "challenge_wafv2_web_acl" {
   name        = "challenge"
-  scope       = "CLOUDFRONT" # Change to "REGIONAL" if needed
+  scope       = "REGIONAL"
   description = "WebACL that challenges every request"
 
   default_action {
@@ -192,6 +218,11 @@ resource "aws_wafv2_web_acl" "challenge_wafv2_web_acl" {
     metric_name                = "challenge-web-acl"
     sampled_requests_enabled   = true
   }
+}*/
+resource "aws_wafv2_web_acl_logging_configuration" "challenge_wafv2_web_acl_logging_configuration" {
+
+  log_destination_configs = [aws_cloudwatch_log_group.example.arn]
+  resource_arn            = aws_wafv2_web_acl.schematical_shared_waf_acl.arn
 }
 resource "aws_cloudwatch_log_group" "example" {
   name = "aws-waf-logs-schematical-shared"

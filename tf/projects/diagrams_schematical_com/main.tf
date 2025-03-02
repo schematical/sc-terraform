@@ -49,15 +49,33 @@ resource "aws_route53_record" "schematical-com-a" {
     evaluate_target_health = false
   }
 }*/
-data "aws_acm_certificate" "explodeme_com_acm_certificate" {
-  domain   = local.domain_name
-  statuses = ["ISSUED"]
-  most_recent = true
-  tags = {
-    Primary = true
+resource "aws_acm_certificate" "diagrams_scheamtical_com_cert" {
+  domain_name       = "diagrams.${data.aws_route53_zone.domain_name_com.name}"
+  subject_alternative_names = ["*.diagrams.${data.aws_route53_zone.domain_name_com.name}"]
+  validation_method = "DNS"
+
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
+resource "aws_route53_record" "aws_acm_certificate_route53_record" {
+  for_each = {
+    for dvo in aws_acm_certificate.diagrams_scheamtical_com_cert.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.record]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = data.aws_route53_zone.domain_name_com.zone_id
+}
 module "dev_env_diagrams_com" {
   depends_on = [module.nextjs_lambda_frontend_base]
   service_name=local.service_name
@@ -69,7 +87,7 @@ module "dev_env_diagrams_com" {
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
   api_gateway_id = module.nextjs_lambda_frontend_base.aws_apigateway_rest_api_id
   private_subnet_mappings = var.env_info.dev.private_subnet_mappings
-  acm_cert_arn = data.aws_acm_certificate.explodeme_com_acm_certificate.arn
+  acm_cert_arn = aws_acm_certificate.diagrams_scheamtical_com_cert.arn
   codepipeline_artifact_store_bucket = var.env_info.dev.codepipeline_artifact_store_bucket
   api_gateway_base_path_mapping = module.nextjs_lambda_frontend_base.aws_api_gateway_rest_api_root_resource_id
   subdomain = "dev.diagrams"
@@ -90,7 +108,7 @@ module "prod_env_diagrams_com" {
   ecs_task_execution_iam_role = var.ecs_task_execution_iam_role
   api_gateway_id = module.nextjs_lambda_frontend_base.aws_apigateway_rest_api_id
   private_subnet_mappings = var.env_info.prod.private_subnet_mappings
-  acm_cert_arn = data.aws_acm_certificate.explodeme_com_acm_certificate.arn
+  acm_cert_arn = aws_acm_certificate.diagrams_scheamtical_com_cert.arn
   codepipeline_artifact_store_bucket = var.env_info.prod.codepipeline_artifact_store_bucket
   api_gateway_base_path_mapping = module.nextjs_lambda_frontend_base.aws_api_gateway_rest_api_root_resource_id
   subdomain = "diagrams"
