@@ -43,6 +43,18 @@ module "nextjs_lambda" {
   xray_tracing_enabled = true
   codestar_connection_arn = var.codestar_connection_arn
 }
+data "aws_security_group" "redis_sg" {
+  name = "schematical-com-redis-prod-us-east-1"
+}
+resource "aws_vpc_security_group_ingress_rule" "example" {
+
+  security_group_id =   data.aws_security_group.redis_sg.id
+  from_port        = 6379
+  to_port          = 6380
+  ip_protocol         = "tcp"
+  referenced_security_group_id = module.nextjs_lambda.lambda_security_group_id
+
+}
 /*
 resource "aws_api_gateway_method_settings" "root" {
   rest_api_id = var.api_gateway_id

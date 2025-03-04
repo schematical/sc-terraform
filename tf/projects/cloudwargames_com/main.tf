@@ -146,7 +146,33 @@ resource "aws_route53_record" "cloudwargames-com-mx" {
     "50 ASPMX3.GOOGLEMAIL.COM."*/
   ]
 }
-
+resource "aws_route53_record" "cloudwargames-com-cname1" {
+  zone_id = aws_route53_zone.cloudwargames_com.zone_id
+  name    = "ckespa.${local.domain_name}"
+  type    = "CNAME"
+  ttl     = "30"
+  records = [
+    "spf.dm-zy6757gm.sg8.convertkit.com."
+  ]
+}
+resource "aws_route53_record" "cloudwargames-com-cname2" {
+  zone_id = aws_route53_zone.cloudwargames_com.zone_id
+  name    = "cka._domainkey.${local.domain_name}"
+  type    = "CNAME"
+  ttl     = "30"
+  records = [
+    "dkim.dm-zy6757gm.sg8.convertkit.com."
+  ]
+}
+resource "aws_route53_record" "cloudwargames-com-txt2" {
+  zone_id = aws_route53_zone.cloudwargames_com.zone_id
+  name    = "_dmarc.${local.domain_name}"
+  type    = "TXT"
+  ttl     = "30"
+  records = [
+    "v=DMARC1; p=none;"
+  ]
+}
 
 resource "aws_api_gateway_rest_api" "api_gateway" {
   body = jsonencode({
@@ -341,7 +367,12 @@ module "nextjs_lambda_frontend_base" {
   api_gateway_stage_name = "dev"
   aws_route53_zone_id = aws_route53_zone.cloudwargames_com.zone_id
 }
-
+data "aws_elasticache_cluster" "elasticache_cluster" {
+  cluster_id = "schematical-com"
+}
+data "aws_dynamodb_table" "schematical_com_table" {
+  name = "SchematicalComPost"
+}
 module "dev_env_cloudwargames_com" {
   # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
   source = "./env"
@@ -359,11 +390,11 @@ module "dev_env_cloudwargames_com" {
   secrets = var.env_info.dev.secrets
   dynamodb_table_arns = [
     aws_dynamodb_table.dynamodb_table_user.arn,
-
+    data.aws_dynamodb_table.schematical_com_table.arn
   ]
   service_name = local.service_name
   subdomain = "dev"
-  redis_host =  "" # join(",", [for o in aws_elasticache_cluster.elasticache_cluster.cache_nodes : o.address])
+  redis_host =  join(",", [for o in data.aws_elasticache_cluster.elasticache_cluster.cache_nodes : o.address])
   waf_web_acl_arn = var.env_info.prod.waf_web_acl_arn
   alb_arn = var.env_info.dev.shared_alb.alb_arn
   alb_dns_name = var.env_info.dev.shared_alb.alb_dns_name
@@ -397,9 +428,9 @@ module "prod_env_cloudwargames_com" {
 
   dynamodb_table_arns = [
     aws_dynamodb_table.dynamodb_table_user.arn,
-
+    data.aws_dynamodb_table.schematical_com_table.arn
   ]
-  redis_host = "" # join(",", [for o in aws_elasticache_cluster.elasticache_cluster.cache_nodes : o.address]) # join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])
+  redis_host =  join(",", [for o in data.aws_elasticache_cluster.elasticache_cluster.cache_nodes : o.address])
   waf_web_acl_arn = var.env_info.prod.waf_web_acl_arn
 
   alb_arn = var.env_info.prod.shared_alb.alb_arn
