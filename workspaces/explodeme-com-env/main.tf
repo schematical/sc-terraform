@@ -32,11 +32,6 @@ data "aws_api_gateway_rest_api" "explodme_com_rest_api" {
 data "aws_vpc" "default_vpc" {
   id = "vpc-081f2e4a286d83c11"
 }*/
-module "vpc" {
-  source = "../../modules/vpc"
-  vpc_name = var.env
-  # bastion_keypair_name = "schematical_node_1"
-}
 resource "aws_codestarconnections_connection" "codestarconnections_connection" {
   name          = "github-connection"
   provider_type = "GitHub"
