@@ -27,6 +27,6 @@ resource "aws_iam_user_login_profile" "iam_user_login_profile" {
 }
 resource "local_file" "login" {
   for_each = aws_iam_user_login_profile.iam_user_login_profile
-  content  = "${each.value.user}\n${each.value.password}"
+  content  = "https://${data.aws_caller_identity.current.account_id}.signin.aws.amazon.com/console\n${each.value.user}\n${each.value.password}"
   filename = "creds/${each.value.user}-login.txt"
 }
