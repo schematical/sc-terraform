@@ -17,7 +17,7 @@ terraform {
   required_version = ">= 1.5.7"
 }
 provider "aws" {
-  profile  = "schematical"
+  # profile  = "schematical"
   region = "us-east-1"
   default_tags {
     tags = {

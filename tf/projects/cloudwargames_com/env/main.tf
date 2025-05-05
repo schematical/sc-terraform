@@ -38,7 +38,7 @@ module "nextjs_lambda" {
     CONVERTKIT_API_SECRET: var.secrets.schematical_lambda_service_CONVERTKIT_API_SECRET
     POSTHOG_API_KEY: var.secrets.schematical_lambda_service_POSTHOG_API_KEY
     MAKE_COM_WEBHOOK: var.secrets.schematical_lambda_service_MAKE_COM_WEBHOOK
-
+    DB_URL: var.secrets.cloudwargames_lambda_service_DB_URL
   }
   xray_tracing_enabled = true
   codestar_connection_arn = var.codestar_connection_arn

@@ -80,33 +80,7 @@ resource "aws_route53_record" "cloudwargames-com-a" {
     evaluate_target_health = false
   }
 }
-resource "aws_route53_record" "cloudwargames-com-ck1" {
-  zone_id = aws_route53_zone.cloudwargames_com.zone_id
-  name    = "ckespa.cloudwargames.com"
-  type    = "CNAME"
-  ttl     = 300
-  records = [
-    "spf.dm-rm8vgvoy.sg7.convertkit.com."
-  ]
-}
-resource "aws_route53_record" "cloudwargames-com-ck2" {
-  zone_id = aws_route53_zone.cloudwargames_com.zone_id
-  name    = "cka._domainkey.cloudwargames.com"
-  type    = "CNAME"
-  ttl     = 300
-  records = [
-    "dkim.dm-rm8vgvoy.sg7.convertkit.com."
-  ]
-}
-resource "aws_route53_record" "cloudwargames-com-ck3" {
-  zone_id = aws_route53_zone.cloudwargames_com.zone_id
-  name    = "_dmarc.cloudwargames.com"
-  type    = "TXT"
-  ttl     = 300
-  records = [
-    "v=DMARC1; p=none;"
-  ]
-}
+
 resource "aws_route53_record" "cloudwargames-com-txt" {
   zone_id = aws_route53_zone.cloudwargames_com.zone_id
   name    = "cloudwargames.com"
@@ -170,7 +144,7 @@ resource "aws_route53_record" "cloudwargames-com-txt2" {
   type    = "TXT"
   ttl     = "30"
   records = [
-    "v=DMARC1; p=none;"
+    "v=DMARC1; p=quarantine; rua=mailto:hello@cloudwargames.com"
   ]
 }
 

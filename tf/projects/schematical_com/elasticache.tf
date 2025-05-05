@@ -22,16 +22,16 @@ resource "aws_security_group" "redis_security_group" {
   description = "${local.service_name}-redis-prod-${var.region}"
   vpc_id      = var.env_info.prod.vpc_id
 
-  ingress {
+/*  ingress {
     description      = "TLS from VPC"
     from_port        = 6379
     to_port          = 6380
     protocol         = "tcp"
     security_groups = [
-      module.dev_env_schematical_com.task_security_group_id,
-      module.prod_env_schematical_com.task_security_group_id
+
+
     ]
-  }
+  }*/
 
   egress {
     from_port        = 0
@@ -42,8 +42,26 @@ resource "aws_security_group" "redis_security_group" {
   }
 
   tags = {
-    Name = "allow_tls"
+    // Name = "allow_tls"
   }
+}
+resource "aws_vpc_security_group_ingress_rule" "dev" {
+
+  security_group_id =   aws_security_group.redis_security_group.id
+  from_port        = 6379
+  to_port          = 6380
+  ip_protocol         = "tcp"
+  referenced_security_group_id =  module.dev_env_schematical_com.task_security_group_id
+
+}
+resource "aws_vpc_security_group_ingress_rule" "prod" {
+
+  security_group_id =   aws_security_group.redis_security_group.id
+  from_port        = 6379
+  to_port          = 6380
+  ip_protocol         = "tcp"
+  referenced_security_group_id = module.prod_env_schematical_com.task_security_group_id
+
 }
 
 /*

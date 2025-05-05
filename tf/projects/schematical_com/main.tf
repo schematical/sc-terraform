@@ -65,7 +65,7 @@ resource "aws_route53_record" "schematical-com-ck3" {
   type    = "TXT"
   ttl     = 300
   records = [
-    "v=DMARC1; p=none;"
+    "v=DMARC1; p=quarantine; rua=mailto:hello@schematical.com"
   ]
 }
 
