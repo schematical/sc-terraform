@@ -16,3 +16,6 @@ output "api_gateway_stage_id" {
 output "api_gateway_stage_arn" {
   value = module.apigateway_env.api_gateway_stage_arn
 }
+output "cloudfront_s3_bucket_arn" {
+  value = module.cloudfront.s3_bucket.arn
+}

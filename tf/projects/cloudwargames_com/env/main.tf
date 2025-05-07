@@ -95,6 +95,19 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             "dynamodb:DeleteItem"
           ],
           "Resource" : var.dynamodb_table_arns
+        },
+        {
+          "Sid": "s3",
+          "Effect": "Allow",
+          "Action": [
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:PutObjectAcl",
+            "s3:*"
+          ],
+          "Resource": [
+            "${module.nextjs_lambda.cloudfront_s3_bucket_arn}/uploads/**"
+          ]
         }
 
       ]

@@ -144,7 +144,7 @@ resource "aws_route53_record" "cloudwargames-com-txt2" {
   type    = "TXT"
   ttl     = "30"
   records = [
-    "v=DMARC1; p=quarantine; rua=mailto:hello@cloudwargames.com"
+    "v=DMARC1; p=quarantine; rua=mailto:servers@schematical.com"
   ]
 }
 
