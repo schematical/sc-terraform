@@ -24,6 +24,18 @@ resource "aws_acm_certificate" "schematical_com_cert" {
 resource "aws_route53_zone" "schematical_com" {
   name = local.domain_name
 }
+resource "aws_route53_record" "schematical-com-txt" {
+  zone_id = aws_route53_zone.schematical_com.zone_id
+  name    = "schematical.com"
+  type    = "TXT"
+  ttl     = 3600
+  records = [
+    "google-site-verification=83tJ_uXjBls0FhUPPs-D3ve-ZHHNXzkeTUe9CX9q7UE",
+    "k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCACWRiAp4JqK/LfWDGoVhYzza5ZD5O8D3KqUCIE4R8cmsntfBFE+krQTWAT4LTMoEpJOZI8iAvS64JDmTV13ugZIOFTuTmlu1HTjyZAhZ8+Ehk7pBudahPfjKR1sV+OzrEZYdyKMOMWoDoRzFm36qSoQZThx2Z7UgB1X+cVLCHdwIDAQAB",
+    // "v=spf1 a mx include:spf.mtasv.net ~all",
+    "v=spf1 include:_spf.google.com ~all"
+  ]
+}
 /*resource "aws_route53_record" "schematical-com-ns" {
   zone_id = aws_route53_zone.schematical_com.zone_id
   name    = ""
@@ -65,7 +77,7 @@ resource "aws_route53_record" "schematical-com-ck3" {
   type    = "TXT"
   ttl     = 300
   records = [
-    "v=DMARC1; p=quarantine; rua=mailto:servers@schematical.com"
+    "v=DMARC1; p=none; rua=mailto:servers@schematical.com"
   ]
 }
 

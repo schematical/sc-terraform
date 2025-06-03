@@ -87,7 +87,8 @@ resource "aws_route53_record" "cloudwargames-com-txt" {
   type    = "TXT"
   ttl     = 300
   records = [
-    "google-site-verification=3db48GbMZF8GgzjrCvf-QtD-6Cle4L58ImhqhMSYGxc"
+    "google-site-verification=3db48GbMZF8GgzjrCvf-QtD-6Cle4L58ImhqhMSYGxc",
+    "v=spf1 include:_spf.google.com ~all"
   ]
 }
 
@@ -144,7 +145,7 @@ resource "aws_route53_record" "cloudwargames-com-txt2" {
   type    = "TXT"
   ttl     = "30"
   records = [
-    "v=DMARC1; p=quarantine; rua=mailto:servers@schematical.com"
+    "v=DMARC1; p=none; rua=mailto:servers@schematical.com"
   ]
 }
 
@@ -200,6 +201,8 @@ resource "aws_api_gateway_method" "api_gateway_proxy_method" {
   authorization = "NONE"
   request_parameters = {
     "method.request.path.proxy" = true
+    "method.request.header.Accept"       = false
+    "method.request.header.Content-Type" = false
   }
 }
 
