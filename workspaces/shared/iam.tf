@@ -30,3 +30,27 @@ resource "local_file" "login" {
   content  = "https://${data.aws_caller_identity.current.account_id}.signin.aws.amazon.com/console\n${each.value.user}\n${each.value.password}"
   filename = "creds/${each.value.user}-login.txt"
 }
+resource "aws_iam_policy" "policy" {
+  name        = "really-important-stuff-access-policy"
+
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:Put*",
+          "s3:Get*",
+          "s3:Delete*",
+        ]
+        Effect   = "Allow"
+        Resource = "arn:aws:s3:::explodeme-com-secret-stuff/**"
+      },
+    ]
+  })
+}
+resource "aws_iam_user_policy_attachment" "s3-policy-attach" {
+  for_each = aws_iam_user.iam_user
+  user       = each.value.name
+  policy_arn = aws_iam_policy.policy.arn
+}
