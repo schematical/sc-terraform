@@ -43,14 +43,47 @@ resource "aws_route53_record" "schematical-com-txt" {
   ttl     = "30"
   records = aws_route53_zone.schematical_com.name_servers
 }*/
+
 resource "aws_route53_record" "schematical-com-a" {
   zone_id = aws_route53_zone.schematical_com.zone_id
   name    =  local.domain_name
   type    = "A"
   alias {
-    name                   = aws_api_gateway_domain_name.api_gateway_domain_name.cloudfront_domain_name
-    zone_id                = aws_api_gateway_domain_name.api_gateway_domain_name.cloudfront_zone_id
+    name = var.env_info.prod.shared_alb.alb_dns_name
+    zone_id = var.env_info.prod.shared_alb.alb_hosted_zone_id
+    // name                   = aws_api_gateway_domain_name.api_gateway_domain_name.cloudfront_domain_name
+    // zone_id                =  aws_api_gateway_domain_name.api_gateway_domain_name.cloudfront_zone_id
     evaluate_target_health = false
+  }
+}
+resource "aws_lb_listener_rule" "aws_lb_listener_rule_http" {
+  listener_arn = var.env_info.prod.shared_alb_http_listener_arn
+  priority     = 3
+
+  action {
+    type = "forward"
+    target_group_arn = module.prod_env_schematical_com.target_group_arn
+  }
+
+  condition {
+    host_header {
+      values = [local.domain_name]
+    }
+  }
+}
+resource "aws_lb_listener_rule" "aws_lb_listener_rule_https" {
+  listener_arn = var.env_info.prod.shared_alb_https_listener_arn
+  priority     = 3
+
+  action {
+    type = "forward"
+    target_group_arn = module.prod_env_schematical_com.target_group_arn
+  }
+
+  condition {
+    host_header {
+      values = [local.domain_name]
+    }
   }
 }
 resource "aws_route53_record" "schematical-com-ck1" {
@@ -90,12 +123,12 @@ resource "aws_api_gateway_domain_name" "api_gateway_domain_name" {
     types = ["EDGE"]
   }
 }
-resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
+/*resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
   base_path   = ""
   domain_name = aws_api_gateway_domain_name.api_gateway_domain_name.id
   api_id = aws_api_gateway_rest_api.api_gateway.id
   stage_name  = "prod"
-}
+}*/
 resource "aws_route53_record" "schematical-com-mx" {
   zone_id = aws_route53_zone.schematical_com.zone_id
   name    = "schematical.com"

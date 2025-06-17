@@ -2,7 +2,6 @@
 locals {
   cloudfront_subdomain = "assets-${var.env}"
 }
-/*
 module "cloudfront" {
   service_name = var.service_name
   source = "../../../../modules/cloudfront"
@@ -14,7 +13,6 @@ module "cloudfront" {
   hosted_zone_id = var.hosted_zone_id
   hosted_zone_name = var.hosted_zone_name
   acm_cert_arn = var.acm_cert_arn
-  api_gateway_id = var.api_gateway_id
   codepipeline_artifact_store_bucket = var.codepipeline_artifact_store_bucket
   cors_allowed_hosts = [
     "localhost",
@@ -62,4 +60,4 @@ resource "aws_s3_bucket_policy" "cloudfront_bucket_policy" {
       }
     ]
   })
-}*/
+}

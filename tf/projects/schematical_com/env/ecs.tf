@@ -1,4 +1,3 @@
-/*
 
 resource "aws_iam_role" "task_role" {
   name = "ecs-task-role"
@@ -120,6 +119,11 @@ module "env_schematical_com_ecs_service" {
       name : "PUBLIC_ASSET_URL",
       value : local.PUBLIC_ASSET_URL
     },
+    {
+      name : "DB_URL",
+      value : var.secrets.schematical_lambda_service_DB_URL
+    },
+
   ]
   container_name = var.service_name
 }
@@ -178,8 +182,7 @@ resource "aws_iam_policy" "codebuild_iam_policy" {
             "s3:*"
           ]
           Resource = [
-            "${module.cloudfront.s3_bucket.arn}*/
-/**",
+            "${module.cloudfront.s3_bucket.arn}/*",
             "${module.cloudfront.s3_bucket.arn}"
           ]
         }
@@ -258,8 +261,6 @@ resource "aws_iam_policy" "code_pipeline_iam_policy" {
           "Resource" : "*",
           "Effect" : "Allow"
         },
-        */
-/*
         {
           "Action" : [
             "cloudformation:CreateStack",
@@ -275,7 +276,7 @@ resource "aws_iam_policy" "code_pipeline_iam_policy" {
           ],
           "Resource" : "*",
           "Effect" : "Allow"
-        },*//*
+        },
 
         {
           "Action" : [
@@ -310,4 +311,4 @@ resource "aws_iam_policy" "code_pipeline_iam_policy" {
 resource "aws_iam_role_policy_attachment" "code_pipeline_iam_policy_attach" {
   role       = module.buildpipeline.code_pipeline_service_role.name
   policy_arn = aws_iam_policy.code_pipeline_iam_policy.arn
-}*/
+}

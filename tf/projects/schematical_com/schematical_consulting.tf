@@ -11,7 +11,7 @@ resource "aws_route53_zone" "schematical_consulting_com" {
   ttl     = "30"
   records = aws_route53_zone.schematical_com.name_servers
 }*/
-resource "aws_route53_record" "schematical-consulting-a" {
+/*resource "aws_route53_record" "schematical-consulting-a" {
   zone_id = aws_route53_zone.schematical_consulting_com.zone_id
   name    =  local.sc_domain_name
   type    = "A"
@@ -44,7 +44,7 @@ resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping_sc" 
   domain_name = aws_api_gateway_domain_name.api_gateway_domain_name_sc.id
   api_id = aws_api_gateway_rest_api.api_gateway.id
   stage_name  = "prod"
-}
+}*/
 resource "aws_route53_record" "schematicalconsulting-com-google-search" {
   zone_id = aws_route53_zone.schematical_consulting_com.zone_id
   name    = local.sc_domain_name
