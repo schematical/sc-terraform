@@ -24,23 +24,23 @@ resource "aws_iam_role" "task_role" {
 }
 resource "aws_iam_role_policy_attachment" "lambda_iam_policy_attach" {
   role       = aws_iam_role.task_role.name
-  policy_arn = aws_iam_policy.lambda_iam_policy.arn
+  policy_arn = aws_iam_policy.ecs_iam_policy.arn
 }
 
 
-resource "aws_ecr_repository" "ecr_repo" {
+/*resource "aws_ecr_repository" "ecr_repo" {
   name                 = "schematical-com-${var.env}-${var.region}"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
     scan_on_push = true
   }
-}
+}*/
 
 module "env_schematical_com_tg" {
   source                              = "../../../../modules/alb-ecs-service-association"
   env                                 = var.env
-  service_name                        = "schematical-com"
+  service_name                        = var.service_name
   vpc_id                              = var.vpc_id
   hosted_zone_id                      = var.hosted_zone_id
   hosted_zone_name                    = var.hosted_zone_name
@@ -58,7 +58,7 @@ module "env_schematical_com_ecs_service" {
   source                  = "../../../../modules/ecs-service"
   env                     = var.env
   vpc_id                  = var.vpc_id
-  service_name            = "schematical-com"
+  service_name            = var.service_name
   ecs_desired_task_count  = 1
   private_subnet_mappings = var.private_subnet_mappings
   aws_lb_target_group_arns = [module.env_schematical_com_tg.aws_lb_target_group_arn]
@@ -66,7 +66,7 @@ module "env_schematical_com_ecs_service" {
   ingress_security_groups = [
     var.shared_alb_sg_id
   ]
-  ecr_image_uri                    = "${aws_ecr_repository.ecr_repo.repository_url}:${var.env}"
+  ecr_image_uri                    = "docker.n8n.io/n8nio/n8n"# "${aws_ecr_repository.ecr_repo.repository_url}:${var.env}"
   container_port                   = local.container_port
   create_secrets                   = false
   task_role_arn                    = aws_iam_role.task_role.arn
@@ -84,50 +84,42 @@ module "env_schematical_com_ecs_service" {
       value : var.env
     },
     {
-      name : "TEMPLATE_API_KEY",
-      value : var.secrets.schematical_lambda_service_TEMPLATE_API_KEY
+      name : "N8N_PORT",
+      value : "80"
     },
     {
-      name : "CALENDLY_API_KEY",
-      value : var.secrets.schematical_lambda_service_CALENDLY_API_KEY
+      name : "N8N_HOST",
+      value : "https://${var.subdomain}.${var.hosted_zone_name}"
     },
     {
-      name : "CONVERTKIT_API_SECRET",
-      value : var.secrets.schematical_lambda_service_CONVERTKIT_API_SECRET
+      name : "WEBHOOK_URL",
+      value : "https://${var.subdomain}.${var.hosted_zone_name}"
     },
     {
-      name : "POSTHOG_API_KEY",
-      value : var.secrets.schematical_lambda_service_POSTHOG_API_KEY
+      name : "GENERIC_TIMEZONE",
+      value : "UTC-06:00"
     },
     {
-      name : "NEXT_PUBLIC_SERVER_URL",
-      value : local.NEXT_PUBLIC_SERVER_URL
+      name : "N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE",
+      value : "true"
     },
     {
-      name : "AUTH_CLIENT_ID",
-      value : var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+      name : "DB_TYPE",
+      value : "postgresdb"
     },
     {
-      name : "AUTH_USER_POOL_ID",
-      value : var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+      name : "DB_POSTGRESDB_DATABASE",
+      value : "n8n"
     },
     {
-      name : "S3_BUCKET",
-      value : module.cloudfront.s3_bucket.bucket
-    },
-    {
-      name : "PUBLIC_ASSET_URL",
-      value : local.PUBLIC_ASSET_URL
-    },
-    {
-      name : "DB_URL",
-      value : var.secrets.schematical_lambda_service_DB_URL
-    },
+      name : "DB_POSTGRESDB_HOST",
+      value : var.dsql_cluster_identifier
+    }
 
   ]
   container_name = var.service_name
 }
-module "buildpipeline" {
+/*module "buildpipeline" {
   source                              = "../../../../modules/buildpipeline"
   # "github.com/schematical/sc-terraform/modules/buildpipeline"
   service_name                        = "schematical-com"
@@ -312,3 +304,4 @@ resource "aws_iam_role_policy_attachment" "code_pipeline_iam_policy_attach" {
   role       = module.buildpipeline.code_pipeline_service_role.name
   policy_arn = aws_iam_policy.code_pipeline_iam_policy.arn
 }
+*/

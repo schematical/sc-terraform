@@ -1,8 +1,9 @@
 
+
 locals {
   cloudfront_subdomain = "assets-${var.env}"
 }
-module "cloudfront" {
+/*module "cloudfront" {
   service_name = var.service_name
   source = "../../../../modules/cloudfront"
   region = var.region
@@ -60,4 +61,4 @@ resource "aws_s3_bucket_policy" "cloudfront_bucket_policy" {
       }
     ]
   })
-}
+}*/

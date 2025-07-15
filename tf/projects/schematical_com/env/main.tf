@@ -4,7 +4,7 @@ locals{
   NEXT_PUBLIC_SERVER_URL = "https://${var.subdomain}.${var.hosted_zone_name}"
   PUBLIC_ASSET_URL = "https://${local.cloudfront_subdomain}.${var.hosted_zone_name}"
 }
-module "nextjs_lambda" {
+/*module "nextjs_lambda" {
   # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
   source = "../../../../modules/nextjs-lambda-frontend-env"
   env = var.env
@@ -41,7 +41,7 @@ module "nextjs_lambda" {
   }
   xray_tracing_enabled = true
   codestar_connection_arn = var.codestar_connection_arn
-}
+}*/
 /*
 resource "aws_api_gateway_method_settings" "root" {
   rest_api_id = var.api_gateway_id
@@ -81,13 +81,25 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             "dynamodb:BatchGetItem"
           ],
           "Resource" : var.dynamodb_table_arns
+        },
+        {
+          "Sid" : "s3",
+          "Effect" : "Allow",
+          "Action" : [
+            "s3:PutObject",
+            "s3:PutObjectAcl",
+            "s3:DeleteObject"
+          ],
+          "Resource" : [
+            "${module.cloudfront.s3_bucket.arn}/uploads/**"
+          ]
         }
-
       ]
     }
   )
 }
 
+/*
 resource "aws_iam_role_policy_attachment" "lambda_iam_policy_attach" {
   role = module.nextjs_lambda.iam_role_name
   policy_arn = aws_iam_policy.lambda_iam_policy.arn
@@ -95,4 +107,4 @@ resource "aws_iam_role_policy_attachment" "lambda_iam_policy_attach" {
 resource "aws_wafv2_web_acl_association" "wafv2_web_acl_association" {
   resource_arn = module.nextjs_lambda.api_gateway_stage_arn
   web_acl_arn  = var.waf_web_acl_arn
-}
+}*/

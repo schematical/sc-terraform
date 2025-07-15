@@ -8,16 +8,17 @@ output "waf_web_acl_arn" {
   value = aws_wafv2_web_acl.schematical_shared_waf_acl.arn
 }
 output "shared_alb" {
-  value = {
+  /*value = {
     alb_sg_id  = "",
     alb_arn  = "",
     alb_hosted_zone_id  = "",
     alb_dns_name = "",
-  } # module.shared_alb
+  } */
+  value =  module.shared_alb
 }
 output "shared_alb_http_listener_arn" {
-  value = ""# module.shared_alb.lb_http_listener_arn
+  value =  module.shared_alb.lb_http_listener_arn
 }
 output "shared_alb_https_listener_arn" {
-  value = ""# module.shared_alb.lb_https_listener_arn
+  value = module.shared_alb.lb_https_listener_arn
 }
