@@ -3,7 +3,6 @@ resource "aws_api_gateway_deployment" "api_gateway_deployment" {
   rest_api_id = var.api_gateway_id
   # depends_on = [aws_api_gateway_stage.api_gateway_stage]
   description = "module apigateway-env deployment"
-  stage_description = "module apigateway-env deployment"
 }
 
 resource "aws_api_gateway_stage" "api_gateway_stage" {

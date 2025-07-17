@@ -1,6 +1,6 @@
 
 resource "aws_iam_role" "task_role" {
-  name = "ecs-task-role"
+  name = "${var.service_name}-ecs-role"
 
   # Terraform's "jsonencode" function converts a
   # Terraform expression result to valid JSON syntax.
@@ -22,20 +22,16 @@ resource "aws_iam_role" "task_role" {
     tag-key = "tag-value"
   }
 }
-resource "aws_iam_role_policy_attachment" "lambda_iam_policy_attach" {
-  role       = aws_iam_role.task_role.name
-  policy_arn = aws_iam_policy.ecs_iam_policy.arn
-}
 
 
-/*resource "aws_ecr_repository" "ecr_repo" {
-  name                 = "schematical-com-${var.env}-${var.region}"
+resource "aws_ecr_repository" "ecr_repo" {
+  name                 = "n8n-${var.env}-${var.region}"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
     scan_on_push = true
   }
-}*/
+}
 
 module "env_schematical_com_tg" {
   source                              = "../../../../modules/alb-ecs-service-association"
@@ -52,7 +48,7 @@ module "env_schematical_com_tg" {
   alb_target_group_health_check_path  = "/"
   lb_http_listener_arn                = var.lb_http_listener_arn
   lb_https_listener_arn               = var.lb_https_listener_arn
-  lb_listener_rule_http_rule_priority = var.env == "prod" ? 1 : 2
+  lb_listener_rule_http_rule_priority = var.env == "prod" ? 5 : 6
 }
 module "env_schematical_com_ecs_service" {
   source                  = "../../../../modules/ecs-service"
@@ -66,7 +62,7 @@ module "env_schematical_com_ecs_service" {
   ingress_security_groups = [
     var.shared_alb_sg_id
   ]
-  ecr_image_uri                    = "docker.n8n.io/n8nio/n8n"# "${aws_ecr_repository.ecr_repo.repository_url}:${var.env}"
+  ecr_image_uri                    = "${aws_ecr_repository.ecr_repo.repository_url}:${var.env}" # "docker.n8n.io/n8nio/n8n"
   container_port                   = local.container_port
   create_secrets                   = false
   task_role_arn                    = aws_iam_role.task_role.arn
@@ -74,10 +70,6 @@ module "env_schematical_com_ecs_service" {
     {
       name : "NODE_ENV ",
       value : var.env
-    },
-    {
-      name : "REDIS_HOST",
-      value : var.redis_host
     },
     {
       name : "ENV",
@@ -112,13 +104,34 @@ module "env_schematical_com_ecs_service" {
       value : "n8n"
     },
     {
+      name : "DB_POSTGRESDB_USER",
+      value : "admin"
+    },
+    {
+      name : "DB_POSTGRESDB_PASSWORD",
+      value : "fqabuhnmquyt4cikb5equhhoni.dsql.us-east-1.on.aws/?Action=DbConnectAdmin&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAVLUN3P2B3YMKVZOK%2F20250717%2Fregion%2Fdsql%2Faws4_request&X-Amz-Date=20250717T190026Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEKf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJIMEYCIQCD7dGSzp%2FOrol2o9FuknRZlL2DVXWcniNygsuH1uRFcgIhAOu0nJDnpP990%2BijVr3IHgZz3OUj%2BnpUUvbY4Fr6L%2FomKv0CCJD%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQABoMMzY4NTkwOTQ1OTIzIgwuvZChN9xdSPdBgCsq0QK0ajfdXxTa4tl8Pq3j6o7JVSX3KdhHbEAD0MWvNcwqG5VyBepodZpeTDOaGqkx%2Fj6J5e1hKEWbWGtrjJMJfa7Ya4UwrWBiRDT5pUR1XhghF84Q%2BAhtgv7%2F6Xi8G8OaUfbxtYD5KNG7E22xzsEnZr0wdSlbqE4zvIWsaKo4mwJDHtt6nRj2rp4vQ79UWW%2FdHLYAh9vzYJMJQjEUTm1%2FSvb%2FQz0BvrAWZ%2FKyL4XytG87T60lcxYQzaR%2B0fxIB6m5Ye81vNQFjjiyT1jvEq9qDzoU7bH8naYa%2BsLbYnKevJKipGi6iSUzucwlQuYRRz63UoJivh0cO%2FZ7o%2Fn9waQrnjyXerCabhPffiFdQB9e22QtoGdJN9Q9IK07RyPUyfyHZF5IEjW8X2zjVeYDaNfnFiqkisYDQQlaz3MI%2B3iksjXoGI6FJ2Px4K0fbR1rcHBn7O3MMIany8IGOqYBD8cj%2FFJxw87Cn9xHFsvieGXjkBPiIUUP7yKowfVzVo%2BjJgA%2F5NLjG%2F3YGWGyxKBj8QcoVafAeQPSluRjfYtuxqGJiiTpK3XosWhVQh%2FhMYjb4R3naTJ6b6phBhcnlctdRG4RDM%2BSGxdfF7ZAu%2BzQigdJJinYqkPAGo4xQcrw%2F7xAox%2FaNGWzai9QPgvyBLsDCvhZAnQ%2F3xAzR6kAElDguR%2BjPwdCnA%3D%3D&X-Amz-Signature=4093cc72a7e0afae174dde355eb396ab6c701363141ff206f176744d2b9ee6f3"
+    },
+    {
+      name : "DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED",
+      value : "false"
+    },
+    {
       name : "DB_POSTGRESDB_HOST",
-      value : var.dsql_cluster_identifier
-    }
-
+      value : "${var.dsql_cluster_identifier}.dsql.us-east-1.on.aws"
+    },
+    {
+      name : "N8N_LOG_LEVEL",
+      value : "debug"
+    },
+    {
+      name : "N8N_ENCRYPTION_KEY",
+      value : var.secrets.N8N_ENCRYPTION_KEY
+    },
   ]
+
   container_name = var.service_name
 }
+
 /*module "buildpipeline" {
   source                              = "../../../../modules/buildpipeline"
   # "github.com/schematical/sc-terraform/modules/buildpipeline"

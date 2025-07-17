@@ -10,6 +10,7 @@ data "aws_route53_zone" "schematical_com"{
 data "aws_route53_zone" "domain_name_com"{
   name = local.domain_name
 }
+
 module "prod_env_schematical_com" {
   # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
   source = "./env"
@@ -40,4 +41,6 @@ module "prod_env_schematical_com" {
   shared_alb_sg_id = var.env_info.prod.shared_alb.alb_sg_id
   codestar_connection_arn = var.env_info.prod.codestar_connection_arn
   dsql_cluster_identifier = aws_dsql_cluster.dsql_cluster.identifier
+  dsql_cluster_arn = aws_dsql_cluster.dsql_cluster.arn
+
 }

@@ -1,6 +1,6 @@
 
 resource "aws_batch_compute_environment" "batch_gpu_compute_environment" {
-  compute_environment_name = join("-", [var.service_name, var.env, var.region])
+  name = join("-", [var.service_name, var.env, var.region])
 
   compute_resources {
     allocation_strategy      = "BEST_FIT_PROGRESSIVE"
