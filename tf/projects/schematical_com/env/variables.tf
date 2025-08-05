@@ -74,3 +74,7 @@ variable "shared_alb_sg_id" {
 variable "codestar_connection_arn" {
   type = string
 }
+variable "ecs_desired_task_count" {
+  default = 1
+  type = number
+}

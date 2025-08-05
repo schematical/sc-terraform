@@ -65,9 +65,12 @@ variable "shared_alb_sg_id" {
 variable "codestar_connection_arn" {
   type = string
 }
-variable "dsql_cluster_identifier" {
+variable "dsql_cluster_endpoint" {
   type = string
 }
 variable "dsql_cluster_arn" {
+  type = string
+}
+variable "dsql_cluster_password" {
   type = string
 }

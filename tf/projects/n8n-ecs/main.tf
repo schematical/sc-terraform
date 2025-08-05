@@ -40,7 +40,8 @@ module "prod_env_schematical_com" {
   lb_https_listener_arn = var.env_info.prod.shared_alb_https_listener_arn
   shared_alb_sg_id = var.env_info.prod.shared_alb.alb_sg_id
   codestar_connection_arn = var.env_info.prod.codestar_connection_arn
-  dsql_cluster_identifier = aws_dsql_cluster.dsql_cluster.identifier
-  dsql_cluster_arn = aws_dsql_cluster.dsql_cluster.arn
+  dsql_cluster_endpoint = aws_rds_cluster.postgresql.endpoint
+  dsql_cluster_arn = aws_rds_cluster.postgresql.arn
+  dsql_cluster_password = random_password.password.result
 
 }

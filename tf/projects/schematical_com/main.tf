@@ -331,6 +331,7 @@ module "dev_env_schematical_com" {
   lb_https_listener_arn = var.env_info.dev.shared_alb_https_listener_arn
   shared_alb_sg_id = var.env_info.dev.shared_alb.alb_sg_id
   codestar_connection_arn = var.env_info.dev.codestar_connection_arn
+  ecs_desired_task_count = 0
 }
 
 module "prod_env_schematical_com" {
@@ -368,4 +369,5 @@ module "prod_env_schematical_com" {
   lb_https_listener_arn = var.env_info.prod.shared_alb_https_listener_arn
   shared_alb_sg_id = var.env_info.prod.shared_alb.alb_sg_id
   codestar_connection_arn = var.env_info.prod.codestar_connection_arn
+  ecs_desired_task_count = 1
 }

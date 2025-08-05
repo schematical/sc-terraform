@@ -59,7 +59,7 @@ module "env_schematical_com_ecs_service" {
   env                     = var.env
   vpc_id                  = var.vpc_id
   service_name            = "schematical-com"
-  ecs_desired_task_count  = 1
+  ecs_desired_task_count  = var.ecs_desired_task_count
   private_subnet_mappings = var.private_subnet_mappings
   aws_lb_target_group_arns = [module.env_schematical_com_tg.aws_lb_target_group_arn]
   ecs_cluster_id          = var.ecs_cluster_id

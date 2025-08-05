@@ -1,4 +1,3 @@
-
 resource "aws_iam_role" "task_role" {
   name = "${var.service_name}-ecs-role"
 
@@ -26,6 +25,7 @@ resource "aws_iam_role" "task_role" {
 
 resource "aws_ecr_repository" "ecr_repo" {
   name                 = "n8n-${var.env}-${var.region}"
+  # name                 = "368590945923.dkr.ecr.us-east-1.amazonaws.com/docker-hub/n8nio/n8n:latest"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -45,7 +45,7 @@ module "env_schematical_com_tg" {
   alb_dns_name                        = var.alb_dns_name
   alb_hosted_zone_id                  = var.alb_hosted_zone_id
   container_port                      = local.container_port
-  alb_target_group_health_check_path  = "/"
+  alb_target_group_health_check_path  = "/healthz"
   lb_http_listener_arn                = var.lb_http_listener_arn
   lb_https_listener_arn               = var.lb_https_listener_arn
   lb_listener_rule_http_rule_priority = var.env == "prod" ? 5 : 6
@@ -62,10 +62,10 @@ module "env_schematical_com_ecs_service" {
   ingress_security_groups = [
     var.shared_alb_sg_id
   ]
-  ecr_image_uri                    = "${aws_ecr_repository.ecr_repo.repository_url}:${var.env}" # "docker.n8n.io/n8nio/n8n"
-  container_port                   = local.container_port
-  create_secrets                   = false
-  task_role_arn                    = aws_iam_role.task_role.arn
+  ecr_image_uri = "${aws_ecr_repository.ecr_repo.repository_url}:${var.env}" # "docker.n8n.io/n8nio/n8n"
+  container_port = local.container_port
+  create_secrets = false
+  task_role_arn  = aws_iam_role.task_role.arn
   task_definition_environment_vars = [
     {
       name : "NODE_ENV ",
@@ -77,7 +77,7 @@ module "env_schematical_com_ecs_service" {
     },
     {
       name : "N8N_PORT",
-      value : "80"
+      value : local.container_port
     },
     {
       name : "N8N_HOST",
@@ -101,15 +101,15 @@ module "env_schematical_com_ecs_service" {
     },
     {
       name : "DB_POSTGRESDB_DATABASE",
-      value : "n8n"
+      value : "mydb"
     },
     {
       name : "DB_POSTGRESDB_USER",
-      value : "admin"
+      value : "batman"
     },
     {
       name : "DB_POSTGRESDB_PASSWORD",
-      value : "fqabuhnmquyt4cikb5equhhoni.dsql.us-east-1.on.aws/?Action=DbConnectAdmin&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAVLUN3P2B3YMKVZOK%2F20250717%2Fregion%2Fdsql%2Faws4_request&X-Amz-Date=20250717T190026Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEKf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJIMEYCIQCD7dGSzp%2FOrol2o9FuknRZlL2DVXWcniNygsuH1uRFcgIhAOu0nJDnpP990%2BijVr3IHgZz3OUj%2BnpUUvbY4Fr6L%2FomKv0CCJD%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQABoMMzY4NTkwOTQ1OTIzIgwuvZChN9xdSPdBgCsq0QK0ajfdXxTa4tl8Pq3j6o7JVSX3KdhHbEAD0MWvNcwqG5VyBepodZpeTDOaGqkx%2Fj6J5e1hKEWbWGtrjJMJfa7Ya4UwrWBiRDT5pUR1XhghF84Q%2BAhtgv7%2F6Xi8G8OaUfbxtYD5KNG7E22xzsEnZr0wdSlbqE4zvIWsaKo4mwJDHtt6nRj2rp4vQ79UWW%2FdHLYAh9vzYJMJQjEUTm1%2FSvb%2FQz0BvrAWZ%2FKyL4XytG87T60lcxYQzaR%2B0fxIB6m5Ye81vNQFjjiyT1jvEq9qDzoU7bH8naYa%2BsLbYnKevJKipGi6iSUzucwlQuYRRz63UoJivh0cO%2FZ7o%2Fn9waQrnjyXerCabhPffiFdQB9e22QtoGdJN9Q9IK07RyPUyfyHZF5IEjW8X2zjVeYDaNfnFiqkisYDQQlaz3MI%2B3iksjXoGI6FJ2Px4K0fbR1rcHBn7O3MMIany8IGOqYBD8cj%2FFJxw87Cn9xHFsvieGXjkBPiIUUP7yKowfVzVo%2BjJgA%2F5NLjG%2F3YGWGyxKBj8QcoVafAeQPSluRjfYtuxqGJiiTpK3XosWhVQh%2FhMYjb4R3naTJ6b6phBhcnlctdRG4RDM%2BSGxdfF7ZAu%2BzQigdJJinYqkPAGo4xQcrw%2F7xAox%2FaNGWzai9QPgvyBLsDCvhZAnQ%2F3xAzR6kAElDguR%2BjPwdCnA%3D%3D&X-Amz-Signature=4093cc72a7e0afae174dde355eb396ab6c701363141ff206f176744d2b9ee6f3"
+      value : var.dsql_cluster_password
     },
     {
       name : "DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED",
@@ -117,11 +117,15 @@ module "env_schematical_com_ecs_service" {
     },
     {
       name : "DB_POSTGRESDB_HOST",
-      value : "${var.dsql_cluster_identifier}.dsql.us-east-1.on.aws"
+      value : var.dsql_cluster_endpoint # "${var.dsql_cluster_endpoint}.dsql.us-east-1.on.aws"
     },
     {
       name : "N8N_LOG_LEVEL",
       value : "debug"
+    },
+    {
+      name : "N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS",
+      value : "false"
     },
     {
       name : "N8N_ENCRYPTION_KEY",
