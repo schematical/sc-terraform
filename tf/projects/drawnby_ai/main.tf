@@ -92,7 +92,7 @@ resource "aws_route53_record" "drawnby-ai-cname-mc-2" {
     "dkim3.mcsv.net"
   ]
 }
-resource "aws_route53_record" "verification_record" {
+/*resource "aws_route53_record" "verification_record" {
   zone_id = aws_route53_zone.drawnby_ai.zone_id
   name    = "_amazonses.email"
   type    = "TXT"
@@ -112,7 +112,7 @@ resource "aws_route53_record" "verification_record_3" {
   type    = "TXT"
   ttl     = "600"
   records = ["amazonses:${aws_ses_domain_identity.ses_domain_identity.verification_token}"]
-}
+}*/
 resource "aws_route53_record" "sendgrid_verification_record_1" {
   zone_id = aws_route53_zone.drawnby_ai.zone_id
   name    = "em9202"
@@ -134,9 +134,9 @@ resource "aws_route53_record" "sendgrid_verification_record_3" {
   ttl     = "600"
   records = ["s2.domainkey.u34811792.wl043.sendgrid.net"]
 }
-resource "aws_ses_domain_identity" "ses_domain_identity" {
+/*resource "aws_ses_domain_identity" "ses_domain_identity" {
   domain = "drawnby.ai"
-}
+}*/
 
 
 resource "aws_api_gateway_rest_api" "api_gateway" {

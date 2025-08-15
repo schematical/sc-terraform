@@ -264,28 +264,59 @@ resource "aws_dynamodb_table" "dynamodb_table_post" {
   }
 }
 
+# Product table - stores individual products from each provider
+resource "aws_dynamodb_table" "dynamodb_table_products" {
+  name           = "products"
+  billing_mode   = "PAY_PER_REQUEST"  # On-demand pricing
+  hash_key       = "providerKey"      # Partition key
+  range_key      = "providerId"       # Sort key
 
-/*resource "aws_elasticache_serverless_cache" "elasticache_serverless_cache" {
-  engine = "redis"
-  name   = "${local.service_name}-${var.region}"
-  cache_usage_limits {
-    data_storage {
-      maximum = 1
-      unit    = "GB"
-    }
-    ecpu_per_second {
-      maximum = 1000
-    }
+  attribute {
+    name = "providerKey"
+    type = "S"
   }
-  #daily_snapshot_time      = "09:00"
-  description              = "${local.service_name}-${var.region}"
-  # kms_key_id               = aws_kms_key.test.arn
-  major_engine_version     = "7"
-  snapshot_retention_limit = 1
-  security_group_ids       = [aws_security_group.redis_security_group.id]
-  subnet_ids               = [for o in var.env_info.prod.private_subnet_mappings : o.id] # values(var.private_subnet_mappings)
-}*/
 
+  attribute {
+    name = "providerId"
+    type = "S"
+  }
+
+  # Optional: Add TTL attribute for future use
+  ttl {
+    attribute_name = "ttl"
+    enabled        = false  # Disabled for now, can enable later
+  }
+
+  tags = {
+    Name        = "ProductCache"
+    Environment = "poc"
+    Project     = "multi-retailer-search"
+  }
+}
+
+# ProductSearch table - stores search results with references to products
+resource "aws_dynamodb_table" "dynamodb_table_product_searches" {
+  name           = "product-searches"
+  billing_mode   = "PAY_PER_REQUEST"  # On-demand pricing
+  hash_key       = "searchKey"        # Partition key (URI-like search identifier)
+
+  attribute {
+    name = "searchKey"
+    type = "S"
+  }
+
+  # Optional: Add TTL attribute for future use
+  ttl {
+    attribute_name = "ttl"
+    enabled        = false  # Disabled for now, can enable later
+  }
+
+  tags = {
+    Name        = "ProductSearchCache"
+    Environment = "poc"
+    Project     = "multi-retailer-search"
+  }
+}
 
 
 module "nextjs_lambda_frontend_base" {
@@ -355,6 +386,8 @@ module "prod_env_schematical_com" {
 
   dynamodb_table_arns = [
     aws_dynamodb_table.dynamodb_table_post.arn,
+    aws_dynamodb_table.dynamodb_table_products.arn,
+    aws_dynamodb_table.dynamodb_table_product_searches.arn,
 
   ]
   redis_host =  join(",", [for o in aws_elasticache_cluster.elasticache_cluster.cache_nodes : o.address]) # join(",", [for o in aws_elasticache_serverless_cache.elasticache_serverless_cache.endpoint : o.address])

@@ -112,6 +112,14 @@ module "env_schematical_com_ecs_service" {
       value : var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
     },
     {
+      name : "NEXT_PUBLIC_AUTH_CLIENT_ID",
+      value : var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+    },
+    {
+      name : "NEXT_PUBLIC_AUTH_USER_POOL_ID",
+      value : var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+    },
+    {
       name : "S3_BUCKET",
       value : module.cloudfront.s3_bucket.bucket
     },
@@ -122,6 +130,10 @@ module "env_schematical_com_ecs_service" {
     {
       name : "DB_URL",
       value : var.secrets.schematical_lambda_service_DB_URL
+    },
+    {
+      name : "APIFY_API_TOKEN",
+      value : var.secrets.APIFY_API_TOKEN
     },
 
   ]
@@ -157,6 +169,9 @@ module "buildpipeline" {
     AUTH_USER_POOL_ID : var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
     S3_BUCKET : module.cloudfront.s3_bucket.bucket
     PUBLIC_ASSET_URL : local.PUBLIC_ASSET_URL
+    NEXT_PUBLIC_AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
+    NEXT_PUBLIC_AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+
   }
 
 }
