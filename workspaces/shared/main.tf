@@ -2,7 +2,7 @@ terraform {
   backend "s3" {
     bucket = "schematical2-terraform-v1"
     region = "us-east-1"
-    key    = "sc-workspaces-shared/terraform.tfstate"
+    key    = "sc-workspaces-explodeme-com-shared/terraform.tfstate"
   }
   required_providers {
     aws = {

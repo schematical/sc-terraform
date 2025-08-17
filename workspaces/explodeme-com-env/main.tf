@@ -1,3 +1,21 @@
+terraform {
+  backend "s3" {
+    bucket = "schematical2-terraform-v1"
+    region = "us-east-1"
+    key    = "sc-workspaces-explodeme-com-env/terraform.tfstate"
+  }
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "5.88.0"
+    }
+  }
+}
+
+provider "aws" {
+  # Configuration options
+  region = "us-east-1"
+}
 data "aws_caller_identity" "current" {}
 data "aws_s3_bucket" "codepipeline_artifact_store_bucket" {
   bucket = "explodeme-com-codebuild-v1"

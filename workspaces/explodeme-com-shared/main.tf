@@ -1,3 +1,21 @@
+terraform {
+  backend "s3" {
+    bucket = "schematical2-terraform-v1"
+    region = "us-east-1"
+    key    = "sc-workspaces-explodeme-com-shared/terraform.tfstate"
+  }
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "5.87.0"
+    }
+  }
+}
+
+provider "aws" {
+  # Configuration options
+  region = "us-east-1"
+}
 locals {
   domain_name = "explodeme.com"
   service_name = "explodeme-com"
