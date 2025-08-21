@@ -211,19 +211,19 @@ resource "aws_kinesis_firehose_delivery_stream" "kinesis_to_s3" {
 
   kinesis_source_configuration {
     kinesis_stream_arn = var.kinesis_stream_arn
-    role_arn          = aws_iam_role.firehose_delivery_role.arn
+    role_arn           = aws_iam_role.firehose_delivery_role.arn
   }
 
   extended_s3_configuration {
-    role_arn           = aws_iam_role.firehose_delivery_role.arn
-    bucket_arn         = aws_s3_bucket.data_lake_bucket.arn
-    prefix             = "${var.table_name}/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/"
+    role_arn   = aws_iam_role.firehose_delivery_role.arn
+    bucket_arn = aws_s3_bucket.data_lake_bucket.arn
+    prefix     = "${var.table_name}/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/"
     error_output_prefix = "errors/"
-    
+
     # Buffer configuration - correct parameter names for extended_s3_configuration
     buffering_size     = local.effective_buffer_size
     buffering_interval = var.buffer_interval
-    
+
     # When using data format conversion to Parquet, compression must be UNCOMPRESSED at S3 level
     # Parquet handles compression internally
     compression_format = var.convert_to_parquet ? "UNCOMPRESSED" : "GZIP"
@@ -255,24 +255,41 @@ resource "aws_kinesis_firehose_delivery_stream" "kinesis_to_s3" {
       for_each = var.convert_to_parquet ? [1] : []
       content {
         enabled = true
-        
+
         input_format_configuration {
           deserializer {
             open_x_json_ser_de {}
           }
         }
-        
+
         output_format_configuration {
           serializer {
             parquet_ser_de {}
           }
         }
-        
+
         schema_configuration {
           database_name = aws_glue_catalog_database.data_lake_database.name
           table_name    = aws_glue_catalog_table.kinesis_events_table.name
           role_arn      = aws_iam_role.firehose_delivery_role.arn
         }
+      }
+    }
+  }
+}
+# Athena Workgroup for query results
+resource "aws_athena_workgroup" "analytics_workgroup" {
+  name = "${var.project_name}-${var.environment}-analytics"
+
+  configuration {
+    enforce_workgroup_configuration    = true
+    publish_cloudwatch_metrics_enabled = true
+
+    result_configuration {
+      output_location = "s3://${aws_s3_bucket.data_lake_bucket.bucket}/athena-results/"
+
+      encryption_configuration {
+        encryption_option = "SSE_S3"
       }
     }
   }

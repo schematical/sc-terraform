@@ -28,6 +28,11 @@ output "firehose_delivery_stream_arn" {
   value       = aws_kinesis_firehose_delivery_stream.kinesis_to_s3.arn
 }
 
+output "athena_workgroup_name" {
+  description = "Name of the Athena workgroup for running queries"
+  value       = aws_athena_workgroup.analytics_workgroup.name
+}
+
 output "athena_query_example" {
   description = "Example Athena query to query the partitioned data"
   value = <<-EOT
