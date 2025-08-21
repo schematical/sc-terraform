@@ -58,9 +58,14 @@ variable "table_schema" {
 }
 
 variable "buffer_size" {
-  description = "Buffer size in MB for Kinesis Firehose"
+  description = "Buffer size in MB for Kinesis Firehose (minimum 64 MB when data format conversion is enabled)"
   type        = number
-  default     = 5
+  default     = 64
+  
+  validation {
+    condition = var.buffer_size >= 1 && var.buffer_size <= 128
+    error_message = "Buffer size must be between 1 and 128 MB. When convert_to_parquet is true, minimum is 64 MB."
+  }
 }
 
 variable "buffer_interval" {
@@ -93,7 +98,6 @@ variable "predefined_partitions" {
     year  = number
     month = number
     day   = number
-    hour  = number
   }))
   default = []
 }

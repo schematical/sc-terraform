@@ -1,5 +1,21 @@
 # Kinesis to Glue Database Integration Module
 
+terraform {
+  required_version = ">= 1.0"
+  
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"  # Use latest 6.x version
+    }
+  }
+}
+
+locals {
+  # Ensure buffer size meets AWS requirements when data format conversion is enabled
+  effective_buffer_size = var.convert_to_parquet ? max(var.buffer_size, 64) : var.buffer_size
+}
+
 # S3 bucket for storing the data
 resource "aws_s3_bucket" "data_lake_bucket" {
   bucket = "${var.project_name}-data-lake-${var.environment}"
@@ -204,9 +220,13 @@ resource "aws_kinesis_firehose_delivery_stream" "kinesis_to_s3" {
     prefix             = "${var.table_name}/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/"
     error_output_prefix = "errors/"
     
-    # buffer_size        = var.buffer_size
-    # buffer_interval    = var.buffer_interval
-    compression_format = "GZIP"
+    # Buffer configuration - correct parameter names for extended_s3_configuration
+    buffering_size     = local.effective_buffer_size
+    buffering_interval = var.buffer_interval
+    
+    # When using data format conversion to Parquet, compression must be UNCOMPRESSED at S3 level
+    # Parquet handles compression internally
+    compression_format = var.convert_to_parquet ? "UNCOMPRESSED" : "GZIP"
 
     # Data transformation (optional)
     dynamic "processing_configuration" {
