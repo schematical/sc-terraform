@@ -73,7 +73,7 @@ resource "aws_dynamodb_table" "tenant_inbox_message" {
   }
   attribute {
     name = "createdAt"
-    type = "S"
+    type = "N"
   }
 
   local_secondary_index {
