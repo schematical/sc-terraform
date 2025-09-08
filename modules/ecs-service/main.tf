@@ -57,7 +57,7 @@ locals {
 }
 
 
-resource "aws_iam_role" "task_iam_role" {
+resource "aws_iam_role" "execution_role_arn" {
   name = "${var.service_name}-${var.region}-v1-${var.env}-ecs"
 
   assume_role_policy = jsonencode({
@@ -98,14 +98,38 @@ resource "aws_iam_role" "task_iam_role" {
     Region  = var.region
   }
 }
+data "aws_iam_role" "task_role" {
+  name = var.task_role_name
+}
+resource "aws_iam_role_policy_attachment" "lambda_iam_policy_attach" {
+  count = var.enable_execute_command ? 1 : 0
+  role       = data.aws_iam_role.task_role.name
+  policy_arn = aws_iam_policy.ssmmessages_iam_policy[0].arn
+}
+resource "aws_iam_policy" "ssmmessages_iam_policy" {
+  count = var.enable_execute_command ? 1 : 0
+  name = "schematical-com-v1-${var.env}-ssmmessages"
 
-
+  policy = jsonencode(
+    {
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          Action = "ssmmessages:*"
+          Effect = "Allow"
+          Sid    = "ssmmessages"
+          "Resource" : "*"
+        },
+      ]
+    }
+  )
+}
 resource "aws_ecs_task_definition" "ecs_task_definition" {
   family                   = "${var.service_name}-${var.region}-v1-${var.env}-container"
   network_mode             = "awsvpc"
   requires_compatibilities = [var.launch_type]
-  execution_role_arn       = aws_iam_role.task_iam_role.arn
-  task_role_arn = var.task_role_arn
+  execution_role_arn       = aws_iam_role.execution_role_arn.arn
+  task_role_arn = data.aws_iam_role.task_role.arn
   cpu    = var.task_cpu
   memory = var.task_memory
   container_definitions = jsonencode([{
@@ -127,7 +151,9 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
       hostPort      = var.container_port
       protocol       = "tcp"
     }]
-
+    linuxParameters: {
+      "initProcessEnabled": var.enable_execute_command
+    }
     logConfiguration = {
       logDriver = "awslogs"
       options    = {

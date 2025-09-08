@@ -69,7 +69,7 @@ module "env_schematical_com_ecs_service" {
   ecr_image_uri                    = "${aws_ecr_repository.ecr_repo.repository_url}:${var.env}"
   container_port                   = local.container_port
   create_secrets                   = false
-  task_role_arn                    = aws_iam_role.task_role.arn
+  task_role_name                    = aws_iam_role.task_role.name
   task_definition_environment_vars = [
     {
       name : "NODE_ENV ",
@@ -137,6 +137,7 @@ module "env_schematical_com_ecs_service" {
     },
 
   ]
+  enable_execute_command = true
   container_name = var.service_name
 }
 module "buildpipeline" {
