@@ -62,7 +62,7 @@ module "env_schematical_com_ecs_service" {
   ingress_security_groups = [
     var.shared_alb_sg_id
   ]
-  ecr_image_uri = "${aws_ecr_repository.ecr_repo.repository_url}:${var.env}" # "docker.n8n.io/n8nio/n8n"
+  ecr_image_uri =  "${aws_ecr_repository.ecr_repo.repository_url}:${var.env}" # "docker.n8n.io/n8nio/n8n"
   container_port = local.container_port
   create_secrets = false
   task_role_name  = aws_iam_role.task_role.name
@@ -136,6 +136,38 @@ module "env_schematical_com_ecs_service" {
   container_name = var.service_name
 }
 
+resource "aws_iam_role_policy_attachment" "docker_iam_policy_attach" {
+  role       = module.env_schematical_com_ecs_service.ecs_task_execution_iam_role_name
+  policy_arn = aws_iam_policy.docker_iam_policy.arn
+}
+resource "aws_iam_policy" "docker_iam_policy" {
+  name = "schematical-com-v1-${var.env}-docker"
+
+  policy = jsonencode(
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ecr:GetAuthorizationToken"
+          ],
+          "Resource": "*"
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:GetDownloadUrlForLayer",
+            "ecr:BatchGetImage"
+          ],
+          "Resource": "arn:aws:ecr:us-east-1:368590945923:repository/docker-hub/*"
+        }
+      ]
+    }
+
+  )
+}
 /*module "buildpipeline" {
   source                              = "../../../../modules/buildpipeline"
   # "github.com/schematical/sc-terraform/modules/buildpipeline"

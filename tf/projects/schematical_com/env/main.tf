@@ -91,7 +91,8 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             "s3:DeleteObject"
           ],
           "Resource" : [
-            "${module.cloudfront.s3_bucket.arn}/uploads/**"
+            "${module.cloudfront.s3_bucket.arn}/uploads/**",
+            "${module.cloudfront.s3_bucket.arn}/podcasts/**"
           ]
         }
       ]

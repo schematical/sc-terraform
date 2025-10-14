@@ -74,3 +74,6 @@ variable "dsql_cluster_arn" {
 variable "dsql_cluster_password" {
   type = string
 }
+variable "docker_url" {
+  type = string
+}

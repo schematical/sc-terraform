@@ -10,7 +10,9 @@ data "aws_route53_zone" "schematical_com"{
 data "aws_route53_zone" "domain_name_com"{
   name = local.domain_name
 }
-
+data "aws_ecr_pull_through_cache_rule" "docker" {
+  ecr_repository_prefix = "docker-hub"
+}
 module "prod_env_schematical_com" {
   # depends_on = [aws_api_gateway_integration.api_gateway_root_resource_method_integration]
   source = "./env"
@@ -28,7 +30,7 @@ module "prod_env_schematical_com" {
   subdomain = "n8n"
   secrets = var.env_info.prod.secrets
 
-
+  docker_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/docker-hub/n8nio/n8n:latest"
   waf_web_acl_arn = var.env_info.prod.waf_web_acl_arn
 
   alb_arn = var.env_info.prod.shared_alb.alb_arn
