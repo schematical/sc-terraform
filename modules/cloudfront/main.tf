@@ -104,7 +104,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
   # Cache behavior with precedence 0
   ordered_cache_behavior {
-    path_pattern     = "/content/immutable/*"
+    path_pattern     = "/uploads/*"
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD", "OPTIONS"]
     target_origin_id = local.s3_origin_id
@@ -118,8 +118,8 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
       }
     }
 
-    min_ttl                = 0
-    default_ttl            = 86400
+    min_ttl                = 604800
+    default_ttl            = 604800
     max_ttl                = 31536000
     compress               = true
     viewer_protocol_policy = "redirect-to-https"
