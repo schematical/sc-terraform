@@ -135,6 +135,10 @@ module "env_schematical_com_ecs_service" {
       name : "APIFY_API_TOKEN",
       value : var.secrets.APIFY_API_TOKEN
     },
+    {
+      name : "STRIPE_SECRET_KEY",
+      value : var.secrets.STRIPE_SECRET_KEY
+    },
 
   ]
   enable_execute_command = true
@@ -172,6 +176,7 @@ module "buildpipeline" {
     PUBLIC_ASSET_URL : local.PUBLIC_ASSET_URL
     NEXT_PUBLIC_AUTH_CLIENT_ID: var.secrets.chaospixel_lambda_service_AUTH_CLIENT_ID
     NEXT_PUBLIC_AUTH_USER_POOL_ID: var.secrets.chaospixel_lambda_service_AUTH_USER_POOL_ID
+    STRIPE_SECRET_KEY: var.secrets.STRIPE_SECRET_KEY
 
   }
 
