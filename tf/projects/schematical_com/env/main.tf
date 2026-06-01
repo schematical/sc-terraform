@@ -94,6 +94,16 @@ resource "aws_iam_policy" "lambda_iam_policy" {
             "${module.cloudfront.s3_bucket.arn}/uploads/**",
             "${module.cloudfront.s3_bucket.arn}/podcasts/**"
           ]
+        },
+        {
+          "Sid" : "ses",
+          "Effect" : "Allow",
+          "Action" : [
+            "ses:SendRawEmail"
+          ],
+          "Resource" : [
+            "arn:aws:ses:us-east-1:368590945923:identity/schematical.com"
+          ]
         }
       ]
     }
