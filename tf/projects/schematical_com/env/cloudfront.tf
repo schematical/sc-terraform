@@ -7,7 +7,7 @@ module "cloudfront" {
   source = "../../../../modules/cloudfront"
   region = var.region
   env = var.env
-  subdomain = local.cloudfront_subdomain
+  subdomain = local.cloudfront_subdomain  
   vpc_id = var.vpc_id
   private_subnet_mappings = var.private_subnet_mappings
   hosted_zone_id = var.hosted_zone_id
@@ -19,6 +19,7 @@ module "cloudfront" {
     "localhost:3000",
     "${var.subdomain}.${var.hosted_zone_name}",
     "www.${var.hosted_zone_name}",
+    "gdbingo.com",
     var.hosted_zone_name
   ]
 }

@@ -247,7 +247,7 @@ locals {
 }
 
 
-module "project_chaospixel" {
+/*module "project_chaospixel" {
   source = "./projects/chaospixel"
   ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role
   api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
@@ -255,7 +255,7 @@ module "project_chaospixel" {
   hosted_zone_id = local.default_hosted_zone_id
   hosted_zone_name = local.default_hosted_zone_name
   env_info = local.env_info
-}
+}*/
 module "project_drawnby_ai" {
   source = "./projects/drawnby_ai"
   ecs_task_execution_iam_role = aws_iam_role.ecs_task_execution_iam_role

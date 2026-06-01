@@ -6,7 +6,7 @@ provider "aws" {
   region = "us-east-1"
   # alias  = "east"
 }
-resource "aws_acm_certificate" "drawnby_ai_cert" {
+/*resource "aws_acm_certificate" "drawnby_ai_cert" {
   domain_name       = aws_route53_zone.drawnby_ai.name
   subject_alternative_names = ["*.${aws_route53_zone.drawnby_ai.name}"]
   validation_method = "DNS"
@@ -20,13 +20,6 @@ resource "aws_acm_certificate" "drawnby_ai_cert" {
 resource "aws_route53_zone" "drawnby_ai" {
   name = "drawnby.ai"
 }
-/*resource "aws_route53_record" "drawnby-ai-ns" {
-  zone_id = aws_route53_zone.drawnby_ai.zone_id
-  name    = ""
-  type    = "NS"
-  ttl     = "30"
-  records = aws_route53_zone.drawnby_ai.name_servers
-}*/
 resource "aws_route53_record" "drawnby-ai-a" {
   zone_id = aws_route53_zone.drawnby_ai.zone_id
   name    = ""
@@ -65,15 +58,7 @@ resource "aws_route53_record" "drawnby-ai-mx" {
   ]
 }
 
-/*resource "aws_route53_record" "drawnby-ai-cname-www" {
-  zone_id = aws_route53_zone.drawnby_ai.zone_id
-  name    = "www"
-  type    = "CNAME"
-  ttl     = "30"
-  records = [
-    "us21-93119a0c-eca5fb707a2d3f78196c48655.pages.mailchi.mp"
-  ]
-}*/
+
 resource "aws_route53_record" "drawnby-ai-cname-mc-1" {
   zone_id = aws_route53_zone.drawnby_ai.zone_id
   name    = "k2._domainkey"
@@ -92,27 +77,7 @@ resource "aws_route53_record" "drawnby-ai-cname-mc-2" {
     "dkim3.mcsv.net"
   ]
 }
-/*resource "aws_route53_record" "verification_record" {
-  zone_id = aws_route53_zone.drawnby_ai.zone_id
-  name    = "_amazonses.email"
-  type    = "TXT"
-  ttl     = "600"
-  records = ["${aws_ses_domain_identity.ses_domain_identity.verification_token}"]
-}
-resource "aws_route53_record" "verification_record_2" {
-  zone_id = aws_route53_zone.drawnby_ai.zone_id
-  name    = "_amazonses"
-  type    = "TXT"
-  ttl     = "600"
-  records = [aws_ses_domain_identity.ses_domain_identity.verification_token]
-}
-resource "aws_route53_record" "verification_record_3" {
-  zone_id = aws_route53_zone.drawnby_ai.zone_id
-  name    = ""
-  type    = "TXT"
-  ttl     = "600"
-  records = ["amazonses:${aws_ses_domain_identity.ses_domain_identity.verification_token}"]
-}*/
+
 resource "aws_route53_record" "sendgrid_verification_record_1" {
   zone_id = aws_route53_zone.drawnby_ai.zone_id
   name    = "em9202"
@@ -134,9 +99,7 @@ resource "aws_route53_record" "sendgrid_verification_record_3" {
   ttl     = "600"
   records = ["s2.domainkey.u34811792.wl043.sendgrid.net"]
 }
-/*resource "aws_ses_domain_identity" "ses_domain_identity" {
-  domain = "drawnby.ai"
-}*/
+
 
 
 resource "aws_api_gateway_rest_api" "api_gateway" {
@@ -242,4 +205,4 @@ module "prod_env_drawnby_ai" {
   domain_name = "www"
 
   secrets = var.env_info.prod.secrets
-}
+}*/
