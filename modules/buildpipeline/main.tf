@@ -228,9 +228,9 @@ resource "aws_codebuild_project" "codebuild_project" {
     ]
   }
   environment {
-    compute_type = "BUILD_GENERAL1_MEDIUM"
+    compute_type = var.codebuild_environment_compute_type
     image = var.code_build_image_uri
-    type = "LINUX_CONTAINER"
+    type = var.codebuild_environment_type
     privileged_mode = true
 
     environment_variable {
