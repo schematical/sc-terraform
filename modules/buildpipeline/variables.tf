@@ -89,3 +89,11 @@ variable "ecs_deploy_service_name" {
   type = string
   default = ""
 }
+variable "codebuild_environment_type" {
+  type = string
+  default = "LINUX_CONTAINER"
+}
+variable "codebuild_environment_compute_type" {
+  type = string
+  default = "BUILD_GENERAL1_MEDIUM"
+}
